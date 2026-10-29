@@ -16,7 +16,7 @@ const T = createRequire(import.meta.url)(path.join(root, 'theory.js'));
 const server = await startServer(root);
 const browser = await launchBrowser();
 const results = [];
-const PAGES = ['ayuda.html'];
+const PAGES = ['ayuda.html', 'aprender.html'];
 
 async function test(name, fn, opts = {}) {
   const page = await browser.newPage(opts.width || 1280, opts.height || 800, opts.scheme);
@@ -105,6 +105,50 @@ await test('herramienta: la navegación lleva a la ayuda', async (p) => {
   await p.goto(url('index.html'));
   assert.ok(await p.eval('!!document.querySelector(\'.site-nav a[href="ayuda.html"]\')'));
   assert.deepEqual(await p.eval(`performance.getEntriesByType('resource').map(r => r.name).filter(n => new URL(n).origin !== location.origin)`), []);
+});
+
+await test('aprender: el progreso se guarda, se cuenta por nivel y se puede reiniciar', async (p) => {
+  await p.goto(url('aprender.html'));
+  const total = await p.eval('document.querySelectorAll("input[data-progress]").length');
+  assert.ok(total >= 30, 'comprobaciones: ' + total);
+  assert.match(await p.eval('document.querySelector("[data-progress-total]").textContent'), new RegExp('^0 de ' + total + '$'));
+  await p.click('input[data-progress="n0-cuerda6"]');
+  await p.click('input[data-progress="n0-cuerda5"]');
+  const n0 = await p.eval('document.querySelectorAll("input[data-progress^=n0-]").length');
+  assert.equal(await p.eval('document.querySelector(".table-wrap [data-progress-level=n0]").textContent'), `2 de ${n0}`);
+  await p.goto(url('aprender.html'));                         // se recupera al recargar
+  assert.equal(await p.eval('document.querySelector("input[data-progress=n0-cuerda6]").checked'), true);
+  assert.match(await p.eval('document.querySelector("[data-progress-total]").textContent'), new RegExp('^2 de ' + total + '$'));
+  await p.click('#reset-progress');                           // primer clic: pide confirmación
+  assert.equal(await p.eval('document.querySelector("input[data-progress=n0-cuerda6]").checked'), true);
+  await p.click('#reset-progress');                           // segundo clic: borra
+  assert.equal(await p.eval('document.querySelector("input[data-progress=n0-cuerda6]").checked'), false);
+  assert.equal(await p.eval('localStorage.getItem("fm-progress")'), '[]');
+});
+
+await test('aprender: los identificadores de progreso son únicos y cada casilla tiene texto', async (p) => {
+  await p.goto(url('aprender.html'));
+  const ids = await p.eval('[...document.querySelectorAll("input[data-progress]")].map(i => i.dataset.progress)');
+  assert.equal(new Set(ids).size, ids.length);
+  assert.deepEqual(await p.eval('[...document.querySelectorAll("input[data-progress]")].filter(i => !i.closest("label").textContent.trim()).length'), 0);
+  const levels = new Set(ids.map((i) => i.split('-')[0]));
+  assert.deepEqual([...levels].sort(), ['n0', 'n1', 'n2', 'n3', 'n4']);
+});
+
+await test('aprender: las tablas generadas y los enlaces "Abrir" funcionan', async (p) => {
+  await p.goto(url('aprender.html'));
+  assert.equal(await p.eval('document.querySelectorAll("[data-gen=caged] tbody tr").length'), 5);
+  const href = await p.eval('document.querySelector(\'a.try[href*="blues"]\').getAttribute("href")');
+  await p.goto(`${server.url}/${href}`);
+  assert.match(await p.eval('document.title'), /^A Blues/);
+});
+
+await test('aprender: la autoevaluación se despliega con teclado y muestra la respuesta', async (p) => {
+  await p.goto(url('aprender.html'));
+  assert.equal(await p.eval('document.querySelector("details.qa").open'), false);
+  await p.eval('document.querySelector("details.qa > summary").click()');
+  assert.equal(await p.eval('document.querySelector("details.qa").open'), true);
+  assert.ok(await p.eval('document.querySelector("details.qa > div").textContent.length > 5'));
 });
 
 await browser.close();

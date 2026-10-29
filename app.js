@@ -15,9 +15,9 @@
 
   // ---------- Estado (persistido en la URL y en localStorage) ----------
 
-  const DEFAULTS = { k: 0, s: 'major', p: 'all', m: 'notes', a: 'auto', t: 'standard', f: 22, c: 0, l: 0, z: 3, v: 1, r: 0, q: 'maj' };
+  const DEFAULTS = { k: 0, s: 'major', p: 'all', m: 'notes', a: 'auto', t: 'standard', f: 22, c: 0, l: 0, z: 3, v: 1, r: 0, q: 'maj', b: 0 };
   const STORE_KEY = 'fm-state';
-  const KEEP_CHORD_KEYS = ['t', 'f', 'c', 'l', 'm', 'v', 'p', 'r', 'q'];
+  const KEEP_CHORD_KEYS = ['t', 'f', 'c', 'l', 'm', 'v', 'p', 'r', 'q', 'b'];
 
   function sanitize(raw) {
     const o = { ...DEFAULTS };
@@ -37,6 +37,8 @@
     const r = parseInt(raw.r, 10);
     if (r >= 0 && r < 12) o.r = r;
     if (has(T.CHORD_TYPES, raw.q)) o.q = String(raw.q);
+    const b = parseInt(raw.b, 10);
+    if (b >= 0 && b < 6) o.b = b;
     return o;
   }
 
@@ -60,6 +62,8 @@
   let chordIdx = null;   // acorde seleccionado
   let playTimers = [];
   let explorer = null;   // acorde del explorador (deletreado)
+  let explorerLabel = '';  // nombre con bajo: C/E
+  let bassIdx = 0;         // posición en explorer.notes de la nota más grave
   let voicings = [];     // digitaciones calculadas
   let voicingIdx = 0;
   let allVoicings = [];  // todas las digitaciones encontradas (antes de filtrar)
@@ -265,17 +269,23 @@
     $('#share').addEventListener('click', share);
 
     // Explorador de acordes
-    const explorerChanged = () => announce(`${explorer.name}: ${explorer.notes.map((n) => n.name).join(' ')}`);
+    const explorerChanged = () => announce(`${explorerLabel}: ${explorer.notes.map((n) => n.name).join(' ')}`);
     $('#chord-root').addEventListener('click', (e) => {
       const b = e.target.closest('.pill');
       if (!b) return;
-      setState({ r: Number(b.dataset.pc) });
+      setState({ r: Number(b.dataset.pc), b: 0 });
       explorerChanged();
     });
     $('#chord-type').addEventListener('click', (e) => {
       const b = e.target.closest('.chip');
       if (!b) return;
-      setState({ q: b.dataset.type });
+      setState({ q: b.dataset.type, b: 0 });
+      explorerChanged();
+    });
+    $('#bass-seg').addEventListener('click', (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      setState({ b: Number(b.dataset.b) });
       explorerChanged();
     });
     $('#play-chord').addEventListener('click', () => playVoicing(voicings[voicingIdx]));
@@ -296,7 +306,7 @@
       const c = chords[chordIdx];
       const type = c && T.QUALITY_TO_TYPE[c.quality];
       if (!type) return;
-      setState({ r: c.pcs[0], q: type });
+      setState({ r: c.pcs[0], q: type, b: 0 });
       $('#explorer').scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
       explorerChanged();
     });
@@ -457,6 +467,11 @@
     } else {
       n.textContent = `Forma ${state.p}: caja CAGED de ${parentName} Mayor, la tonalidad que comparte las notas de ${S.rootName} ${scale.name}.`;
     }
+    const { sourceOf } = T.alterationMap(state.s, state.k);
+    const alt = S.notes.filter((x) => sourceOf.has(x.pc)).map((x) => x.name);
+    if (alt.length) {
+      n.textContent += ` Las notas ajenas a esa mayor (${alt.join(', ')}) van en la caja de la nota a la que sustituyen, un traste más arriba o abajo.`;
+    }
   }
 
   function renderInfo() {
@@ -583,12 +598,12 @@
   }
 
   function applyHighlight() {
-    const ranges = T.positionRanges(state.s, state.k, state.f)[state.p];
+    const inShape = T.positionPredicate(state.s, state.k, state.p, state.f);
     const chordPcs = chordIdx !== null && chords[chordIdx] ? new Set(chords[chordIdx].pcs) : null;
     $$('.note-marker').forEach((m) => {
       const fret = Number(m.dataset.f);
       const pc = Number(m.dataset.pc);
-      const inPos = ranges.some((r) => fret >= r[0] && fret <= r[1]);
+      const inPos = inShape(fret, pc);
       const inChord = !chordPcs || chordPcs.has(pc);
       const on = inPos && inChord;
       m.classList.toggle('note-active', on);
@@ -616,14 +631,18 @@
     const type = T.CHORD_TYPES[state.q];
     // Con cejilla, la forma se toca desde la cejilla: las cuerdas "al aire" pasan a sonar más agudas.
     explorerTuning = T.TUNINGS[state.t].midi.map((m) => m + state.c);
-    allVoicings = T.findVoicings(explorerTuning, explorer, state.f - state.c - 1, 80);
+    bassIdx = Math.min(state.b, explorer.notes.length - 1);
+    explorerLabel = bassIdx ? `${explorer.name}/${explorer.notes[bassIdx].name}` : explorer.name;
+    allVoicings = T.findVoicings(explorerTuning, explorer, state.f - state.c - 1, 80, bassIdx);
+    renderBass();
     const capoNote = $('#capo-note');
     capoNote.hidden = state.c === 0;
     capoNote.textContent = `Cejilla en el traste ${state.c}: los trastes del diagrama se cuentan desde la cejilla y las notas son las que suenan.`;
 
     const title = $('#explorer-name');
     title.textContent = '';
-    title.append(el('strong', '', explorer.name), ` · ${type.name}`);
+    const inversion = bassIdx === 0 ? '' : bassIdx <= 3 ? ` · ${bassIdx}ª inversión` : ` · bajo en la ${explorer.notes[bassIdx].display}`;
+    title.append(el('strong', '', explorerLabel), ` · ${type.name}${inversion}`);
 
     const chips = $('#explorer-chips');
     chips.textContent = '';
@@ -656,6 +675,18 @@
     renderVoicings();
   }
 
+  function renderBass() {
+    const seg = $('#bass-seg');
+    seg.textContent = '';
+    explorer.notes.forEach((n, i) => {
+      const b = el('button', '', `${n.name} (${n.display})`);
+      b.type = 'button';
+      b.dataset.b = i;
+      b.setAttribute('aria-pressed', String(i === bassIdx));
+      seg.appendChild(b);
+    });
+  }
+
   function renderVoicings() {
     $$('#voicing-filter button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.vf === voicingFilter)));
     voicings = allVoicings.filter(VOICING_FILTERS[voicingFilter]).slice(0, MAX_VOICINGS);
@@ -675,7 +706,7 @@
       b.dataset.i = i;
       b.setAttribute('aria-pressed', String(i === 0));
       const caption = [...v.frets].reverse().map((f) => (f < 0 ? 'x' : f)).join(' ');
-      b.setAttribute('aria-label', `Digitación ${i + 1} de ${explorer.name}, cuerdas de grave a aguda: ${caption.replace(/x/g, 'muda')}. Pulsa para escucharla.`);
+      b.setAttribute('aria-label', `Digitación ${i + 1} de ${explorerLabel}, cuerdas de grave a aguda: ${caption.replace(/x/g, 'muda')}. Pulsa para escucharla.`);
       b.appendChild(drawVoicing(v));
       b.append(el('span', 'vcap', caption));
       const sub = v.frets.includes(0) ? 'Posición abierta' : `Traste ${v.minFret}`;

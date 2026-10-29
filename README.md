@@ -30,8 +30,8 @@ node tests/theory.test.js && node tests/synth.test.js
 
 ## Limitaciones conocidas
 
-- Las cajas CAGED salen de ventanas de trastes fijas sobre la mayor "madre". En escalas diatónicas cada caja completa tiene 2–3 notas por cuerda y ninguna nota queda sin caja (hay un test para las 12 tonalidades). En escalas con notas alteradas (armónica, melódica, blues…) se muestran las notas de la escala dentro de esa ventana, sin dibujar un patrón propio.
-- Cerca de la cejilla de la guitarra (traste 0) puede verse una caja recortada: es el final de la forma anterior, no un error.
+- Las cajas CAGED salen de ventanas de trastes fijas sobre la mayor "madre" de la escala. En las diatónicas cada caja completa tiene 2–3 notas por cuerda y ninguna nota queda sin caja. En las escalas con notas ajenas a esa mayor (menor armónica y melódica, frigio dominante…) cada nota alterada va en la caja de la nota que sustituye (G → G♯), un traste más arriba o abajo. Hay tests en las 12 tonalidades.
+- Las notas de paso sin nota que sustituyan (la ♭5 del blues, algunas de la disminuida) se colocan por ventana de trastes, sin patrón propio.
+- Cerca del traste 0 puede verse una caja recortada: es el final de la forma anterior, no un error.
 - El audio es síntesis de cuerda pulsada, no samples de guitarra. Su afinación está verificada con tests; el timbre no se ha evaluado de oído.
-- Las digitaciones del explorador las calcula un buscador (bajo = fundamental, máx. 4 trastes de amplitud, máx. 4 dedos), no un catálogo curado. Con cejilla, se calculan desde la cejilla.
-- No hay inversiones ni acordes con bajo distinto de la fundamental (tipo C/E).
+- Las digitaciones del explorador las calcula un buscador (máx. 4 trastes de amplitud, máx. 4 dedos), no un catálogo curado. Con cejilla, se calculan desde la cejilla. Se puede elegir la nota del bajo (inversiones), pero no hay bajos ajenos al acorde (C/D, "slash" sobre otra nota).

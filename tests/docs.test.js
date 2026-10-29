@@ -86,7 +86,11 @@ pages.forEach((page) => {
   test(`${page}: los ejemplos data-verify coinciden con el código`, () => {
     verifyItems(read(page)).forEach(({ spec, text }) => {
       const [kind, ...args] = spec.split(':');
-      if (kind === 'voicing' || kind === 'voicing-first') {
+      if (kind === 'novoicing') {
+        // Formas que la documentación cita como excluidas por las reglas del buscador.
+        const [pc, type, bass] = args;
+        assert.ok(!voicings(STD, +pc, type, +bass, 21).includes(text), `${spec}: «${text}» sí aparece; la limitación ya no es cierta`);
+      } else if (kind === 'voicing' || kind === 'voicing-first') {
         const [pc, type, bass] = args;
         const list = voicings(STD, +pc, type, +bass, 21);
         if (kind === 'voicing-first') assert.equal(list[0], text, spec);

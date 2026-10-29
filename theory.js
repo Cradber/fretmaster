@@ -24,34 +24,34 @@
       use: 'Melodías alegres, pop, country y rock clásico. Se apoya en los acordes I, IV y V.'
     },
     minor: {
-      name: 'Menor Natural', group: 'basic', formula: '1 2 b3 4 5 b6 b7', parent: 3,
+      name: 'Menor natural', group: 'basic', formula: '1 2 b3 4 5 b6 b7', parent: 3,
       desc: 'Sonido oscuro y melancólico (modo eólico). Comparte notas con su mayor relativa.',
       use: 'Rock, baladas y metal; sobre acordes i, iv, v o la cadencia ♭VI–♭VII–i.'
     },
     harmonic_minor: {
-      name: 'Menor Armónica', group: 'basic', formula: '1 2 b3 4 5 b6 7', parent: 3,
+      name: 'Menor armónica', group: 'basic', formula: '1 2 b3 4 5 b6 7', parent: 3,
       desc: 'Menor natural con 7ª mayor: la sensible resuelve con fuerza y aparece una 2ª aumentada (♭6–7).',
       use: 'Sobre el V7 que resuelve a menor, música clásica, neoclásico y metal.'
     },
     melodic_minor: {
-      name: 'Menor Melódica', group: 'basic', formula: '1 2 b3 4 5 6 7', parent: 3,
+      name: 'Menor melódica', group: 'basic', formula: '1 2 b3 4 5 6 7', parent: 3,
       desc: 'Menor con 6ª y 7ª mayores (versión ascendente): suena suave pero con tensión.',
       use: 'Jazz, sobre acordes m(maj7). De ella salen la escala alterada y el lidio dominante.'
     },
     major_pentatonic: {
-      name: 'Penta Mayor', group: 'penta', formula: '1 2 3 5 6', parent: 0,
-      desc: 'Cinco notas sin 4ª ni 7ª: sonido abierto y sin disonancias.',
+      name: 'Pentatónica mayor', group: 'penta', formula: '1 2 3 5 6', parent: 0,
+      desc: 'Cinco notas, sin 4ª ni 7ª y sin ningún semitono entre ellas: sonido abierto y sin choques.',
       use: 'Solos de country, rock sureño y pop sobre acordes mayores.'
     },
     minor_pentatonic: {
-      name: 'Penta Menor', group: 'penta', formula: '1 b3 4 5 b7', parent: 3,
+      name: 'Pentatónica menor', group: 'penta', formula: '1 b3 4 5 b7', parent: 3,
       desc: 'La escala del rock: cinco notas, sin 2ª ni 6ª.',
-      use: 'Rock, blues y pop; funciona sobre casi cualquier acorde menor o de dominante.'
+      use: 'Rock, blues y pop sobre acordes menores; en el blues, también sobre los acordes de séptima dominante.'
     },
     blues: {
       name: 'Blues', group: 'penta', formula: '1 b3 4 b5 5 b7', parent: 3,
       desc: 'Pentatónica menor con ♭5 (la «blue note»), que añade tensión.',
-      use: 'Blues y rock; desliza o dobla la ♭5 hacia la 4ª o la 5ª.'
+      use: 'Blues y rock; usa la ♭5 de paso, deslizándola o estirándola (bending) hacia la 4ª o la 5ª.'
     },
     dorian: {
       name: 'Dórico', group: 'mode', formula: '1 2 b3 4 5 6 b7', parent: 10,
@@ -79,19 +79,19 @@
       use: 'Sobre acordes m7♭5; apenas se usa como centro tonal.'
     },
     phrygian_dominant: {
-      name: 'Frigio Dominante', group: 'other', formula: '1 b2 3 4 5 b6 b7', parent: 8,
+      name: 'Frigio dominante', group: 'other', formula: '1 b2 3 4 5 b6 b7', parent: 8,
       desc: 'Frigio con 3ª mayor (5º modo de la menor armónica): sonido árabe y flamenco.',
       use: 'Sobre dominantes que resuelven a menor (V7♭9); flamenco, metal y klezmer.'
     },
     whole_tone: {
-      name: 'Tonos Enteros', group: 'other', formula: '1 2 3 #4 #5 b7', parent: 0, symmetric: true,
+      name: 'Tonos enteros', group: 'other', formula: '1 2 3 #4 #5 b7', parent: 0, symmetric: true,
       desc: 'Seis notas separadas por tonos enteros: ambigua, flotante y sin resolución.',
       use: 'Tensión onírica sobre acordes aumentados o 7♯5 (Debussy).'
     },
     diminished: {
       name: 'Disminuida (T–S)', group: 'other', formula: '1 2 b3 4 b5 b6 bb7 7', parent: 0, symmetric: true,
       desc: 'Ocho notas simétricas que alternan tono y semitono.',
-      use: 'Sobre acordes dim7 y dominantes con ♭9; jazz y neoclásico.'
+      use: 'Sobre acordes dim7 de su misma fundamental; jazz y neoclásico. Sus notas son las de la disminuida S–T un semitono más abajo (Do T–S = Si S–T), la que se usa sobre el dominante 7♭9 (Si7♭9).'
     }
   };
 
@@ -401,7 +401,7 @@
     maj7: { name: 'Maj7', symbol: 'maj7', group: 'seventh', formula: '1 3 5 7' },
     7: { name: 'Dominante 7', symbol: '7', group: 'seventh', formula: '1 3 5 b7' },
     m7: { name: 'Menor 7', symbol: 'm7', group: 'seventh', formula: '1 b3 5 b7' },
-    mmaj7: { name: 'Menor Maj7', symbol: 'm(maj7)', group: 'seventh', formula: '1 b3 5 7' },
+    mmaj7: { name: 'Menor maj7', symbol: 'm(maj7)', group: 'seventh', formula: '1 b3 5 7' },
     m7b5: { name: 'Semidisminuido', symbol: 'm7♭5', group: 'seventh', formula: '1 b3 b5 b7' },
     dim7: { name: 'Disminuido 7', symbol: 'dim7', group: 'seventh', formula: '1 b3 b5 bb7' },
     '7sus4': { name: '7sus4', symbol: '7sus4', group: 'seventh', formula: '1 4 5 b7' },
@@ -479,7 +479,7 @@
 
   /**
    * Busca digitaciones tocables para el acorde en la afinación dada.
-   * frets[i]: traste de la cuerda i (0 = la más aguda); -1 = muda. La nota más grave siempre es la fundamental.
+   * frets[i]: traste de la cuerda i (0 = la más aguda); -1 = muda. La nota más grave es la del bajo elegido (bassIdx; por defecto, la fundamental).
    */
   function findVoicings(tuning, chord, maxFret, limit, bassIdx) {
     const n = tuning.length;

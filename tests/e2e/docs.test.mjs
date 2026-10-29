@@ -76,7 +76,7 @@ await test('ayuda: las tablas generadas contienen todas las escalas, acordes, af
 
 await test('ayuda: la tabla de escalas muestra las notas correctas de Do', async (p) => {
   await p.goto(url('ayuda.html'));
-  const row = await p.eval(`[...document.querySelectorAll('[data-gen="scales"] tbody tr')].find(r => r.cells[0].textContent.startsWith('Menor Armónica')).cells[4].textContent`);
+  const row = await p.eval(`[...document.querySelectorAll('[data-gen="scales"] tbody tr')].find(r => r.cells[0].textContent.startsWith('Menor armónica')).cells[4].textContent`);
   assert.equal(row, 'C D E♭ F G A♭ B');
 });
 
@@ -97,7 +97,7 @@ await test('ayuda: los enlaces "Verla" abren la herramienta con ese estado', asy
   await p.goto(url('ayuda.html'));
   const href = await p.eval('document.querySelector(\'a.try[href*="harmonic_minor&p=C"]\').getAttribute("href")');
   await p.goto(`${server.url}/${href}`);
-  assert.match(await p.eval('document.title'), /^A Menor Armónica/);
+  assert.match(await p.eval('document.title'), /^A Menor armónica/);
   assert.equal(await p.eval('document.querySelector("#caged-seg [aria-pressed=true]").dataset.pos'), 'C');
 });
 

@@ -91,6 +91,7 @@
   </header>
 
   <main id="main" class="app">
+    <h1 class="sr-only">FretMaster: escalas, modos y acordes para guitarra</h1>
     <div class="tabs" role="tablist" aria-label="Secciones de la herramienta" id="view-tabs">
       <button type="button" role="tab" id="tab-escala" aria-controls="panel-escala" data-view="escala">Escala</button>
       <button type="button" role="tab" id="tab-acordes" aria-controls="panel-acordes" data-view="acordes">Explorador de acordes</button>
@@ -100,11 +101,11 @@
     <section id="panel-escala" role="tabpanel" aria-labelledby="tab-escala" class="panel">
       <section class="controls" aria-label="Tonalidad y escala">
         <div class="control">
-          <h2 class="eyebrow" id="key-label">Tonalidad</h2>
+          <p class="eyebrow" id="key-label">Tonalidad</p>
           <div class="keys" id="key-selector" role="group" aria-labelledby="key-label"></div>
         </div>
         <div class="control">
-          <h2 class="eyebrow" id="scale-label">Escala</h2>
+          <p class="eyebrow" id="scale-label">Escala</p>
           <div class="scale-picker">
             <div class="group-tabs" id="scale-groups" role="group" aria-label="Familia de escalas"></div>
             <div class="scale-items" id="scale-selector" role="group" aria-labelledby="scale-label"></div>
@@ -171,17 +172,17 @@
     <section id="panel-acordes" role="tabpanel" aria-labelledby="tab-acordes" class="panel" hidden>
       <div class="controls controls--stack">
         <div class="control">
-          <h3 class="eyebrow" id="chord-root-label">Fundamental</h3>
+          <p class="eyebrow" id="chord-root-label">Fundamental</p>
           <div class="keys" id="chord-root" role="group" aria-labelledby="chord-root-label"></div>
         </div>
         <div class="control">
-          <h3 class="eyebrow" id="chord-type-label">Tipo de acorde</h3>
+          <p class="eyebrow" id="chord-type-label">Tipo de acorde</p>
           <div class="chord-types" id="chord-type" role="group" aria-labelledby="chord-type-label"></div>
         </div>
       </div>
 
       <div class="panel-head">
-        <h3 id="explorer-name" class="explorer-name"></h3>
+        <h2 id="explorer-name" class="explorer-name"></h2>
         <button id="play-chord" class="btn btn--primary" type="button">▶ Escuchar acorde</button>
       </div>
       <ul id="explorer-chips" class="note-chips" aria-label="Notas del acorde"></ul>

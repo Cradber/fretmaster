@@ -124,6 +124,13 @@ test('la tabla de archivos de desarrollo.html no omite ningún archivo del proye
   assert.ok(dev.includes('<td class="mono">tests/</td>'));
 });
 
+test('los números del README (escalas y tipos de acorde) coinciden con los catálogos', () => {
+  const T = ctx.FretTheory;
+  const readme = read('README.md');
+  assert.ok(readme.includes(`${Object.keys(T.SCALES).length} escalas`), 'README: número de escalas desactualizado');
+  assert.ok(readme.includes(`${Object.keys(T.CHORD_TYPES).length} tipos de acorde`), 'README: número de tipos de acorde desactualizado');
+});
+
 test('los scripts de package.json apuntan a pruebas que existen', () => {
   const pkg = JSON.parse(read('package.json'));
   Object.values(pkg.scripts).forEach((cmd) => {

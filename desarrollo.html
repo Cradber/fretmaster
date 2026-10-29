@@ -336,7 +336,7 @@
             <tr><td class="mono">tests/contrast.test.js</td><td>Contraste WCAG de los tokens en los dos temas.</td><td>Node, lee <code>base.css</code></td></tr>
             <tr><td class="mono">tests/docs.test.js</td><td>Los ejemplos de la ayuda y de Aprender coinciden con <code>theory.js</code> (<code>data-verify</code>), los enlaces a la herramienta tienen parámetros válidos, las anclas existen, la navegación es idéntica y todo está en la caché.</td><td>Node, analiza el HTML</td></tr>
             <tr><td class="mono">tests/architecture.test.js</td><td>La API documentada coincide con las exportaciones, el orden de carga respeta las dependencias, las capas puras no tocan el DOM, no hay URL externas y cada archivo está en el README.</td><td>Node, módulos en un contexto aislado</td></tr>
-            <tr><td class="mono">tests/e2e/*.test.mjs</td><td>La aplicación y las páginas en Chrome real: carga sin errores, interacción, estado en la URL, tema automático, teclado, tablas generadas, sin peticiones externas, móvil, service worker.</td><td>Chrome headless por CDP</td></tr>
+            <tr><td class="mono">tests/e2e/*.test.mjs</td><td>La aplicación y las páginas en Chrome real: carga sin errores, interacción, estado en la URL, tema automático, teclado, tablas generadas, sin peticiones externas, móvil, service worker. Una auditoría transversal revisa en todas las páginas los nombres accesibles, los niveles de título, el foco visible con teclado y que <em>todas</em> funcionen sin conexión.</td><td>Chrome headless por CDP</td></tr>
           </tbody>
         </table>
       </div>

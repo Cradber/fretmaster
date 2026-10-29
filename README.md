@@ -1,6 +1,15 @@
 # FretMaster
 
-Explorador de escalas, modos y acordes diatónicos sobre el mástil de la guitarra. Sin dependencias ni paso de build; funciona sin conexión.
+Explorador de escalas, modos, formas CAGED, acordes y digitaciones para guitarra. Sin dependencias ni paso de compilación; funciona sin conexión y no envía datos a ningún servidor.
+
+## Qué incluye
+
+- **Herramienta** (`index.html`): 15 escalas en 12 tonalidades, formas CAGED, acordes de la escala y un explorador de 22 tipos de acorde con digitaciones calculadas, inversiones y cejilla. Afinaciones alternativas, 22 o 24 trastes, modo zurdo, sonido y tema Automático / Claro / Oscuro.
+- **Aprender** (`aprender.html`): ruta autodidacta por niveles, con lecciones, práctica, autoevaluación y progreso guardado en el navegador.
+- **Ayuda** (`ayuda.html`): descripción rigurosa del contenido musical y de cómo se calcula.
+- **Desarrollo** (`desarrollo.html`): arquitectura, algoritmos, pruebas y cómo ampliar.
+
+Las tablas y los ejemplos de las páginas de documentación se generan o se verifican contra el código, de modo que no pueden contradecir a la aplicación.
 
 ## Ejecutar
 

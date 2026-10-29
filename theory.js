@@ -7,9 +7,9 @@
 
   const GROUPS = [
     { id: 'basic', title: 'Comunes' },
-    { id: 'penta', title: 'Pentatónicas y blues' },
-    { id: 'mode', title: 'Modos griegos' },
-    { id: 'other', title: 'Otras escalas' }
+    { id: 'penta', title: 'Penta y blues' },
+    { id: 'mode', title: 'Modos' },
+    { id: 'other', title: 'Otras' }
   ];
 
   /*

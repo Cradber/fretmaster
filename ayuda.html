@@ -210,6 +210,7 @@
         <li>La tabla se mide para <strong>Do mayor</strong> y se traslada con la tónica: para otra tonalidad, cada ventana se desplaza tantos trastes como semitonos haya entre Do y la tónica de la mayor madre.</li>
         <li>Las ventanas contiguas <strong>se solapan</strong>: las notas del borde pertenecen a dos cajas.</li>
         <li>En las escalas diatónicas (mayor, menor natural y los modos) cada caja completa contiene <strong>2 o 3 notas por cuerda</strong>, y ninguna nota del mástil queda fuera de todas las cajas. Un test lo comprueba en las 12 tonalidades.</li>
+        <li>Las ventanas están medidas para la <strong>afinación estándar</strong> y se desplazan con la afinación: en <em>Medio tono abajo</em> cada caja está un traste más arriba, porque todas las notas están un traste más arriba. Drop D y 7 cuerdas conservan las cinco cuerdas agudas de la estándar y usan las mismas ventanas.</li>
         <li>Para un <strong>modo</strong> o para la <strong>menor natural</strong> se usan las cajas de su mayor madre: <em>Re dórico</em> usa las de Do mayor, y <em>La menor</em>, las de Do mayor. Lo indica la línea que aparece al elegir una forma.</li>
       </ul>
       <h3>Escalas con notas alteradas</h3>
@@ -357,7 +358,7 @@
       <p>Lo que la aplicación no hace, o hace con restricciones. Cada punto se ha comprobado contra el código.</p>
       <ul>
         <li><strong>Cajas CAGED</strong>: son ventanas de trastes sobre la mayor madre, no patrones dibujados escala por escala, y están medidas para la <strong>afinación estándar</strong>. En las escalas diatónicas cada caja completa tiene 2 o 3 notas por cuerda, y en las pentatónicas exactamente 2; en la disminuida algunas cuerdas llegan a 4. En las escalas con notas alteradas, cada nota alterada sigue a la nota que sustituye.</li>
-        <li><strong>Cajas en otras afinaciones</strong>: las ventanas no se ajustan a la afinación. En <em>Medio tono abajo</em> quedan desplazadas un traste respecto a las formas reales, y en las afinaciones abiertas (DADGAD, Open D, Open G) las formas CAGED no tienen sentido: se siguen mostrando ventanas, pero no corresponden a ninguna forma de acorde. Las notas de la escala sí son siempre correctas.</li>
+        <li><strong>Cajas en otras afinaciones</strong>: en las afinaciones abiertas (DADGAD, Open D, Open G) las formas CAGED no existen. La app lo avisa y muestra las mismas ventanas de trastes que en la estándar, solo como zonas del mástil. En Drop D la 6ª cuerda tiene otro dibujo dentro de la caja, porque es la única que cambia. Las notas de la escala son correctas en todas las afinaciones.</li>
         <li><strong>Digitaciones</strong>: las calcula un buscador con las reglas de <a href="#reglas">arriba</a>, no un catálogo curado, y no busca por encima del traste 15. Esas reglas dejan fuera formas habituales:
           <ul>
             <li>las que tienen una cuerda muda entre dos que suenan, como las de jazz «drop 3» y «shell» (<span class="notes" data-verify="novoicing:0:maj7:0">8 x 9 9 8 x</span> para Cmaj7);</li>
@@ -369,7 +370,6 @@
         <li><strong>Escalas</strong>: solo las de la <a href="#familias">tabla</a>. No están la disminuida semitono–tono, la alterada ni el lidio dominante, aunque algunas descripciones las mencionan como relación, ni la mayor armónica. La menor melódica es la ascendente.</li>
         <li><strong>Escuchar escala</strong>: toca una octava en un registro fijo (la tónica entre Do3 y Si3), sin seguir la forma CAGED elegida.</li>
         <li><strong>Audio</strong>: sintético; su afinación está probada, pero el timbre no pretende imitar una guitarra real. En Safari y iOS el audio es más estricto y su comportamiento no se ha verificado en dispositivos reales (<a href="#sin-sonido">ver arriba</a>).</li>
-        <li><strong>Enlaces</strong>: si cambias a mano la parte de la dirección que va tras el <span class="notes">#</span> en una pestaña donde la herramienta ya está abierta, la vista no se actualiza hasta recargar. Abrir un enlace en una pestaña nueva funciona siempre.</li>
         <li><strong>Instrumento</strong>: guitarra de 6 o 7 cuerdas con trastes normales, 22 o 24 trastes y cejilla hasta el traste 9; no hay bajo, ukelele ni instrumentos sin trastes.</li>
       </ul>
 

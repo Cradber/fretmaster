@@ -1,5 +1,5 @@
 /* Service worker: la app funciona sin conexión (caché primero, actualiza en segundo plano). */
-const CACHE = 'fretmaster-v12';
+const CACHE = 'fretmaster-v13';
 const ASSETS = [
   './', 'index.html', 'base.css', 'app.css', 'theme.js', 'theory.js', 'synth.js', 'util.js', 'state.js', 'audio.js',
   'fretboard.js', 'explorer.js', 'app.js', 'ayuda.html', 'aprender.html', 'desarrollo.html', 'docs.css', 'docs.js', 'aprender.js',

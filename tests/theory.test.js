@@ -229,6 +229,40 @@ test('cajas CAGED de las pentatónicas: exactamente 2 notas por cuerda en las 12
   });
 });
 
+test('cagedOffset: estándar, Drop D y 7 cuerdas 0; medio tono abajo 1; abiertas null', () => {
+  const o = (id) => T.cagedOffset(T.TUNINGS[id].midi);
+  assert.equal(o('standard'), 0);
+  assert.equal(o('dropd'), 0);
+  assert.equal(o('seven'), 0);
+  assert.equal(o('eb'), 1);
+  ['dadgad', 'opend', 'openg'].forEach((id) => assert.equal(o(id), null, id));
+  assert.equal(T.cagedOffset(undefined), 0);
+});
+test('en medio tono abajo las cajas se desplazan con la afinación y conservan su forma', () => {
+  const EB = T.TUNINGS.eb.midi;
+  // Do mayor, Forma C: en estándar trastes 0–3; con todo medio tono abajo, 1–4.
+  assert.deepEqual(T.positionRanges('major', 0, 22, EB).C[0], [1, 4]);
+  ['major', 'major_pentatonic', 'minor_pentatonic'].forEach((id) => {
+    const per = id === 'major' ? [2, 3] : [2, 2];
+    for (let pc = 0; pc < 12; pc++) {
+      const sc = T.spellScale(pc, id);
+      const ranges = T.positionRanges(id, pc, 22, EB);
+      let uncovered = 0;
+      EB.forEach((m) => { for (let x = 0; x <= 22; x++) {
+        if (sc.byPc.has((m + x) % 12) && !T.CAGED_ORDER.some((sh) => T.positionPredicate(id, pc, sh, 22, EB)(x, (m + x) % 12))) uncovered++;
+      } });
+      assert.equal(uncovered, 0, `${id} ${pc}: notas sin caja`);
+      T.CAGED_ORDER.forEach((sh) => ranges[sh].filter(([a, b]) => b - a >= T.CAGED[sh][1] - T.CAGED[sh][0]).forEach(([a, b]) => {
+        EB.forEach((m, si) => {
+          let count = 0;
+          for (let x = a; x <= b; x++) if (sc.byPc.has((m + x) % 12)) count++;
+          assert.ok(count >= per[0] && count <= per[1], `${id} ${pc} forma ${sh} [${a},${b}] cuerda ${si + 1}: ${count}`);
+        });
+      }));
+    }
+  });
+});
+
 test('con cejilla en el traste 2, A suena con la forma abierta de G (320003)', () => {
   const capoTuning = STD.map((m) => m + 2);
   const shapes = T.findVoicings(capoTuning, T.spellChord(9, 'maj'), 12, 60)

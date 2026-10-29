@@ -311,9 +311,24 @@
     return asc;
   }
 
+  /**
+   * Trastes que se desplazan las cajas en una afinación: 0 en la estándar (y en Drop D o 7 cuerdas, que mantienen
+   * las cinco cuerdas agudas), 1 en medio tono abajo… Las ventanas CAGED están medidas para la afinación estándar;
+   * en otra afinación transpuesta, la misma forma está tantos trastes más arriba como semitonos se haya bajado.
+   * Devuelve null si las cinco cuerdas agudas no conservan los intervalos de la estándar (afinaciones abiertas):
+   * ahí las formas CAGED no existen.
+   */
+  function cagedOffset(tuning) {
+    if (!tuning) return 0;
+    const std = TUNINGS.standard.midi;
+    const d = std[0] - tuning[0];
+    for (let i = 1; i < 5; i++) if (std[i] - tuning[i] !== d) return null;
+    return ((d % 12) + 12) % 12;
+  }
+
   /** Ventanas de trastes de cada forma, sin recortar al mástil (pueden empezar antes del traste 0). */
-  function windows(scaleId, rootPc, frets) {
-    const shift = (rootPc + SCALES[scaleId].parent) % 12;
+  function windows(scaleId, rootPc, frets, tuning) {
+    const shift = (rootPc + SCALES[scaleId].parent + (cagedOffset(tuning) || 0)) % 12;
     const out = {};
     CAGED_ORDER.forEach((id) => {
       const [start, end] = CAGED[id];
@@ -328,8 +343,8 @@
     return out;
   }
 
-  function positionRanges(scaleId, rootPc, frets) {
-    const w = windows(scaleId, rootPc, frets);
+  function positionRanges(scaleId, rootPc, frets, tuning) {
+    const w = windows(scaleId, rootPc, frets, tuning);
     const out = { all: [[0, frets]] };
     CAGED_ORDER.forEach((id) => {
       out[id] = w[id].filter(([a, b]) => a <= frets && b >= 0).map(([a, b]) => [Math.max(0, a), Math.min(frets, b)]);
@@ -367,11 +382,12 @@
 
   /**
    * ¿Pertenece la nota (traste, clase de altura) a la caja? Una nota alterada va en la caja de la nota
-   * que sustituye, un traste más arriba o abajo, así la caja no queda con huecos.
+   * que sustituye, un traste más arriba o abajo, así la caja no queda con huecos. tuning (MIDI, opcional) desplaza
+   * las ventanas según cagedOffset; sin ella se supone la afinación estándar.
    */
-  function positionPredicate(scaleId, rootPc, shapeId, frets) {
+  function positionPredicate(scaleId, rootPc, shapeId, frets, tuning) {
     if (shapeId === 'all') return () => true;
-    const wins = windows(scaleId, rootPc, frets)[shapeId];
+    const wins = windows(scaleId, rootPc, frets, tuning)[shapeId];
     const inWin = (f) => wins.some(([a, b]) => f >= a && f <= b);
     const { sourceOf } = alterationMap(scaleId, rootPc);
     return (fret, pc) => {
@@ -542,7 +558,7 @@
     spellScale, keyLabel, legendFor, stepPattern, diatonicChords,
     chordMidis, scaleMidis, positionRanges, parseFormula, pretty,
     spellChord, chordLegend, findVoicings, fingering,
-    alterationMap, positionPredicate
+    alterationMap, positionPredicate, cagedOffset
   };
   global.FretTheory = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

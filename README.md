@@ -54,9 +54,8 @@ npm run test:all
 
 La lista completa, con ejemplos, está en la sección «Límites y alcance» de `ayuda.html`. En resumen:
 
-- **Cajas CAGED**: ventanas de trastes fijas sobre la mayor "madre", medidas para la afinación estándar. En las diatónicas cada caja completa tiene 2–3 notas por cuerda (2 en las pentatónicas, hasta 4 en la disminuida) y ninguna nota queda sin caja; las notas alteradas (G → G♯) van en la caja de la nota que sustituyen. No se ajustan a la afinación: en «medio tono abajo» quedan desplazadas un traste y en las afinaciones abiertas no corresponden a formas reales.
+- **Cajas CAGED**: ventanas de trastes fijas sobre la mayor "madre", medidas para la afinación estándar. En las diatónicas cada caja completa tiene 2–3 notas por cuerda (2 en las pentatónicas, hasta 4 en la disminuida) y ninguna nota queda sin caja; las notas alteradas (G → G♯) van en la caja de la nota que sustituyen. Se desplazan con la afinación (en «medio tono abajo», un traste más arriba); en las afinaciones abiertas no existen formas CAGED y la app lo avisa.
 - **Digitaciones**: las calcula un buscador (hasta el traste 15, máx. 4 trastes de amplitud y 4 dedos), no un catálogo curado. Quedan fuera las formas con cuerdas mudas intercaladas (drop 3, shell), las de tres cuerdas salvo el power chord y las que necesitan una cejilla que no está en el traste más bajo (C9 x32333). No hay bajos ajenos al acorde (C/D).
 - **Catálogo**: 22 tipos de acorde (sin 7♭9, 7♯9, 6/9, 11, 13) y 15 escalas (sin disminuida S–T, alterada, lidio dominante ni mayor armónica).
 - **Escuchar escala** toca una octava en un registro fijo, sin seguir la forma elegida.
 - **Audio**: síntesis de cuerda pulsada; afinación verificada con tests, timbre no evaluado de oído. En Safari e iOS **no está verificado en dispositivos reales** (hay un diagnóstico en Ajustes).
-- **Dirección**: cambiar a mano el `#` en una pestaña ya abierta no actualiza la vista hasta recargar.

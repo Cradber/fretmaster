@@ -93,7 +93,7 @@
   /** Atenúa las notas fuera de la forma CAGED elegida o del acorde seleccionado (chordPcs: Set de clases de altura o null). */
   function highlight(st, S, chordPcs) {
     state = st;
-    const inShape = T.positionPredicate(st.s, st.k, st.p, st.f);
+    const inShape = T.positionPredicate(st.s, st.k, st.p, st.f, T.TUNINGS[st.t].midi);
     $$('.note-marker').forEach((m) => {
       const fret = Number(m.dataset.f);
       const pc = Number(m.dataset.pc);

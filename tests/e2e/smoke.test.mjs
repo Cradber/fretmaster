@@ -82,6 +82,24 @@ await test('acorde diatónico: resalta sus notas y abre el explorador', async (p
   assert.match(await p.eval('document.querySelector("#explorer-name").textContent'), /^G · Mayor/);
 });
 
+await test('formas CAGED según la afinación: desplazadas en medio tono abajo y avisadas en las abiertas', async (p) => {
+  await p.goto(base('#k=0&s=major&p=C&t=eb'));
+  assert.match(await p.eval('document.querySelector("#caged-note").textContent'), /1 traste más arriba/);
+  // Cuerda 6 en estándar: E F G en los trastes 0 1 3. Con la afinación medio tono abajo, las mismas notas en 1 2 4.
+  const active = await p.eval(`[...document.querySelectorAll('.note-marker[data-s="5"]')].filter(m => !m.classList.contains('note-dimmed')).map(m => +m.dataset.f).filter(f => f < 6).join(' ')`);
+  assert.equal(active, '1 2 4');
+  await p.goto(base('#k=0&s=major&p=C&t=dadgad'));
+  assert.match(await p.eval('document.querySelector("#caged-note").textContent'), /no existen las formas CAGED/);
+});
+
+await test('cambiar el # en la misma pestaña actualiza la vista', async (p) => {
+  await p.goto(base('#k=0&s=major'));
+  assert.match(await p.eval('document.title'), /^C Mayor/);
+  await p.eval(`location.hash = 'k=9&s=harmonic_minor'`);
+  await p.waitFor(`document.title.startsWith('A Menor armónica')`);
+  assert.match(await p.eval('location.hash'), /k=9/);
+});
+
 await test('explorador: tipo, bajo y filtros', async (p) => {
   await p.goto(base());
   await p.click('#chord-type [data-type="maj7"]');

@@ -289,6 +289,12 @@
     if (alt.length) {
       n.textContent += ` Las notas ajenas a esa mayor (${alt.join(', ')}) van en la caja de la nota a la que sustituyen, un traste más arriba o abajo.`;
     }
+    const offset = T.cagedOffset(T.TUNINGS[state.t].midi);
+    if (offset === null) {
+      n.textContent += ' En esta afinación no existen las formas CAGED: se muestran las mismas ventanas de trastes que en la estándar, solo como zonas del mástil.';
+    } else if (offset > 0) {
+      n.textContent += ` Con esta afinación la caja está ${offset} ${offset === 1 ? 'traste' : 'trastes'} más arriba que en la estándar.`;
+    }
   }
 
   function renderInfo() {
@@ -440,6 +446,13 @@
     A.Explorer.init({ setState, announce });
     A.Audio.onProblem(() => toast(AUDIO_HINT));
     wireEvents();
+    // Un cambio del # en la misma pestaña (escrito a mano o pegado) no recarga la página: se vuelve a leer el estado.
+    // persist() usa replaceState, que no dispara este evento, así que no hay bucle.
+    window.addEventListener('hashchange', () => {
+      state = A.State.load();
+      chordIdx = null;
+      update();
+    });
     update();
     if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
       navigator.serviceWorker.register('sw.js').catch(() => { /* sin soporte offline */ });

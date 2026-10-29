@@ -123,10 +123,10 @@
 
   function parseFormula(formula) {
     return formula.split(' ').map((token) => {
-      const m = /^([#b]*)(\d)$/.exec(token);
+      const m = /^([#b]*)(\d+)$/.exec(token);
       const acc = [...m[1]].reduce((a, c) => a + (c === '#' ? 1 : -1), 0);
       const deg = Number(m[2]);
-      return { token, deg, acc, semi: (LETTER_PC[deg - 1] + acc + 12) % 12 };
+      return { token, deg, acc, semi: (LETTER_PC[(deg - 1) % 7] + acc + 12) % 12 };
     });
   }
 
@@ -140,6 +140,9 @@
     });
     return out;
   })();
+
+  // letra:alteración → B♯ (6:1), E♯ (2:1), F♭ (3:-1), C♭ (0:-1)
+  const EXOTIC_ROOTS = new Set(['6:1', '2:1', '3:-1', '0:-1']);
 
   function spellWith(cand, tokens) {
     const rootPc = (LETTER_PC[cand.letter] + cand.acc + 12) % 12;
@@ -168,19 +171,24 @@
    * pref: 'auto' elige la ortografía con menos alteraciones; 'sharp' / 'flat' la fuerzan
    * cuando existe una alternativa (p. ej. C♯ vs D♭).
    */
+  function bestSpelling(pc, tokens, pref) {
+    // Fundamentales que nadie escribe (B♯, E♯, F♭, C♭): ya existen como C, F, E y B.
+    let cands = PC_CANDIDATES[pc].filter((c) => !EXOTIC_ROOTS.has(c.letter + ':' + c.acc));
+    if (pref === 'sharp') cands = cands.filter((c) => c.acc >= 0).length ? cands.filter((c) => c.acc >= 0) : cands;
+    if (pref === 'flat') cands = cands.filter((c) => c.acc <= 0).length ? cands.filter((c) => c.acc <= 0) : cands;
+    let best = null;
+    cands.forEach((cand) => {
+      const sp = spellWith(cand, tokens);
+      if (!best || sp.cost < best.cost) best = sp;
+    });
+    return best;
+  }
+
   function spellScale(pc, scaleId, pref) {
     const scale = SCALES[scaleId];
     const tokens = parseFormula(scale.formula);
     const hasP5 = tokens.some((t) => t.semi === 7);
-    let cands = PC_CANDIDATES[pc];
-    if (pref === 'sharp') cands = cands.filter((c) => c.acc >= 0).length ? cands.filter((c) => c.acc >= 0) : cands;
-    if (pref === 'flat') cands = cands.filter((c) => c.acc <= 0).length ? cands.filter((c) => c.acc <= 0) : cands;
-
-    let best = null;
-    cands.forEach((cand) => {
-      const sp = spellWith(cand, tokens);
-      if (!best || sp.cost < best.sp.cost) best = { cand, sp };
-    });
+    const best = { sp: bestSpelling(pc, tokens, pref) };
 
     const notes = best.sp.notes.map((n) => {
       const role = roleFor(n.semi, hasP5);
@@ -319,10 +327,167 @@
     return out;
   }
 
+  // ---------- Catálogo de acordes y digitaciones ----------
+
+  const CHORD_GROUPS = [
+    { id: 'triad', title: 'Tríadas' },
+    { id: 'sixth', title: 'Sextas' },
+    { id: 'seventh', title: 'Séptimas' },
+    { id: 'ext', title: 'Extendidos' }
+  ];
+
+  const CHORD_TYPES = {
+    maj: { name: 'Mayor', symbol: '', group: 'triad', formula: '1 3 5' },
+    min: { name: 'Menor', symbol: 'm', group: 'triad', formula: '1 b3 5' },
+    dim: { name: 'Disminuido', symbol: 'dim', group: 'triad', formula: '1 b3 b5' },
+    aug: { name: 'Aumentado', symbol: 'aug', group: 'triad', formula: '1 3 #5' },
+    sus2: { name: 'Sus2', symbol: 'sus2', group: 'triad', formula: '1 2 5' },
+    sus4: { name: 'Sus4', symbol: 'sus4', group: 'triad', formula: '1 4 5' },
+    6: { name: 'Sexta', symbol: '6', group: 'sixth', formula: '1 3 5 6' },
+    m6: { name: 'Menor 6', symbol: 'm6', group: 'sixth', formula: '1 b3 5 6' },
+    maj7: { name: 'Maj7', symbol: 'maj7', group: 'seventh', formula: '1 3 5 7' },
+    7: { name: 'Dominante 7', symbol: '7', group: 'seventh', formula: '1 3 5 b7' },
+    m7: { name: 'Menor 7', symbol: 'm7', group: 'seventh', formula: '1 b3 5 b7' },
+    mmaj7: { name: 'Menor Maj7', symbol: 'm(maj7)', group: 'seventh', formula: '1 b3 5 7' },
+    m7b5: { name: 'Semidisminuido', symbol: 'm7♭5', group: 'seventh', formula: '1 b3 b5 b7' },
+    dim7: { name: 'Disminuido 7', symbol: 'dim7', group: 'seventh', formula: '1 b3 b5 bb7' },
+    '7sus4': { name: '7sus4', symbol: '7sus4', group: 'seventh', formula: '1 4 5 b7' },
+    aug7: { name: 'Aumentado 7', symbol: '7♯5', group: 'seventh', formula: '1 3 #5 b7' },
+    'maj7#5': { name: 'Maj7♯5', symbol: 'maj7♯5', group: 'seventh', formula: '1 3 #5 7' },
+    5: { name: 'Power chord', symbol: '5', group: 'ext', formula: '1 5' },
+    add9: { name: 'Add9', symbol: 'add9', group: 'ext', formula: '1 3 5 9' },
+    9: { name: 'Dominante 9', symbol: '9', group: 'ext', formula: '1 3 5 b7 9' },
+    maj9: { name: 'Maj9', symbol: 'maj9', group: 'ext', formula: '1 3 5 7 9' },
+    m9: { name: 'Menor 9', symbol: 'm9', group: 'ext', formula: '1 b3 5 b7 9' }
+  };
+
+  // Mapa de la calidad que devuelve diatonicChords() al tipo del catálogo.
+  const QUALITY_TO_TYPE = {
+    maj: 'maj', min: 'min', dim: 'dim', aug: 'aug',
+    maj7: 'maj7', 7: '7', m7: 'm7', mMaj7: 'mmaj7', m7b5: 'm7b5', dim7: 'dim7', 'maj7#5': 'maj7#5', '7#5': 'aug7'
+  };
+
+  const CHORD_ROLE_NAMES = { root: 'tónica', third: 'tercera', fifth: 'quinta', seventh: 'séptima o sexta', tritone: 'extensión o suspensión' };
+
+  function chordRole(semi) {
+    if (semi === 0) return 'root';
+    if (semi === 3 || semi === 4) return 'third';
+    if (semi === 6 || semi === 7 || semi === 8) return 'fifth';
+    if (semi === 9 || semi === 10 || semi === 11) return 'seventh';
+    return 'tritone';
+  }
+
+  function spellChord(pc, typeId, pref) {
+    const type = CHORD_TYPES[typeId];
+    const sp = bestSpelling(pc, parseFormula(type.formula), pref);
+    const notes = sp.notes.map((n) => {
+      const role = chordRole(n.semi);
+      return { ...n, role, roleName: CHORD_ROLE_NAMES[role] };
+    });
+    return {
+      typeId,
+      rootPc: pc,
+      rootName: notes[0].name,
+      symbol: type.symbol,
+      name: notes[0].name + type.symbol,
+      notes,
+      pcs: notes.map((n) => n.pc),
+      byPc: new Map(notes.map((n) => [n.pc, n]))
+    };
+  }
+
+  function chordLegend(chord) {
+    const labels = {
+      root: 'Fundamental', third: 'Tercera', fifth: 'Quinta',
+      seventh: 'Séptima / sexta', tritone: 'Extensión / suspensión'
+    };
+    const out = [];
+    Object.keys(labels).forEach((role) => {
+      if (chord.notes.some((n) => n.role === role)) out.push({ role, label: labels[role] });
+    });
+    return out;
+  }
+
+  /** Dedos necesarios y cejilla (si la hay) para un vector de trastes (-1 = cuerda muda). */
+  function fingering(frets) {
+    const fretted = frets.filter((f) => f > 0);
+    if (!fretted.length) return { fingers: 0, barre: null };
+    const f0 = Math.min(...fretted);
+    const idx = frets.map((f, i) => (f === f0 ? i : -1)).filter((i) => i >= 0);
+    const from = Math.min(...idx);
+    const to = Math.max(...idx);
+    let barreOk = idx.length >= 2;
+    for (let i = from; i <= to && barreOk; i++) if (frets[i] < f0) barreOk = false;
+    if (barreOk) {
+      return { fingers: 1 + fretted.filter((f) => f > f0).length, barre: { fret: f0, from, to } };
+    }
+    return { fingers: fretted.length, barre: null };
+  }
+
+  /**
+   * Busca digitaciones tocables para el acorde en la afinación dada.
+   * frets[i]: traste de la cuerda i (0 = la más aguda); -1 = muda. La nota más grave siempre es la fundamental.
+   */
+  function findVoicings(tuning, chord, maxFret, limit) {
+    const n = tuning.length;
+    const root = chord.rootPc;
+    const pcSet = new Set(chord.pcs);
+    const fifth = chord.notes.find((x) => x.semi === 7);
+    const required = new Set(chord.pcs);
+    if (chord.pcs.length >= 4 && fifth) required.delete(fifth.pc);
+    const minStrings = chord.pcs.length <= 2 ? 3 : 4;
+    const top = Math.max(4, Math.min(maxFret, 15));
+    const found = new Map();
+
+    function evaluate(cur) {
+      const played = cur.filter((f) => f >= 0);
+      if (played.length < minStrings) return;
+      const seen = new Set();
+      cur.forEach((f, s) => { if (f >= 0) seen.add((tuning[s] + f) % 12); });
+      for (const pc of required) if (!seen.has(pc)) return;
+      const fretted = played.filter((f) => f > 0);
+      const minF = fretted.length ? Math.min(...fretted) : 0;
+      const maxF = fretted.length ? Math.max(...fretted) : 0;
+      if (maxF - minF > 3) return;
+      const { fingers, barre } = fingering(cur);
+      if (fingers > 4) return;
+      const key = cur.join(',');
+      if (found.has(key)) return;
+      const mutes = cur.filter((f) => f < 0).length;
+      const opens = played.length - fretted.length;
+      const score = (maxF - minF) * 1.5 + minF * 0.12 + mutes * 1.2 - opens * 0.4 +
+        (seen.has(fifth ? fifth.pc : -1) || !fifth ? 0 : 1) + fingers * 0.3 - played.length * 0.3;
+      found.set(key, { frets: cur.slice(), barre, fingers, minFret: minF, maxFret: maxF, score });
+    }
+
+    for (let b = 0; b <= top - 3; b++) {
+      const lo = b === 0 ? 0 : b;
+      const hi = b === 0 ? 4 : b + 3;
+      const cur = new Array(n).fill(-1);
+      const dfs = (s, started, ended) => {
+        if (s < 0) { evaluate(cur); return; }
+        cur[s] = -1;
+        dfs(s - 1, started, started);
+        if (ended) return;
+        for (let f = lo; f <= hi; f++) {
+          const pc = (tuning[s] + f) % 12;
+          if (!pcSet.has(pc) || (!started && pc !== root)) continue;
+          cur[s] = f;
+          dfs(s - 1, true, false);
+        }
+        cur[s] = -1;
+      };
+      dfs(n - 1, false, false);
+    }
+    return [...found.values()].sort((a, b) => a.score - b.score).slice(0, limit || 6);
+  }
+
   const api = {
     LETTERS, GROUPS, SCALES, TUNINGS, CAGED, CAGED_ORDER, INLAY_FRETS, ROLE_NAMES,
+    CHORD_GROUPS, CHORD_TYPES, QUALITY_TO_TYPE,
     spellScale, keyLabel, legendFor, stepPattern, diatonicChords,
-    chordMidis, scaleMidis, positionRanges, parseFormula, pretty
+    chordMidis, scaleMidis, positionRanges, parseFormula, pretty,
+    spellChord, chordLegend, findVoicings, fingering
   };
   global.FretTheory = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

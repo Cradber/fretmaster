@@ -121,4 +121,73 @@ test('todas las escalas se deletrean con 12 tonalidades sin lanzar error', () =>
   });
 });
 
+// ---------- Acordes y digitaciones ----------
+const STD = T.TUNINGS.standard.midi;
+const shape = (pc, type, pref) => T.findVoicings(STD, T.spellChord(pc, type, pref), 15, 12)
+  .map((v) => [...v.frets].reverse().map((f) => (f < 0 ? 'x' : f)).join(''));
+
+test('deletreo de acordes', () => {
+  const sp = (pc, t, pref) => T.spellChord(pc, t, pref).notes.map((n) => n.name).join(' ');
+  assert.equal(sp(0, 'maj7'), 'C E G B');
+  assert.equal(sp(7, '7'), 'G B D F');
+  assert.equal(sp(10, 'maj'), 'B♭ D F');
+  assert.equal(sp(0, 'dim7'), 'C E♭ G♭ B♭♭');
+  assert.equal(sp(0, '9'), 'C E G B♭ D');
+  assert.equal(sp(2, 'm9'), 'D F A C E');
+  assert.equal(T.spellChord(1, 'min').name, 'C♯m');
+});
+test('nombre del acorde incluye el símbolo', () => {
+  assert.equal(T.spellChord(9, 'm7b5').name, 'Am7♭5');
+  assert.equal(T.spellChord(5, 'mmaj7').name, 'Fm(maj7)');
+});
+test('digitaciones clásicas abiertas', () => {
+  assert.ok(shape(0, 'maj').includes('x32010'), 'C');
+  assert.ok(shape(7, 'maj').includes('320003'), 'G');
+  assert.ok(shape(9, 'min').includes('x02210'), 'Am');
+  assert.ok(shape(4, 'maj').includes('022100'), 'E');
+  assert.ok(shape(2, 'min').includes('xx0231'), 'Dm');
+  assert.ok(shape(9, '7').includes('x02020'), 'A7');
+});
+test('acorde con cejilla: F mayor tiene 133211', () => {
+  const f = T.findVoicings(STD, T.spellChord(5, 'maj'), 15, 40).find((v) => [...v.frets].reverse().join('') === '133211');
+  assert.ok(f, 'F con cejilla');
+  assert.deepEqual(f.barre, { fret: 1, from: 0, to: 5 });
+  assert.equal(f.fingers, 4);
+});
+test('todas las digitaciones respetan las reglas', () => {
+  Object.keys(T.CHORD_TYPES).forEach((id) => {
+    for (let pc = 0; pc < 12; pc++) {
+      const ch = T.spellChord(pc, id);
+      T.findVoicings(STD, ch, 15, 6).forEach((v) => {
+        const low = v.frets.map((f, s) => (f >= 0 ? s : -1)).filter((s) => s >= 0).pop();
+        assert.equal((STD[low] + v.frets[low]) % 12, pc, `${ch.name}: el bajo es la fundamental`);
+        assert.ok(v.fingers <= 4 && v.maxFret - v.minFret <= 3, ch.name);
+        v.frets.forEach((f, s) => { if (f >= 0) assert.ok(ch.pcs.includes((STD[s] + f) % 12), ch.name + ': nota ajena'); });
+      });
+    }
+  });
+});
+test('todo acorde del catálogo tiene al menos una digitación en afinación estándar', () => {
+  Object.keys(T.CHORD_TYPES).forEach((id) => {
+    for (let pc = 0; pc < 12; pc++) {
+      assert.ok(T.findVoicings(STD, T.spellChord(pc, id), 15, 1).length > 0, id + ' pc ' + pc);
+    }
+  });
+});
+test('funciona con 7 cuerdas y afinaciones alternativas', () => {
+  Object.values(T.TUNINGS).forEach((t) => {
+    assert.ok(T.findVoicings(t.midi, T.spellChord(0, 'maj7'), 15, 6).length > 0, t.name);
+  });
+});
+test('cada calidad diatónica tiene tipo en el catálogo', () => {
+  ['major', 'harmonic_minor', 'melodic_minor', 'locrian'].forEach((sc) => {
+    [3, 4].forEach((size) => T.diatonicChords(T.spellScale(0, sc), size).forEach((c) => {
+      assert.ok(T.CHORD_TYPES[T.QUALITY_TO_TYPE[c.quality]], sc + ' ' + c.name);
+    }));
+  });
+});
+test('las escalas siguen igual tras generalizar el parser', () => {
+  assert.equal(names(0, 'major'), 'C D E F G A B');
+});
+
 console.log(`\n${passed} pruebas pasaron`);

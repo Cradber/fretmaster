@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark" data-theme-mode="auto">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ayuda · FretMaster</title>
+  <meta name="description" content="Descripción completa de FretMaster: notas, intervalos, escalas, modos, formas CAGED, acordes, digitaciones y cómo se calcula todo.">
+  <meta name="theme-color" content="#0b0b0e">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <script>
+    (function () {
+      var m = null;
+      try { m = localStorage.getItem('fm-theme'); } catch (e) {}
+      var t = m === 'light' || m === 'dark' ? m
+        : (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      var r = document.documentElement;
+      r.setAttribute('data-theme', t);
+      r.setAttribute('data-theme-mode', m === 'light' || m === 'dark' ? m : 'auto');
+      var c = document.querySelector('meta[name="theme-color"]');
+      if (c) c.setAttribute('content', t === 'dark' ? '#0b0b0e' : '#f7f7f8');
+    })();
+  </script>
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+  <a class="skip" href="#contenido">Saltar al contenido</a>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="brand" href="index.html" aria-label="FretMaster, inicio">Fret<strong>Master</strong></a>
+      <nav class="site-nav" aria-label="Principal">
+        <a href="index.html">Herramienta</a>
+        <a href="ayuda.html" aria-current="page">Ayuda</a>
+      </nav>
+      <div class="site-tools">
+        <div class="theme-switch" role="group" aria-label="Tema">
+          <button type="button" data-theme-set="auto" aria-label="Tema automático, según el sistema" title="Automático (sistema)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+          </button>
+          <button type="button" data-theme-set="light" aria-label="Tema claro" title="Claro">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          </button>
+          <button type="button" data-theme-set="dark" aria-label="Tema oscuro" title="Oscuro">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="doc">
+    <details class="toc">
+      <summary>Contenido de esta página</summary>
+      <p class="eyebrow">En esta página</p>
+      <ol>
+        <li><a href="#que-es">Qué es FretMaster</a></li>
+        <li><a href="#fundamentos">Fundamentos</a>
+          <ol>
+            <li><a href="#notas">Notas y semitonos</a></li>
+            <li><a href="#mastil">El mástil</a></li>
+            <li><a href="#intervalos">Intervalos</a></li>
+          </ol>
+        </li>
+        <li><a href="#escalas">Escalas y modos</a>
+          <ol>
+            <li><a href="#familias">Familias de escalas</a></li>
+            <li><a href="#modos">Los modos</a></li>
+          </ol>
+        </li>
+        <li><a href="#ortografia">Cómo se nombran las notas</a></li>
+        <li><a href="#roles">Roles y colores</a></li>
+        <li><a href="#caged">Formas CAGED</a></li>
+        <li><a href="#acordes">Acordes</a>
+          <ol>
+            <li><a href="#diatonicos">Acordes de la escala</a></li>
+            <li><a href="#catalogo">Catálogo de acordes</a></li>
+          </ol>
+        </li>
+        <li><a href="#digitaciones">Digitaciones</a>
+          <ol>
+            <li><a href="#reglas">Cómo se calculan</a></li>
+            <li><a href="#diagramas">Cómo leer un diagrama</a></li>
+            <li><a href="#inversiones">Inversiones</a></li>
+          </ol>
+        </li>
+        <li><a href="#ajustes">Afinación, trastes y cejilla</a></li>
+        <li><a href="#audio">Audio</a></li>
+        <li><a href="#teclado">Teclado y accesibilidad</a></li>
+        <li><a href="#compartir">Enlaces, estado y privacidad</a></li>
+        <li><a href="#limites">Límites y alcance</a></li>
+        <li><a href="#glosario">Glosario</a></li>
+      </ol>
+    </details>
+
+    <main id="contenido" class="prose">
+      <h1>Ayuda de <strong>FretMaster</strong></h1>
+      <p class="lead">Qué muestra la aplicación, qué significa cada cosa que ves en pantalla y cómo se calcula. Todas las tablas de esta página se generan a partir del mismo código que usa la herramienta, y los ejemplos de notas y digitaciones los comprueba un test automático: lo que lees aquí es lo que la aplicación hace.</p>
+
+      <!-- ===================================================== -->
+      <h2 id="que-es">Qué es FretMaster</h2>
+      <p>FretMaster es un explorador de teoría musical para <strong>guitarra</strong>. Dibuja sobre un mástil las notas de una escala o de un acorde, las colorea según la función que cumplen y calcula digitaciones tocables. Cubre cuatro áreas:</p>
+      <ul>
+        <li><strong>Escalas y modos</strong>: <span data-count="scales"></span> escalas en las 12 tonalidades, con su fórmula, sus notas y su carácter.</li>
+        <li><strong>Formas CAGED</strong>: las <span data-count="shapes"></span> cajas en las que se reparte una escala a lo largo del mástil.</li>
+        <li><strong>Acordes de la escala</strong>: tríadas y cuatriadas que se forman sobre cada grado, con su cifrado romano.</li>
+        <li><strong>Explorador de acordes</strong>: <span data-count="chords"></span> tipos de acorde en las 12 fundamentales, con digitaciones, inversiones y cejilla.</li>
+      </ul>
+      <p>Es una herramienta de <em>estudio y consulta</em>, no un afinador, un metrónomo ni un editor de tablaturas. Funciona sin conexión una vez cargada, y no envía ningún dato a ningún servidor.</p>
+      <p><a class="try" href="index.html">Abrir la herramienta</a></p>
+
+      <!-- ===================================================== -->
+      <h2 id="fundamentos">Fundamentos</h2>
+
+      <h3 id="notas">Notas y semitonos</h3>
+      <p>La música occidental divide la octava en <strong>doce notas</strong> separadas por un <strong>semitono</strong>, la distancia más pequeña de la guitarra (un traste). Dos semitonos forman un <strong>tono</strong>. Tras doce semitonos se llega a la misma nota una <strong>octava</strong> más aguda, y por eso solo hay doce nombres distintos.</p>
+      <p>Las notas naturales son Do, Re, Mi, Fa, Sol, La y Si, que la app escribe con las letras <span class="notes">C D E F G A B</span>. Entre ellas hay cinco notas intermedias, que se escriben con una alteración: un sostenido (♯) sube un semitono y un bemol (♭) lo baja. Una misma altura puede tener dos nombres, por ejemplo <span class="notes">C♯</span> y <span class="notes">D♭</span>: se llaman <strong>enarmónicas</strong>. Cuál es el nombre correcto depende del contexto; lo explica la sección <a href="#ortografia">Cómo se nombran las notas</a>.</p>
+
+      <h3 id="mastil">El mástil</h3>
+      <p>Cada cuerda al aire suena una nota, y cada traste que avanzas sube un semitono. Por eso la nota de cualquier punto del mástil es:</p>
+      <pre><code>nota = nota de la cuerda al aire + número de traste   (en semitonos, módulo 12)</code></pre>
+      <p>Dos consecuencias importantes:</p>
+      <ul>
+        <li>En el <strong>traste 12</strong> cada cuerda repite su nota al aire una octava más arriba, así que el dibujo del mástil se repite a partir de ahí. Los puntos del mástil marcan los trastes 3, 5, 7, 9 y 12 (doble), y siguen en 15, 17, 19, 21 y 24.</li>
+        <li>Una misma nota aparece en <strong>varios sitios</strong> del mástil. En afinación estándar las cuerdas contiguas están a una cuarta justa (5 semitonos), salvo la pareja Sol–Si, que está a una tercera mayor (4 semitonos). Esa diferencia es la razón de que las formas de los acordes y de las escalas cambien al cruzar entre la 3ª y la 2ª cuerda.</li>
+      </ul>
+      <p>La cuerda 1 es la más aguda (Mi aguda) y la última es la más grave. En el mástil, la cuerda 1 está arriba, como en una tablatura.</p>
+
+      <h3 id="intervalos">Intervalos</h3>
+      <p>Un <strong>intervalo</strong> es la distancia entre dos notas. FretMaster los escribe como grados respecto a la tónica, con los símbolos de esta tabla. Es lo que ves al activar <em>Intervalos</em> en lugar de <em>Notas</em>.</p>
+      <div data-gen="intervals"></div>
+      <noscript><p>Esta tabla se genera con JavaScript.</p></noscript>
+
+      <!-- ===================================================== -->
+      <h2 id="escalas">Escalas y modos</h2>
+      <p>Una <strong>escala</strong> es un conjunto de notas ordenadas a partir de una <strong>tónica</strong>, la nota que da nombre a la escala y sobre la que se descansa. FretMaster define cada escala con una <strong>fórmula</strong>: la lista de grados respecto a la escala mayor. La mayor es <span class="notes">1 2 3 4 5 6 7</span>, y la menor natural es <span class="notes">1 2 ♭3 4 5 ♭6 ♭7</span>, es decir, la mayor con la 3ª, la 6ª y la 7ª rebajadas un semitono.</p>
+      <p>Otra forma de describirla es por sus <strong>pasos</strong>, la distancia entre notas consecutivas: S = semitono, T = tono y T½ = tono y medio. La mayor es <span class="notes" data-verify="steps:major">T T S T T T S</span>; la menor armónica, <span class="notes" data-verify="steps:harmonic_minor">T S T T S T½ S</span>, y su salto de tono y medio es lo que le da su sonido característico.</p>
+      <p>Ejemplos con la ortografía que usa la app (la sección <a href="#ortografia">siguiente</a> explica por qué):</p>
+      <ul>
+        <li>Do mayor: <span class="notes" data-verify="scale:0:major">C D E F G A B</span> <a class="try" href="index.html#k=0&amp;s=major">Verla</a></li>
+        <li>La menor armónica: <span class="notes" data-verify="scale:9:harmonic_minor">A B C D E F G♯</span> <a class="try" href="index.html#k=9&amp;s=harmonic_minor">Verla</a></li>
+        <li>La penta menor: <span class="notes" data-verify="scale:9:minor_pentatonic">A C D E G</span> <a class="try" href="index.html#k=9&amp;s=minor_pentatonic">Verla</a></li>
+      </ul>
+
+      <h3 id="familias">Familias de escalas</h3>
+      <p>En el selector, las escalas se agrupan en cuatro familias:</p>
+      <ul>
+        <li><strong>Comunes</strong>: mayor, menor natural, menor armónica y menor melódica. La app muestra la menor melódica en su forma <em>ascendente</em> (<span class="notes">1 2 ♭3 4 5 6 7</span>); en la tradición clásica, al descender se usa la menor natural, y esa forma descendente se consulta con la menor natural.</li>
+        <li><strong>Penta y blues</strong>: las pentatónicas tienen cinco notas. La <em>penta menor</em> es la escala del rock y la <em>penta mayor</em> la del country y el pop. El <em>blues</em> añade a la penta menor la ♭5, la nota «blue», y por eso tiene seis notas y no es pentatónico.</li>
+        <li><strong>Modos</strong>: los siete modos de la escala mayor (<a href="#modos">tabla más abajo</a>).</li>
+        <li><strong>Otras</strong>: el frigio dominante (quinto modo de la menor armónica), la escala de tonos enteros (seis notas, todas a un tono) y la disminuida tono–semitono (ocho notas simétricas).</li>
+      </ul>
+      <div data-gen="scales"></div>
+      <p>La columna <em>Mayor madre</em> es la escala mayor que comparte las notas de cada escala; se usa para calcular las <a href="#caged">formas CAGED</a>. Las escalas simétricas (tonos enteros y disminuida) se repiten a intervalos regulares y no tienen una madre propia.</p>
+
+      <h3 id="modos">Los modos</h3>
+      <p>Un <strong>modo</strong> es la misma serie de notas de una escala, pero empezando por otro grado y tratándolo como tónica. De la escala mayor salen siete modos, uno por grado. No es una escala distinta, sino otra «cara» de la misma: lo que cambia es dónde se descansa, y con ello el carácter. Fíjate en que todos los modos de esta tabla contienen exactamente las mismas siete notas.</p>
+      <div data-gen="modes"></div>
+      <p>Los nombres Jónico y Eólico son la escala mayor y la menor natural. Para estudiar un modo conviene tocarlo sobre un acorde fijo de su tónica (por ejemplo, <em>Re dórico</em> sobre <span class="notes">Dm7</span>) y no confundirlo con la mayor que lo contiene: <a class="try" href="index.html#k=2&amp;s=dorian">Re dórico</a>.</p>
+
+      <!-- ===================================================== -->
+      <h2 id="ortografia">Cómo se nombran las notas</h2>
+      <p>En una escala de siete notas, cada grado lleva una letra distinta y consecutiva. Por eso la escala de Fa mayor se escribe <span class="notes" data-verify="scale:5:major">F G A B♭ C D E</span> y no <span class="notes">F G A A♯ C D E</span>: si usáramos A♯, la letra A aparecería dos veces y no habría ninguna B. La altura es la misma (en el piano, la misma tecla), pero la <em>escritura</em> correcta es B♭.</p>
+      <p>FretMaster aplica esa regla en tres pasos:</p>
+      <ol>
+        <li>Cada grado de la fórmula fija su <strong>letra</strong>: el grado 1 usa la letra de la tónica, el 2 la siguiente, y así hasta el 7.</li>
+        <li>Se calcula la <strong>alteración</strong> que necesita esa letra para llegar a la altura correcta, que puede ser doble (♯♯, ♭♭).</li>
+        <li>Si la tónica admite dos nombres (<span class="notes">C♯</span> o <span class="notes">D♭</span>), se elige el que produce <strong>menos alteraciones</strong> en total, penalizando las dobles. Nunca se elige como tónica B♯, E♯, F♭ ni C♭.</li>
+      </ol>
+      <p>Algunos resultados que salen de esa regla:</p>
+      <ul>
+        <li>Re bemol mayor: <span class="notes" data-verify="scale:1:major">D♭ E♭ F G♭ A♭ B♭ C</span> (cinco bemoles, en vez de los siete sostenidos de C♯ mayor).</li>
+        <li>Do sostenido menor: <span class="notes" data-verify="scale:1:minor">C♯ D♯ E F♯ G♯ A B</span> (cuatro sostenidos, en vez de ocho bemoles).</li>
+        <li>La disminuida tono–semitono sobre Do usa una doble alteración, porque necesita una letra B para el grado 7: <span class="notes" data-verify="scale:0:diminished">C D E♭ F G♭ A♭ B♭♭ B</span>.</li>
+      </ul>
+      <p>Por eso las teclas negras del selector de tonalidad se muestran con los dos nombres (<span class="notes">C♯/D♭</span>): el nombre que de verdad se usa depende de la escala elegida y aparece en el título. En <em>Ajustes → Alteraciones</em> puedes forzar sostenidos (♯) o bemoles (♭) en las tonalidades que admiten ambos.</p>
+
+      <!-- ===================================================== -->
+      <h2 id="roles">Roles y colores</h2>
+      <p>Cada nota del mástil se colorea según la <strong>función</strong> que cumple dentro de la escala o del acorde. El color se decide únicamente por la distancia a la tónica en semitonos:</p>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Roles de nota">
+        <table>
+          <caption>Rol de cada nota en una escala</caption>
+          <thead><tr><th scope="col">Rol</th><th scope="col">Semitonos desde la tónica</th><th scope="col">Qué es</th></tr></thead>
+          <tbody>
+            <tr><td><span class="legend-inline"><span class="dot" style="background:var(--c-root)"></span>Tónica</span></td><td class="mono">0</td><td>La nota que da nombre a la escala. Lleva además un anillo para distinguirla sin depender del color.</td></tr>
+            <tr><td><span class="legend-inline"><span class="dot" style="background:var(--c-third)"></span>Tercera</span></td><td class="mono">3 o 4</td><td>3ª menor (♭3) o mayor (3). Decide si la escala suena menor o mayor.</td></tr>
+            <tr><td><span class="legend-inline"><span class="dot" style="background:var(--c-fifth)"></span>Quinta</span></td><td class="mono">7</td><td>La quinta justa. Si la escala no la tiene (Locrio, tonos enteros, disminuida), la ♭5 o ♯4 ocupa su lugar.</td></tr>
+            <tr><td><span class="legend-inline"><span class="dot" style="background:var(--c-tritone)"></span>Nota de color</span></td><td class="mono">6</td><td>El tritono (♯4 o ♭5) cuando la escala <em>también</em> tiene quinta justa: es el ♯4 del Lidio y la ♭5 del blues.</td></tr>
+            <tr><td><span class="legend-inline"><span class="dot" style="background:var(--c-seventh)"></span>Séptima</span></td><td class="mono">10 u 11</td><td>7ª menor (♭7) o mayor (7).</td></tr>
+            <tr><td><span class="legend-inline"><span class="dot" style="background:var(--c-scale)"></span>Resto</span></td><td class="mono">1, 2, 5, 8, 9</td><td>Los demás grados: 2ª, 4ª, 6ª y las alteraciones restantes.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La leyenda bajo el mástil solo muestra los roles que existen en la escala elegida: la penta mayor no tiene séptima, así que no aparece. En el explorador de acordes los colores se reparten de forma parecida (fundamental, tercera, quinta, séptima o sexta, y extensiones o suspensiones).</p>
+
+      <!-- ===================================================== -->
+      <h2 id="caged">Formas CAGED</h2>
+      <p>CAGED es un sistema para ver el mástil entero a través de cinco formas de acorde abierto: <strong>C, A, G, E y D</strong>. Cada una de esas formas, desplazada por el mástil, abarca una región donde las notas de la escala mayor forman una «caja». Las cinco cajas se encadenan sin huecos de un extremo a otro y se repiten cada doce trastes. Estudiar una escala caja a caja ayuda a no memorizar el mástil como una sola mancha de notas.</p>
+      <p>Los botones <em>Forma C, A, G, E, D</em> resaltan una caja y atenúan el resto. Para la mayor de Do, las cajas ocupan estos trastes:</p>
+      <div data-gen="caged"></div>
+      <h4>Cómo se calcula</h4>
+      <ul>
+        <li>La tabla se mide para <strong>Do mayor</strong> y se traslada con la tónica: para otra tonalidad, cada ventana se desplaza tantos trastes como semitonos haya entre Do y la tónica de la mayor madre.</li>
+        <li>Las ventanas contiguas <strong>se solapan</strong>: las notas del borde pertenecen a dos cajas.</li>
+        <li>En las escalas diatónicas (mayor, menor natural y los modos) cada caja completa contiene <strong>2 o 3 notas por cuerda</strong>, y ninguna nota del mástil queda fuera de todas las cajas. Un test lo comprueba en las 12 tonalidades.</li>
+        <li>Para un <strong>modo</strong> o para la <strong>menor natural</strong> se usan las cajas de su mayor madre: <em>Re dórico</em> usa las de Do mayor, y <em>La menor</em>, las de Do mayor. Lo indica la línea que aparece al elegir una forma.</li>
+      </ul>
+      <h4>Escalas con notas alteradas</h4>
+      <p>La menor armónica, la menor melódica y el frigio dominante tienen notas que su mayor madre no contiene. Cada una <strong>sustituye</strong> a una nota de la madre desplazada un semitono: en La menor armónica, el <span class="notes">G♯</span> toma el lugar del <span class="notes">G</span>. La app coloca esa nota en la caja de la nota que sustituye, un traste más arriba o más abajo, para que la caja no quede con un hueco. Las notas de paso que no sustituyen a ninguna (la ♭5 del blues) se colocan por ventana de trastes.</p>
+      <p>Cerca del traste 0 puede verse una caja recortada: es el final de la forma anterior, cortado por el extremo del mástil.</p>
+      <p><a class="try" href="index.html#k=9&amp;s=harmonic_minor&amp;p=C">La menor armónica, Forma C</a></p>
+
+      <!-- ===================================================== -->
+      <h2 id="acordes">Acordes</h2>
+      <p>Un <strong>acorde</strong> son varias notas que suenan a la vez. Los acordes se construyen apilando <strong>terceras</strong>: tónica, tercera, quinta y, si hay, séptima. Según las distancias que se apilen se obtiene la <em>calidad</em> del acorde: mayor (3ª mayor + 5ª justa), menor (3ª menor + 5ª justa), disminuido (3ª menor + 5ª disminuida) o aumentado (3ª mayor + 5ª aumentada). Un acorde de tres notas es una <strong>tríada</strong>; con séptima es una <strong>cuatriada</strong>.</p>
+
+      <h3 id="diatonicos">Acordes de la escala</h3>
+      <p>Bajo el mástil, <em>Acordes de la escala</em> muestra los acordes que se forman sobre cada grado <strong>usando solo notas de la escala</strong> (sobre cada grado se apilan el grado 1, el 3, el 5 y, en las cuatriadas, el 7 <em>contando desde ese grado</em>). Solo existen para escalas de siete notas. Cada acorde lleva su <strong>cifrado romano</strong>:</p>
+      <ul>
+        <li>Mayúscula (<span class="notes">I</span>, <span class="notes">IV</span>) para acordes mayores y aumentados; minúscula (<span class="notes">ii</span>, <span class="notes">vi</span>) para menores y disminuidos.</li>
+        <li><span class="notes">°</span> disminuido, <span class="notes">+</span> aumentado, <span class="notes">ø</span> semidisminuido (m7♭5).</li>
+        <li><span class="notes">♭</span> o <span class="notes">♯</span> delante del número indican que ese grado está alterado respecto a la escala mayor (por ejemplo <span class="notes">♭III</span> en la menor).</li>
+      </ul>
+      <p>Para Do mayor, en tríadas y en cuatriadas:</p>
+      <ul>
+        <li>Tríadas: <span class="notes" data-verify="diatonic:0:major:3">C Dm Em F G Am Bdim</span> → <span class="notes" data-verify="roman:0:major:3">I ii iii IV V vi vii°</span></li>
+        <li>Cuatriadas: <span class="notes" data-verify="diatonic:0:major:4">Cmaj7 Dm7 Em7 Fmaj7 G7 Am7 Bm7♭5</span> → <span class="notes" data-verify="roman:0:major:4">Imaj7 ii7 iii7 IVmaj7 V7 vi7 viiø7</span></li>
+      </ul>
+      <p>En escalas menos habituales salen acordes poco comunes. La menor armónica, en cuatriadas, da <span class="notes" data-verify="diatonic:9:harmonic_minor:4">Am(maj7) Bm7♭5 Cmaj7♯5 Dm7 E7 Fmaj7 G♯dim7</span>, cuyo cifrado es <span class="notes" data-verify="roman:9:harmonic_minor:4">i(maj7) iiø7 ♭III+maj7 iv7 V7 ♭VImaj7 vii°7</span>. Fíjate en el <span class="notes">E7</span>: el acorde de dominante, con la sensible G♯, es la razón de ser de esta escala.</p>
+      <p>Al tocar un acorde, el mástil resalta solo sus notas. El botón <em>Ver digitaciones</em> lo abre en el explorador.</p>
+
+      <h3 id="catalogo">Catálogo de acordes</h3>
+      <p>El explorador conoce <span data-count="chords"></span> tipos de acorde. Cada uno se define por una fórmula, igual que las escalas; los grados 9 son la 2ª una octava más arriba.</p>
+      <div data-gen="chords"></div>
+      <p>Algunos acordes con la ortografía de la app:</p>
+      <ul>
+        <li><span class="notes" data-verify="chord:0:maj7">C E G B</span> es Cmaj7.</li>
+        <li><span class="notes" data-verify="chord:7:7">G B D F</span> es G7, el acorde de dominante de Do.</li>
+        <li><span class="notes" data-verify="chord:0:dim7">C E♭ G♭ B♭♭</span> es Cdim7: sus cuatro notas están a tres semitonos, y por eso el acorde es simétrico.</li>
+      </ul>
+
+      <!-- ===================================================== -->
+      <h2 id="digitaciones">Digitaciones</h2>
+      <p>Una <strong>digitación</strong> es una forma concreta de tocar un acorde: qué cuerdas suenan, en qué traste y con qué dedos. Hay muchas por acorde. El explorador no usa una lista fija: <strong>las calcula</strong> para la afinación que hayas elegido, así que sirve igual en Drop D, DADGAD o siete cuerdas.</p>
+
+      <h3 id="reglas">Cómo se calculan</h3>
+      <p>Una combinación de trastes se acepta como digitación solo si cumple <strong>todas</strong> estas condiciones:</p>
+      <ol>
+        <li>Cada cuerda está <strong>muda</strong> o toca una nota <strong>del acorde</strong>. Nunca suena una nota ajena.</li>
+        <li>Las cuerdas mudas solo pueden estar en los extremos: no hay cuerdas mudas <em>entre</em> dos que suenan.</li>
+        <li>La nota <strong>más grave</strong> que suena es la fundamental, salvo que elijas otra en <em>Nota en el bajo</em> (<a href="#inversiones">inversiones</a>).</li>
+        <li>Suenan al menos <strong>cuatro cuerdas</strong> (tres, si el acorde solo tiene dos notas distintas, como el power chord).</li>
+        <li>Están <strong>todas las notas del acorde</strong>. Excepción: en acordes de cuatro o más notas puede faltar la quinta justa, porque es la que menos altera el carácter del acorde, salvo que esté en el bajo.</li>
+        <li>Las notas pisadas caben en <strong>cuatro trastes</strong> de amplitud como máximo.</li>
+        <li>Se necesitan <strong>cuatro dedos o menos</strong>. Una cejilla cuenta como un solo dedo.</li>
+      </ol>
+      <p>Se buscan combinaciones hasta el <strong>traste 15</strong>. De todas las que cumplen las reglas, se ordenan por comodidad y se muestran hasta ocho. La puntuación favorece que haya poca amplitud entre trastes, que estén cerca del extremo del mástil, que haya pocas cuerdas mudas, que se aprovechen las cuerdas al aire, que esté la quinta, que se usen pocos dedos y que suenen muchas cuerdas.</p>
+      <p>Una <strong>cejilla</strong> se detecta cuando el traste más bajo pisado aparece en dos o más cuerdas y todas las cuerdas entre ellas están pisadas en ese traste o más arriba: ninguna puede quedar al aire ni muda. Así se obtiene <span class="notes" data-verify="voicing:5:maj:0">1 3 3 2 1 1</span> para Fa mayor, la clásica forma E con cejilla (de la cuerda grave a la aguda).</p>
+      <p>Los botones <strong>Todas, Abiertas, Con cejilla y Posición alta</strong> filtran los resultados: <em>abiertas</em> son las que usan alguna cuerda al aire; <em>posición alta</em>, las que empiezan en el traste 5 o más arriba.</p>
+
+      <h3 id="diagramas">Cómo leer un diagrama</h3>
+      <ul>
+        <li>Las cuerdas van en vertical, con la <strong>más grave a la izquierda</strong>; los trastes, en horizontal.</li>
+        <li><span class="notes">×</span> sobre una cuerda: está muda. <span class="notes">○</span>: suena al aire.</li>
+        <li>Cada punto lleva el <strong>nombre de la nota</strong> y el color de su rol (fundamental, tercera…).</li>
+        <li>Una barra gris bajo varios puntos es una <strong>cejilla</strong>.</li>
+        <li>Una línea gruesa arriba es la cejuela (el diagrama empieza en el traste 1). Si en cambio ves <span class="notes">5fr</span>, el diagrama arranca en el traste 5.</li>
+        <li>La cifra de debajo lista los trastes de la cuerda grave a la aguda: <span class="notes" data-verify="voicing-first:0:maj:0">x 3 2 0 1 0</span> es el Do mayor abierto, con la cuerda grave muda.</li>
+      </ul>
+      <p>Pulsa una digitación para oírla rasgueada de grave a aguda.</p>
+
+      <h3 id="inversiones">Inversiones</h3>
+      <p>Una <strong>inversión</strong> es el mismo acorde con otra de sus notas en el bajo. El selector <em>Nota en el bajo</em> ofrece cada nota del acorde. Con la 3ª en el bajo es la <em>primera inversión</em>; con la 5ª, la <em>segunda</em>; con la 7ª, la <em>tercera</em>. Se escriben con barra: <span class="notes" data-verify="chordname:0:maj:1">C/E</span> es Do mayor con Mi en el bajo, y <span class="notes" data-verify="chordname:0:maj:2">C/G</span> con Sol.</p>
+      <p>Las inversiones suavizan las líneas de bajo (Do, Do/Si, La menor…). Digitaciones conocidas: <span class="notes" data-verify="voicing-first:0:maj:1">0 3 2 0 1 0</span> para C/E, <span class="notes" data-verify="voicing:2:maj:1">2 0 0 2 3 2</span> para D/F♯ y <span class="notes" data-verify="voicing:7:maj:1">x 2 0 0 0 3</span> para G/B. <a class="try" href="index.html#w=acordes&amp;r=0&amp;q=maj&amp;b=1">C/E en el explorador</a></p>
+      <p>No hay acordes «con bajo ajeno» (como C/D, con un Re que no es del acorde): el bajo siempre es una nota del acorde.</p>
+
+      <!-- ===================================================== -->
+      <h2 id="ajustes">Afinación, trastes y cejilla</h2>
+      <p>El botón de ajustes de la cabecera abre una ventana con las opciones del mástil:</p>
+      <ul>
+        <li><strong>Afinación</strong>: cambia las notas al aire; todo el mástil, los acordes y las digitaciones se recalculan.</li>
+        <li><strong>Trastes</strong>: 22 o 24.</li>
+        <li><strong>Cejilla</strong>: coloca la cejilla en un traste del 1 al 9. En el mástil se ocultan las notas anteriores a ella. En el explorador, las digitaciones se calculan <em>desde la cejilla</em>: los trastes del diagrama cuentan desde ella y las notas que se nombran son las que suenan de verdad. Por ejemplo, con la cejilla en el traste 2, La mayor se toca con la forma de Sol abierto, <span class="notes" data-verify="voicingcapo:9:maj:2">3 2 0 0 0 3</span>.</li>
+        <li><strong>Alteraciones</strong>: Auto, solo sostenidos o solo bemoles (<a href="#ortografia">ver</a>).</li>
+        <li><strong>Modo zurdo</strong>: invierte el mástil horizontalmente.</li>
+        <li><strong>Sonido</strong>: activa o desactiva el sonido al tocar una nota del mástil.</li>
+      </ul>
+      <div data-gen="tunings"></div>
+
+      <!-- ===================================================== -->
+      <h2 id="audio">Audio</h2>
+      <p>El sonido se <strong>sintetiza</strong> en el navegador con un modelo de cuerda pulsada (algoritmo de Karplus–Strong): un breve impulso de ruido recorre una línea de retardo cuya longitud fija la afinación. No hay muestras de guitarra grabadas, así que el timbre es el de una cuerda sintética. La afinación está verificada con tests automáticos (menos de 8 centésimas de semitono de error).</p>
+      <ul>
+        <li><strong>Tocar una nota</strong> del mástil la hace sonar (si el sonido está activado).</li>
+        <li><strong>Escuchar escala</strong> toca la escala ascendente y descendente durante una octava, nota a nota, mientras se iluminan sus posiciones en el mástil.</li>
+        <li>Tocar un acorde o una digitación los <strong>rasguea</strong> de grave a aguda.</li>
+      </ul>
+      <p>Los navegadores solo permiten sonido tras una acción tuya (un clic o una pulsación), por eso no suena nada al abrir la página.</p>
+
+      <!-- ===================================================== -->
+      <h2 id="teclado">Teclado y accesibilidad</h2>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Atajos de teclado">
+        <table>
+          <caption>Uso con teclado</caption>
+          <thead><tr><th scope="col">Dónde</th><th scope="col">Tecla</th><th scope="col">Efecto</th></tr></thead>
+          <tbody>
+            <tr><td>Mástil</td><td class="mono">Tab</td><td>Entra en el mástil con un único punto de tabulación; otra pulsación sale de él.</td></tr>
+            <tr><td>Mástil</td><td class="mono">← → ↑ ↓</td><td>Se mueve a la nota siguiente en esa dirección (en modo zurdo, izquierda y derecha se invierten).</td></tr>
+            <tr><td>Mástil</td><td class="mono">Inicio / Fin</td><td>Primera o última nota de la cuerda.</td></tr>
+            <tr><td>Mástil</td><td class="mono">Intro / Espacio</td><td>Escucha la nota.</td></tr>
+            <tr><td>Pestañas</td><td class="mono">← → Inicio Fin</td><td>Cambian de pestaña.</td></tr>
+            <tr><td>Ajustes</td><td class="mono">Esc</td><td>Cierra la ventana y devuelve el foco al botón.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Cada nota del mástil tiene una etiqueta accesible con cuerda, traste, nombre, función e intervalo (por ejemplo, <em>Cuerda 2, traste 3: D, grado de la escala (4)</em>). Los cambios de escala o de acorde se anuncian en una región de estado para lectores de pantalla. El color no es el único canal: cada nota lleva escrito su nombre o su intervalo y la tónica un anillo.</p>
+      <ul>
+        <li><strong>Contraste</strong>: los colores del texto y de las notas cumplen el nivel AA de WCAG 2.1 en los dos temas; lo comprueba un test.</li>
+        <li><strong>Tema</strong>: <em>Automático</em> sigue el modo claro u oscuro del sistema y cambia solo cuando el sistema cambia; <em>Claro</em> y <em>Oscuro</em> lo fijan.</li>
+        <li><strong>Movimiento</strong>: con «reducir movimiento» activado en el sistema, las animaciones se desactivan.</li>
+        <li>Se puede ampliar el tamaño de la página sin límite.</li>
+      </ul>
+
+      <!-- ===================================================== -->
+      <h2 id="compartir">Enlaces, estado y privacidad</h2>
+      <p>Todo lo que eliges se guarda en la dirección de la página, tras el símbolo <span class="notes">#</span>, y también en el navegador. El icono de enlace de la cabecera copia la dirección de la vista actual: quien la abra verá lo mismo que tú. Estos son los parámetros:</p>
+      <div data-gen="state"></div>
+      <p>Un valor no válido se ignora y se usa el valor por defecto, de modo que un enlace manipulado no puede romper la aplicación.</p>
+      <div class="callout callout--ok">
+        <p class="title">Privacidad</p>
+        <p>FretMaster no usa cuentas, anuncios ni analíticas, y no hace ninguna petición a servidores externos: las fuentes son las del sistema y todo el código se ejecuta en tu navegador. Lo único que se guarda es tu configuración, en tu propio dispositivo.</p>
+      </div>
+      <p>Una vez cargada la primera vez desde una dirección web, la aplicación se guarda en el navegador y <strong>funciona sin conexión</strong>. Si se publica una versión nueva, se actualiza en la visita siguiente.</p>
+
+      <!-- ===================================================== -->
+      <h2 id="limites">Límites y alcance</h2>
+      <ul>
+        <li><strong>Cajas CAGED</strong>: son ventanas de trastes sobre la mayor madre, no patrones dibujados escala por escala. En las diatónicas están verificadas; en las que tienen notas alteradas, cada nota alterada sigue a la nota que sustituye.</li>
+        <li><strong>Digitaciones</strong>: las calcula un buscador con las reglas de <a href="#reglas">arriba</a>, no un catálogo curado. Pueden aparecer formas correctas pero poco habituales; y no se buscan por encima del traste 15.</li>
+        <li><strong>Acordes</strong>: no hay inversiones con una nota ajena al acorde en el bajo, ni acordes de más de cinco notas.</li>
+        <li><strong>Escalas</strong>: solo las incluidas en la tabla. La menor melódica es la ascendente.</li>
+        <li><strong>Audio</strong>: sintético; su afinación está probada, pero el timbre no pretende imitar una guitarra real.</li>
+        <li>Pensada para guitarra de 6 o 7 cuerdas con trastes normales; no hay bajo, ukelele ni instrumentos fretless.</li>
+      </ul>
+
+      <!-- ===================================================== -->
+      <h2 id="glosario">Glosario</h2>
+      <dl class="glossary">
+        <dt>Alteración</dt><dd>Signo que sube (♯) o baja (♭) una nota un semitono.</dd>
+        <dt>Arpegio</dt><dd>Las notas de un acorde tocadas una a una.</dd>
+        <dt>Caja</dt><dd>Región del mástil donde se toca una escala sin desplazar la mano; en CAGED, cada una de las cinco.</dd>
+        <dt>Cejilla</dt><dd>Dispositivo que acorta todas las cuerdas a la vez (capo), o un dedo que pisa varias cuerdas en el mismo traste (barré). La app usa la palabra para las dos cosas y distingue por el contexto.</dd>
+        <dt>Cifrado romano</dt><dd>Forma de nombrar los acordes por el grado de la escala sobre el que se forman (I, ii, V7…), independiente de la tonalidad.</dd>
+        <dt>Diatónico</dt><dd>Que usa solo las notas de una escala de siete notas.</dd>
+        <dt>Digitación</dt><dd>Forma concreta de tocar un acorde: cuerdas, trastes y dedos.</dd>
+        <dt>Enarmónico</dt><dd>Dos nombres para la misma altura, como C♯ y D♭.</dd>
+        <dt>Fórmula</dt><dd>Lista de grados que define una escala o un acorde respecto a la escala mayor.</dd>
+        <dt>Grado</dt><dd>Posición de una nota dentro de la escala: 1 es la tónica, 2 la siguiente, etc.</dd>
+        <dt>Intervalo</dt><dd>Distancia entre dos notas.</dd>
+        <dt>Inversión</dt><dd>Acorde con una nota distinta de la fundamental en el bajo.</dd>
+        <dt>Mayor madre</dt><dd>En FretMaster, la escala mayor que comparte las notas de una escala; sirve para calcular las cajas CAGED.</dd>
+        <dt>Modo</dt><dd>Escala obtenida empezando por otro grado de una escala madre.</dd>
+        <dt>Octava</dt><dd>Distancia de doce semitonos; la nota se repite con el mismo nombre.</dd>
+        <dt>Semitono / tono</dt><dd>La distancia de un traste / de dos trastes.</dd>
+        <dt>Tónica</dt><dd>La nota principal de una escala o tonalidad, sobre la que se descansa.</dd>
+        <dt>Tritono</dt><dd>Intervalo de seis semitonos (♯4 o ♭5), la mitad exacta de una octava.</dd>
+        <dt>Tríada / cuatriada</dt><dd>Acorde de tres / de cuatro notas apiladas por terceras.</dd>
+      </dl>
+    </main>
+  </div>
+
+  <script src="theme.js"></script>
+  <script src="theory.js"></script>
+  <script src="util.js"></script>
+  <script src="state.js"></script>
+  <script src="docs.js"></script>
+</body>
+</html>

@@ -15,6 +15,8 @@ Abre <http://localhost:8000>. El service worker (modo offline e instalación com
 | Archivo | Contenido |
 | --- | --- |
 | `index.html` | La herramienta: cabecera, pestañas Escala y Explorador de acordes |
+| `ayuda.html` | Documentación del contenido (notas, escalas, CAGED, acordes, digitaciones…). Tablas generadas desde `theory.js` |
+| `docs.css`, `docs.js` | Estilo y comportamiento comunes de las páginas de documentación (índice, tablas generadas) |
 | `base.css` | Sistema de diseño compartido: tokens de color (claro/oscuro), cabecera, botones, controles |
 | `app.css` | Estilos de la herramienta: mástil, notas, diagramas de acordes |
 | `theme.js` | Tema Automático / Claro / Oscuro (compartido por todas las páginas) |
@@ -32,7 +34,7 @@ Abre <http://localhost:8000>. El service worker (modo offline e instalación com
 ## Pruebas
 
 ```bash
-npm test          # teoría, síntesis y contraste WCAG de los dos temas
+npm test          # teoría, síntesis, contraste WCAG de los dos temas y verificación de la documentación
 npm run test:e2e  # interfaz en Chrome headless (usa CHROME_PATH si Chrome no está en la ruta habitual)
 npm run test:all
 ```

@@ -14,18 +14,27 @@ Abre <http://localhost:8000>. El service worker (modo offline e instalación com
 
 | Archivo | Contenido |
 | --- | --- |
-| `theory.js` | Teoría musical pura (sin DOM): ortografía de notas, roles, acordes, catálogo de acordes y buscador de digitaciones, posiciones CAGED |
+| `index.html` | La herramienta: cabecera, pestañas Escala y Explorador de acordes |
+| `base.css` | Sistema de diseño compartido: tokens de color (claro/oscuro), cabecera, botones, controles |
+| `app.css` | Estilos de la herramienta: mástil, notas, diagramas de acordes |
+| `theme.js` | Tema Automático / Claro / Oscuro (compartido por todas las páginas) |
+| `theory.js` | Teoría musical pura (sin DOM): ortografía, roles, acordes, catálogo, digitaciones, cajas CAGED |
 | `synth.js` | Síntesis de cuerda pulsada (Karplus-Strong), pura y probada |
-| `app.js` | Interfaz, audio (Web Audio), teclado y estado en URL/localStorage |
-| `styles.css` | Estilos y temas claro/oscuro |
+| `util.js`, `state.js` | Utilidades de DOM; modelo de estado (validación y persistencia en la URL) |
+| `audio.js` | Salida de audio con Web Audio |
+| `fretboard.js` | Dibujo del mástil, resaltado y navegación con teclado |
+| `explorer.js` | Explorador de acordes y diagramas SVG |
+| `app.js` | Orquestación: controles, escala, acordes diatónicos, pestañas, ajustes |
 | `sw.js`, `manifest.webmanifest`, `icon*` | PWA y modo offline |
-| `tests/theory.test.js`, `tests/synth.test.js` | Pruebas de la teoría y del sintetizador |
+| `tests/` | Teoría, síntesis, contraste WCAG y pruebas e2e en Chrome headless |
 | `original/index.html` | Versión inicial (línea base de referencia) |
 
 ## Pruebas
 
 ```bash
-node tests/theory.test.js && node tests/synth.test.js
+npm test          # teoría, síntesis y contraste WCAG de los dos temas
+npm run test:e2e  # interfaz en Chrome headless (usa CHROME_PATH si Chrome no está en la ruta habitual)
+npm run test:all
 ```
 
 ## Limitaciones conocidas

@@ -15,8 +15,8 @@ const server = await startServer(root);
 const browser = await launchBrowser();
 const results = [];
 
-async function test(name, fn) {
-  const page = await browser.newPage();
+async function test(name, fn, opts = {}) {
+  const page = await browser.newPage(opts.width || 1280, opts.height || 800, opts.scheme);
   try {
     // Cada prueba parte limpia: la app recuerda el estado en localStorage entre visitas.
     await page.goto(`${server.url}/manifest.webmanifest`);
@@ -118,14 +118,86 @@ await test('teclado: un solo punto de tabulación y las flechas mueven entre not
   assert.equal(after.split(':')[0], before.split(':')[0]);
 });
 
-await test('tema: el botón alterna y se recuerda', async (p) => {
+await test('tema automático: sigue al sistema en vivo y se puede fijar a claro u oscuro', async (p) => {
   await p.goto(base());
-  const t0 = await p.eval('document.documentElement.dataset.theme');
-  await p.click('#theme-toggle');
-  const t1 = await p.eval('document.documentElement.dataset.theme');
-  assert.notEqual(t0, t1);
+  const mode = () => p.eval('document.documentElement.dataset.themeMode');
+  const theme = () => p.eval('document.documentElement.dataset.theme');
+  assert.equal(await mode(), 'auto');
+  assert.equal(await theme(), 'light');                       // el sistema emulado es claro
+  await p.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
+  await p.waitFor('document.documentElement.dataset.theme === "dark"');   // sin recargar
+  await p.click('[data-theme-set="light"]');
+  assert.equal(await mode(), 'light');
+  assert.equal(await theme(), 'light');                       // fijado: ya no sigue al sistema
   await p.goto(base());
-  assert.equal(await p.eval('document.documentElement.dataset.theme'), t1);
+  assert.equal(await mode(), 'light');                        // se recuerda
+  await p.click('[data-theme-set="dark"]');
+  assert.equal(await theme(), 'dark');
+  await p.click('[data-theme-set="auto"]');
+  assert.equal(await mode(), 'auto');
+  assert.equal(await p.eval('localStorage.getItem("fm-theme")'), null);
+  assert.equal(await p.eval('document.querySelector("[data-theme-set=auto]").getAttribute("aria-pressed")'), 'true');
+}, { scheme: 'light' });
+
+await test('tema automático sin preferencia guardada arranca oscuro si el sistema es oscuro', async (p) => {
+  await p.goto(base());
+  assert.equal(await p.eval('document.documentElement.dataset.theme'), 'dark');
+}, { scheme: 'dark' });
+
+await test('rediseño: el mástil entero cabe en la primera pantalla (1280×720)', async (p) => {
+  await p.goto(base());
+  const r = await p.eval('(() => { const b = document.querySelector("#fretboard").getBoundingClientRect(); return { top: b.top, bottom: b.bottom }; })()');
+  assert.ok(r.bottom <= 720, `el mástil termina en y=${Math.round(r.bottom)}, fuera de 720`);
+}, { width: 1280, height: 720 });
+
+await test('enlace discreto: botón de icono con nombre accesible y sin texto "Copiar enlace" visible', async (p) => {
+  await p.goto(base());
+  assert.match(await p.eval('document.querySelector("#share").getAttribute("aria-label")'), /enlace/i);
+  assert.equal(await p.eval('document.querySelector("#share").textContent.trim()'), '');
+});
+
+await test('ajustes: la ventana se abre, se cierra con Escape y devuelve el foco', async (p) => {
+  await p.goto(base());
+  assert.equal(await p.eval('document.querySelector("#settings-panel").hidden'), true);
+  await p.click('#settings-toggle');
+  assert.equal(await p.eval('document.querySelector("#settings-panel").hidden'), false);
+  assert.equal(await p.eval('document.querySelector("#settings-toggle").getAttribute("aria-expanded")'), 'true');
+  await p.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', windowsVirtualKeyCode: 27 });
+  await p.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Escape', windowsVirtualKeyCode: 27 });
+  assert.equal(await p.eval('document.querySelector("#settings-panel").hidden'), true);
+  assert.equal(await p.eval('document.activeElement.id'), 'settings-toggle');
+});
+
+await test('pestañas: cambian de panel, guardan la vista y se mueven con flechas', async (p) => {
+  await p.goto(base());
+  assert.equal(await p.eval('document.querySelector("#panel-acordes").hidden'), true);
+  await p.click('#tab-acordes');
+  assert.equal(await p.eval('document.querySelector("#panel-acordes").hidden'), false);
+  assert.equal(await p.eval('document.querySelector("#panel-escala").hidden'), true);
+  assert.match(await p.eval('location.hash'), /w=acordes/);
+  assert.equal(await p.eval('document.querySelector("#tab-acordes").getAttribute("aria-selected")'), 'true');
+  await p.eval('document.querySelector("#tab-acordes").focus()');
+  await p.key('ArrowLeft');
+  assert.equal(await p.eval('document.querySelector("#tab-escala").getAttribute("aria-selected")'), 'true');
+});
+
+await test('los acordes diatónicos abren el explorador en su pestaña', async (p) => {
+  await p.goto(base());
+  await p.click('#chord-list .chord[data-i="1"]');
+  await p.click('#open-voicings');
+  assert.equal(await p.eval('document.querySelector("#panel-acordes").hidden'), false);
+  assert.match(await p.eval('document.querySelector("#explorer-name").textContent'), /^Dm · Menor/);
+});
+
+await test('selector de escala por familias: cambia de familia sin cambiar la escala', async (p) => {
+  await p.goto(base());
+  assert.equal(await p.eval('document.querySelector("#scale-selector .scale-items[data-group=basic]").hidden'), false);
+  await p.click('#scale-groups [data-group="mode"]');
+  assert.equal(await p.eval('document.querySelector("#scale-selector .scale-items[data-group=mode]").hidden'), false);
+  assert.equal(await p.eval('document.querySelector("#scale-selector .scale-items[data-group=basic]").hidden'), true);
+  assert.match(await p.eval('document.title'), /Mayor/);     // la escala sigue siendo la misma
+  await p.click('#scale-selector [data-scale="dorian"]');
+  assert.match(await p.eval('document.title'), /Dórico/);
 });
 
 await test('service worker: se registra y cachea la app', async (p) => {

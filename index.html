@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FretMaster · Escalas y modos para guitarra</title>
+  <meta name="description" content="Explora escalas, modos, formas CAGED y acordes diatónicos sobre el mástil de la guitarra. Funciona sin conexión.">
+
+  <meta name="application-name" content="FretMaster">
+  <meta name="apple-mobile-web-app-title" content="FretMaster">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#09090b">
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon-180.png">
+
+  <!-- Aplica el tema antes del primer pintado para evitar el parpadeo -->
+  <script>
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('fm-theme'); } catch (e) {}
+      if (t !== 'dark' && t !== 'light') {
+        t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      }
+      document.documentElement.setAttribute('data-theme', t);
+      var m = document.querySelector('meta[name="theme-color"]');
+      if (m) m.setAttribute('content', t === 'dark' ? '#09090b' : '#fafafa');
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#fretboard-section">Saltar al mástil</a>
+
+  <div class="app">
+    <header class="top">
+      <div class="brand">
+        <h1>Fret<strong>Master</strong></h1>
+        <button id="theme-toggle" class="icon-btn" type="button" aria-label="Cambiar tema">
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+        </button>
+      </div>
+      <div class="top-actions">
+        <button id="share" class="btn" type="button">Copiar enlace</button>
+        <div class="seg" role="group" aria-label="Mostrar en el mástil" id="mode-seg">
+          <button type="button" data-mode="notes">Notas</button>
+          <button type="button" data-mode="intervals">Intervalos</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="selectors" aria-label="Selección de escala">
+      <div>
+        <h2 class="eyebrow" id="key-label">Tonalidad</h2>
+        <div class="keys" id="key-selector" role="group" aria-labelledby="key-label"></div>
+      </div>
+      <div>
+        <h2 class="eyebrow" id="scale-label">Escala / Modo</h2>
+        <div class="scales" id="scale-selector" role="group" aria-labelledby="scale-label"></div>
+      </div>
+    </section>
+
+    <details class="settings">
+      <summary>Ajustes del mástil</summary>
+      <div class="settings-grid">
+        <label>Afinación <select id="sel-tuning"></select></label>
+        <label>Trastes
+          <select id="sel-frets"><option value="22">22</option><option value="24">24</option></select>
+        </label>
+        <label>Cejilla <select id="sel-capo"></select></label>
+        <div class="field">
+          <span id="acc-label">Alteraciones</span>
+          <div class="seg rect" role="group" aria-labelledby="acc-label" id="acc-seg">
+            <button type="button" data-acc="auto">Auto</button>
+            <button type="button" data-acc="sharp" aria-label="Sostenidos">♯</button>
+            <button type="button" data-acc="flat" aria-label="Bemoles">♭</button>
+          </div>
+        </div>
+        <label class="check"><input type="checkbox" id="chk-lefty"> Modo zurdo</label>
+        <label class="check"><input type="checkbox" id="chk-sound"> Sonido al tocar una nota</label>
+      </div>
+    </details>
+
+    <section id="fretboard-section" aria-labelledby="scale-title">
+      <div class="title-row">
+        <h2 id="scale-title"><span id="scale-root-text" class="root">C</span> <span id="scale-name-text">Mayor</span></h2>
+        <div class="title-tools">
+          <button id="play-scale" class="btn primary" type="button">▶ Escuchar escala</button>
+          <div class="seg rect" role="group" aria-label="Forma CAGED" id="caged-seg">
+            <button type="button" data-pos="all">Todo</button>
+            <button type="button" data-pos="C">Forma C</button>
+            <button type="button" data-pos="A">Forma A</button>
+            <button type="button" data-pos="G">Forma G</button>
+            <button type="button" data-pos="E">Forma E</button>
+            <button type="button" data-pos="D">Forma D</button>
+          </div>
+        </div>
+      </div>
+
+      <p id="scale-desc" class="scale-desc"></p>
+      <p id="caged-note" class="caged-note" hidden></p>
+
+      <ul id="note-chips" class="note-chips" aria-label="Notas de la escala"></ul>
+      <p id="pattern" class="pattern"></p>
+
+      <div class="scroll-hint" aria-hidden="true">⇆ Desliza para explorar el mástil</div>
+
+      <div class="board-scroll" tabindex="-1">
+        <div id="board-inner" class="board-inner">
+          <div id="fret-numbers" class="fretgrid fret-numbers" aria-hidden="true"></div>
+          <div id="fretboard" class="fretboard" role="group" aria-label="Mástil de la guitarra. Usa las flechas para moverte entre notas y Intro para escucharlas."></div>
+        </div>
+      </div>
+
+      <ul id="legend" class="legend" aria-label="Leyenda de colores"></ul>
+      <p class="kbd-tip">Teclado: <kbd>Tab</kbd> entra al mástil, <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> se mueven entre notas, <kbd>Intro</kbd> las escucha.</p>
+    </section>
+
+    <section id="chords" aria-labelledby="chords-title">
+      <div class="title-row">
+        <h2 id="chords-title" class="h3">Acordes diatónicos</h2>
+        <div class="seg rect" role="group" aria-label="Tipo de acorde" id="size-seg">
+          <button type="button" data-size="3">Tríadas</button>
+          <button type="button" data-size="4">Cuatriadas</button>
+        </div>
+      </div>
+      <p id="chord-msg" class="chord-msg" hidden>Los acordes diatónicos solo están disponibles en escalas de siete notas.</p>
+      <p id="chord-help" class="chord-help">Toca un acorde para oírlo y ver solo sus notas en el mástil.</p>
+      <div id="chord-list" class="chord-list"></div>
+    </section>
+
+    <p id="live" class="sr-only" role="status" aria-live="polite"></p>
+  </div>
+
+  <script src="theory.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

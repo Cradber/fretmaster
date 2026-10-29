@@ -201,6 +201,7 @@ kbd { display: inline-block; margin: 0 2px; padding: 1px 6px; border-radius: 4px
 .explorer-name strong { font-weight: 600; color: var(--accent); }
 #explorer .legend { margin: 8px 0 14px; padding: 0; }
 #open-voicings { margin-top: 14px; }
+.voicing-filter { margin: 4px 0 14px; }
 .voicings { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
 .voicing { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 8px 8px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); transition: border-color .2s, background-color .2s; }
 .voicing:hover { border-color: var(--faint); }

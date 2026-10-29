@@ -62,6 +62,16 @@
   let explorer = null;   // acorde del explorador (deletreado)
   let voicings = [];     // digitaciones calculadas
   let voicingIdx = 0;
+  let allVoicings = [];  // todas las digitaciones encontradas (antes de filtrar)
+  let voicingFilter = 'all';
+  let explorerTuning = [];  // afinación efectiva: la del instrumento + cejilla
+  const MAX_VOICINGS = 8;
+  const VOICING_FILTERS = {
+    all: () => true,
+    open: (v) => v.frets.includes(0),
+    barre: (v) => !!v.barre,
+    high: (v) => v.minFret >= 5
+  };
 
   function setState(patch) {
     const keepChord = Object.keys(patch).every((k) => KEEP_CHORD_KEYS.includes(k));
@@ -90,32 +100,37 @@
     return actx;
   }
 
+  // Cada nota se sintetiza una vez (cuerda pulsada, ver synth.js) y se reutiliza.
+  const noteBuffers = new Map();
+  function noteBuffer(ac, midi) {
+    const key = midi + ':' + ac.sampleRate;
+    let buf = noteBuffers.get(key);
+    if (!buf) {
+      const data = window.FretSynth.pluckSamples(window.FretSynth.midiToFreq(midi), ac.sampleRate, 3);
+      buf = ac.createBuffer(1, data.length, ac.sampleRate);
+      buf.copyToChannel(data, 0);
+      noteBuffers.set(key, buf);
+    }
+    return buf;
+  }
+
   function pluck(midi, delay = 0, dur = 1.4, vol = 0.3) {
     const ac = audio();
     if (!ac) return;
     const t = ac.currentTime + delay;
-    const f = 440 * Math.pow(2, (midi - 69) / 12);
+    const src = ac.createBufferSource();
+    src.buffer = noteBuffer(ac, midi);
+    const body = ac.createBiquadFilter();       // suaviza el brillo, como la caja de la guitarra
+    body.type = 'lowpass';
+    body.frequency.value = 4200;
     const gain = ac.createGain();
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.exponentialRampToValueAtTime(vol, t + 0.008);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    const lp = ac.createBiquadFilter();
-    lp.type = 'lowpass';
-    lp.frequency.setValueAtTime(Math.min(f * 7, 6000), t);
-    lp.frequency.exponentialRampToValueAtTime(Math.max(f * 1.5, 300), t + dur * 0.8);
-    lp.connect(gain);
+    gain.gain.setValueAtTime(vol * 1.5, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + Math.min(dur + 0.8, 2.9));
+    src.connect(body);
+    body.connect(gain);
     gain.connect(master);
-    [['sawtooth', 0.5], ['triangle', 1]].forEach(([type, level]) => {
-      const osc = ac.createOscillator();
-      const g = ac.createGain();
-      osc.type = type;
-      osc.frequency.value = f;
-      g.gain.value = level;
-      osc.connect(g);
-      g.connect(lp);
-      osc.start(t);
-      osc.stop(t + dur + 0.05);
-    });
+    src.start(t);
+    src.stop(t + 3);
   }
 
   function flash(match, ms = 320) {
@@ -264,6 +279,12 @@
       explorerChanged();
     });
     $('#play-chord').addEventListener('click', () => playVoicing(voicings[voicingIdx]));
+    $('#voicing-filter').addEventListener('click', (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      voicingFilter = b.dataset.vf;
+      renderVoicings();
+    });
     $('#voicings').addEventListener('click', (e) => {
       const b = e.target.closest('.voicing');
       if (!b) return;
@@ -593,9 +614,12 @@
   function renderExplorer() {
     explorer = T.spellChord(state.r, state.q, state.a);
     const type = T.CHORD_TYPES[state.q];
-    const tuning = T.TUNINGS[state.t].midi;
-    voicings = T.findVoicings(tuning, explorer, state.f - 1, 6);
-    voicingIdx = 0;
+    // Con cejilla, la forma se toca desde la cejilla: las cuerdas "al aire" pasan a sonar más agudas.
+    explorerTuning = T.TUNINGS[state.t].midi.map((m) => m + state.c);
+    allVoicings = T.findVoicings(explorerTuning, explorer, state.f - state.c - 1, 80);
+    const capoNote = $('#capo-note');
+    capoNote.hidden = state.c === 0;
+    capoNote.textContent = `Cejilla en el traste ${state.c}: los trastes del diagrama se cuentan desde la cejilla y las notas son las que suenan.`;
 
     const title = $('#explorer-name');
     title.textContent = '';
@@ -629,11 +653,20 @@
       legend.appendChild(li);
     });
 
+    renderVoicings();
+  }
+
+  function renderVoicings() {
+    $$('#voicing-filter button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.vf === voicingFilter)));
+    voicings = allVoicings.filter(VOICING_FILTERS[voicingFilter]).slice(0, MAX_VOICINGS);
+    voicingIdx = 0;
     const box = $('#voicings');
     box.textContent = '';
     $('#play-chord').disabled = !voicings.length;
     if (!voicings.length) {
-      box.appendChild(el('p', 'empty-voicings', 'No hay digitaciones cómodas de este acorde en esta afinación.'));
+      box.appendChild(el('p', 'empty-voicings', allVoicings.length
+        ? 'Ninguna digitación de este tipo para este acorde. Prueba con otro filtro.'
+        : 'No hay digitaciones cómodas de este acorde en esta afinación.'));
       return;
     }
     voicings.forEach((v, i) => {
@@ -682,7 +715,7 @@
       } else if (f === 0) {
         svgEl('circle', { class: 'vopen', cx: x, cy: 19, r: 3.6 }, svg);
       } else {
-        const note = explorer.byPc.get((T.TUNINGS[state.t].midi[s] + f) % 12);
+        const note = explorer.byPc.get((explorerTuning[s] + f) % 12);
         const dot = svgEl('g', { class: 'vdot' }, svg);
         svgEl('circle', { cx: x, cy: yOf(f), r: 6.5, fill: `var(--c-${note.role})` }, dot);
         const label = svgEl('text', { x, y: yOf(f) + 2.4 }, dot);
@@ -694,10 +727,9 @@
 
   function playVoicing(v) {
     if (!v) return;
-    const tuning = T.TUNINGS[state.t].midi;
     const order = [];
     for (let s = v.frets.length - 1; s >= 0; s--) if (v.frets[s] >= 0) order.push(s);   // de grave a aguda
-    order.forEach((s, i) => pluck(tuning[s] + v.frets[s], i * 0.055, 1.8, 0.22));
+    order.forEach((s, i) => pluck(explorerTuning[s] + v.frets[s], i * 0.055, 1.8, 0.22));
   }
 
   // ---------- Teclado en el mástil ----------

@@ -154,6 +154,13 @@
       <p id="explorer-formula" class="pattern"></p>
       <ul id="explorer-legend" class="legend" aria-label="Leyenda del acorde"></ul>
       <p id="voicing-help" class="chord-help">Toca una digitación para escucharla. Se calculan para la afinación elegida en Ajustes; × = cuerda muda, ○ = al aire. Se muestran de la más cómoda a la más exigente.</p>
+      <p id="capo-note" class="caged-note" hidden></p>
+      <div class="seg rect voicing-filter" role="group" aria-label="Filtrar digitaciones" id="voicing-filter">
+        <button type="button" data-vf="all">Todas</button>
+        <button type="button" data-vf="open">Abiertas</button>
+        <button type="button" data-vf="barre">Con cejilla</button>
+        <button type="button" data-vf="high">Posición alta</button>
+      </div>
       <div id="voicings" class="voicings"></div>
     </section>
 
@@ -161,6 +168,7 @@
   </div>
 
   <script src="theory.js"></script>
+  <script src="synth.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

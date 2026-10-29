@@ -52,9 +52,11 @@ npm run test:all
 
 ## Limitaciones conocidas
 
-- Las cajas CAGED salen de ventanas de trastes fijas sobre la mayor "madre" de la escala. En las diatónicas cada caja completa tiene 2–3 notas por cuerda y ninguna nota queda sin caja. En las escalas con notas ajenas a esa mayor (menor armónica y melódica, frigio dominante…) cada nota alterada va en la caja de la nota que sustituye (G → G♯), un traste más arriba o abajo. Hay tests en las 12 tonalidades.
-- Las notas de paso sin nota que sustituyan (la ♭5 del blues, algunas de la disminuida) se colocan por ventana de trastes, sin patrón propio.
-- Cerca del traste 0 puede verse una caja recortada: es el final de la forma anterior, no un error.
-- El audio es síntesis de cuerda pulsada, no samples de guitarra. Su afinación está verificada con tests; el timbre no se ha evaluado de oído.
-- En Safari e iOS el audio es más estricto (arranque en un gesto, estado `interrupted`, interruptor de silencio). Está contemplado y probado simulando esos casos en Chrome, pero **no verificado en un Safari ni un iPhone reales**. En Ajustes hay un diagnóstico de audio.
-- Las digitaciones del explorador las calcula un buscador (máx. 4 trastes de amplitud, máx. 4 dedos), no un catálogo curado. Con cejilla, se calculan desde la cejilla. Se puede elegir la nota del bajo (inversiones), pero no hay bajos ajenos al acorde (C/D, "slash" sobre otra nota).
+La lista completa, con ejemplos, está en la sección «Límites y alcance» de `ayuda.html`. En resumen:
+
+- **Cajas CAGED**: ventanas de trastes fijas sobre la mayor "madre", medidas para la afinación estándar. En las diatónicas cada caja completa tiene 2–3 notas por cuerda (2 en las pentatónicas, hasta 4 en la disminuida) y ninguna nota queda sin caja; las notas alteradas (G → G♯) van en la caja de la nota que sustituyen. No se ajustan a la afinación: en «medio tono abajo» quedan desplazadas un traste y en las afinaciones abiertas no corresponden a formas reales.
+- **Digitaciones**: las calcula un buscador (hasta el traste 15, máx. 4 trastes de amplitud y 4 dedos), no un catálogo curado. Quedan fuera las formas con cuerdas mudas intercaladas (drop 3, shell), las de tres cuerdas salvo el power chord y las que necesitan una cejilla que no está en el traste más bajo (C9 x32333). No hay bajos ajenos al acorde (C/D).
+- **Catálogo**: 22 tipos de acorde (sin 7♭9, 7♯9, 6/9, 11, 13) y 15 escalas (sin disminuida S–T, alterada, lidio dominante ni mayor armónica).
+- **Escuchar escala** toca una octava en un registro fijo, sin seguir la forma elegida.
+- **Audio**: síntesis de cuerda pulsada; afinación verificada con tests, timbre no evaluado de oído. En Safari e iOS **no está verificado en dispositivos reales** (hay un diagnóstico en Ajustes).
+- **Dirección**: cambiar a mano el `#` en una pestaña ya abierta no actualiza la vista hasta recargar.

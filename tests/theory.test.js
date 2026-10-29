@@ -212,6 +212,23 @@ test('cajas CAGED: en las 12 tonalidades cada caja completa tiene 2–3 notas po
   }
 });
 
+test('cajas CAGED de las pentatónicas: exactamente 2 notas por cuerda en las 12 tonalidades', () => {
+  const S = T.TUNINGS.standard.midi;
+  ['major_pentatonic', 'minor_pentatonic'].forEach((id) => {
+    for (let pc = 0; pc < 12; pc++) {
+      const sc = T.spellScale(pc, id);
+      const ranges = T.positionRanges(id, pc, 22);
+      T.CAGED_ORDER.forEach((sh) => ranges[sh].filter(([a, b]) => b - a >= T.CAGED[sh][1] - T.CAGED[sh][0]).forEach(([a, b]) => {
+        S.forEach((m, si) => {
+          let count = 0;
+          for (let x = a; x <= b; x++) if (sc.byPc.has((m + x) % 12)) count++;
+          assert.equal(count, 2, `${id} ${pc} forma ${sh} [${a},${b}] cuerda ${si + 1}`);
+        });
+      }));
+    }
+  });
+});
+
 test('con cejilla en el traste 2, A suena con la forma abierta de G (320003)', () => {
   const capoTuning = STD.map((m) => m + 2);
   const shapes = T.findVoicings(capoTuning, T.spellChord(9, 'maj'), 12, 60)

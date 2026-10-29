@@ -136,6 +136,12 @@
     $('#chk-lefty').addEventListener('change', (e) => setState({ l: e.target.checked ? 1 : 0 }));
     $('#chk-sound').addEventListener('change', (e) => setState({ v: e.target.checked ? 1 : 0 }));
     $('#play-scale').addEventListener('click', playScale);
+    $('#audio-test').addEventListener('click', () => {
+      A.Audio.unlock();
+      A.Audio.pluck(57, 0, 1.2, 0.35);
+      $('#audio-status').textContent = 'Probando…';
+      setTimeout(reportAudio, 600);
+    });
     $('#share').addEventListener('click', share);
 
     $('#note-chips').addEventListener('click', (e) => {
@@ -357,13 +363,35 @@
     const seq = asc.concat(asc.slice(0, -1).reverse());
     const step = 340;
     $('#play-scale').textContent = '■ Detener';
+    // El sonido se programa entero en el reloj de audio desde este mismo gesto (Safari e iOS no dejan arrancar el audio
+    // desde un temporizador); los temporizadores solo sirven para iluminar las notas en el mástil.
     seq.forEach((m, i) => {
-      playTimers.push(setTimeout(() => {
-        A.Audio.pluck(m);
-        A.Fretboard.flash((mk) => Number(mk.dataset.pc) === m % 12);
-      }, i * step));
+      A.Audio.pluck(m, (i * step) / 1000);
+      playTimers.push(setTimeout(() => A.Fretboard.flash((mk) => Number(mk.dataset.pc) === m % 12), i * step));
     });
     playTimers.push(setTimeout(stopPlayback, seq.length * step + 300));
+  }
+
+  // ---------- Diagnóstico y avisos de audio ----------
+
+  let toastTimer = null;
+  function toast(msg) {
+    const t = $('#toast');
+    t.textContent = msg;
+    t.hidden = false;
+    announce(msg);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.hidden = true; }, 9000);
+  }
+
+  const AUDIO_HINT = 'No se oye nada si el audio del navegador está bloqueado. Toca de nuevo; en iPhone, desactiva el interruptor de silencio y sube el volumen.';
+
+  function reportAudio() {
+    const i = A.Audio.info();
+    const where = `${i.state}${i.sampleRate ? ' · ' + i.sampleRate + ' Hz' : ''} · sesión: ${i.session}`;
+    $('#audio-status').textContent = i.state === 'running'
+      ? `Audio activo (${where}). Si no lo oyes, sube el volumen y, en iPhone, desactiva el interruptor de silencio.`
+      : `El audio no está activo (${where}). Pulsa de nuevo; si sigue igual, recarga la página.`;
   }
 
   // ---------- Copiar enlace ----------
@@ -408,6 +436,7 @@
       }
     });
     A.Explorer.init({ setState, announce });
+    A.Audio.onProblem(() => toast(AUDIO_HINT));
     wireEvents();
     update();
     if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {

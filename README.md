@@ -56,4 +56,5 @@ npm run test:all
 - Las notas de paso sin nota que sustituyan (la ♭5 del blues, algunas de la disminuida) se colocan por ventana de trastes, sin patrón propio.
 - Cerca del traste 0 puede verse una caja recortada: es el final de la forma anterior, no un error.
 - El audio es síntesis de cuerda pulsada, no samples de guitarra. Su afinación está verificada con tests; el timbre no se ha evaluado de oído.
+- En Safari e iOS el audio es más estricto (arranque en un gesto, estado `interrupted`, interruptor de silencio). Está contemplado y probado simulando esos casos en Chrome, pero **no verificado en un Safari ni un iPhone reales**. En Ajustes hay un diagnóstico de audio.
 - Las digitaciones del explorador las calcula un buscador (máx. 4 trastes de amplitud, máx. 4 dedos), no un catálogo curado. Con cejilla, se calculan desde la cejilla. Se puede elegir la nota del bajo (inversiones), pero no hay bajos ajenos al acorde (C/D, "slash" sobre otra nota).

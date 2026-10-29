@@ -92,6 +92,13 @@ export async function launchBrowser() {
         throw new Error('Tiempo agotado esperando: ' + expr);
       },
       async click(sel) { return this.eval(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) throw new Error('no existe ' + ${JSON.stringify(sel)}); e.click(); return true; })()`); },
+      /** Clic con el ratón de verdad (activación de usuario), necesario para el audio, que un element.click() no da. */
+      async realClick(sel) {
+        const r = await this.eval(`(() => { const e = document.querySelector(${JSON.stringify(sel)}); if (!e) throw new Error('no existe ' + ${JSON.stringify(sel)}); e.scrollIntoView({block:'center'}); const b = e.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; })()`);
+        await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: r.x, y: r.y });
+        await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: r.x, y: r.y, button: 'left', clickCount: 1 });
+        await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: r.x, y: r.y, button: 'left', clickCount: 1 });
+      },
       async key(key) {
         const code = { ArrowRight: 39, ArrowLeft: 37, ArrowUp: 38, ArrowDown: 40 }[key];
         await send('Input.dispatchKeyEvent', { type: 'keyDown', key, windowsVirtualKeyCode: code });

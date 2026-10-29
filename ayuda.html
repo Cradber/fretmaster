@@ -89,7 +89,9 @@
           </ol>
         </li>
         <li><a href="#ajustes">Afinación, trastes y cejilla</a></li>
-        <li><a href="#audio">Audio</a></li>
+        <li><a href="#audio">Audio</a>
+          <ol><li><a href="#sin-sonido">Si no se oye nada</a></li></ol>
+        </li>
         <li><a href="#teclado">Teclado y accesibilidad</a></li>
         <li><a href="#compartir">Enlaces, estado y privacidad</a></li>
         <li><a href="#limites">Límites y alcance</a></li>
@@ -300,7 +302,20 @@
         <li><strong>Escuchar escala</strong> toca la escala ascendente y descendente durante una octava, nota a nota, mientras se iluminan sus posiciones en el mástil.</li>
         <li>Tocar un acorde o una digitación los <strong>rasguea</strong> de grave a aguda.</li>
       </ul>
-      <p>Los navegadores solo permiten sonido tras una acción tuya (un clic o una pulsación), por eso no suena nada al abrir la página.</p>
+      <p>Los navegadores solo permiten sonido tras una acción tuya (un clic, un toque o una pulsación), por eso no suena nada al abrir la página.</p>
+      <h3 id="sin-sonido">Si no se oye nada</h3>
+      <p>Safari y el iPhone son más estrictos con el audio de las páginas web que otros navegadores. Estas son las causas habituales y qué hacer:</p>
+      <ul>
+        <li><strong>El audio se ha interrumpido.</strong> Si cambias de pestaña, bloqueas el teléfono o recibes una llamada, el navegador detiene el audio de la página. <strong>Toca cualquier nota o botón</strong>: la aplicación lo reanuda en el siguiente toque (la nota de ese primer toque puede perderse si el navegador tarda en reanudarlo).</li>
+        <li><strong>El interruptor de silencio del iPhone.</strong> Con el interruptor lateral en silencio, iOS puede silenciar el audio de las páginas web. La aplicación pide a iOS que trate su sonido como reproducción de medios, pero si aun así no oyes nada, desactiva el silencio y sube el volumen.</li>
+        <li><strong>El volumen o la salida.</strong> Comprueba el volumen del dispositivo y que el sonido no vaya a unos auriculares o a un altavoz desconectado.</li>
+        <li><strong>Sonido desactivado en Ajustes.</strong> La casilla <em>Sonido al tocar una nota</em> solo afecta a las notas del mástil; <em>Escuchar escala</em> y los acordes suenan siempre.</li>
+      </ul>
+      <p>En <em>Ajustes → Diagnóstico de audio</em>, el botón <em>Probar sonido</em> toca una nota y muestra el estado del audio: <span class="notes">running</span> es lo correcto; <span class="notes">suspended</span> o <span class="notes">interrupted</span> significan que el navegador lo mantiene detenido. Si la aplicación detecta que el navegador no deja sonar, muestra además un aviso en pantalla.</p>
+      <div class="callout callout--warn">
+        <p class="title">Lo que no está verificado</p>
+        <p>Estas medidas se han probado simulando en Chrome el comportamiento de Safari (estado interrumpido, arranque bloqueado), pero <strong>no en un Safari ni un iPhone reales</strong>. Si te sigue sin sonar, el estado que muestra el diagnóstico ayuda a localizar el problema.</p>
+      </div>
 
       <!-- ===================================================== -->
       <h2 id="teclado">Teclado y accesibilidad</h2>
@@ -344,7 +359,7 @@
         <li><strong>Digitaciones</strong>: las calcula un buscador con las reglas de <a href="#reglas">arriba</a>, no un catálogo curado. Pueden aparecer formas correctas pero poco habituales; y no se buscan por encima del traste 15.</li>
         <li><strong>Acordes</strong>: no hay inversiones con una nota ajena al acorde en el bajo, ni acordes de más de cinco notas.</li>
         <li><strong>Escalas</strong>: solo las incluidas en la tabla. La menor melódica es la ascendente.</li>
-        <li><strong>Audio</strong>: sintético; su afinación está probada, pero el timbre no pretende imitar una guitarra real.</li>
+        <li><strong>Audio</strong>: sintético; su afinación está probada, pero el timbre no pretende imitar una guitarra real. En Safari y iOS el audio es más estricto y su comportamiento no se ha verificado en dispositivos reales (<a href="#sin-sonido">ver arriba</a>).</li>
         <li>Pensada para guitarra de 6 o 7 cuerdas con trastes normales; no hay bajo, ukelele ni instrumentos fretless.</li>
       </ul>
 

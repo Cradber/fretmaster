@@ -311,20 +311,73 @@
     return asc;
   }
 
-  function positionRanges(scaleId, rootPc, frets) {
+  /** Ventanas de trastes de cada forma, sin recortar al mástil (pueden empezar antes del traste 0). */
+  function windows(scaleId, rootPc, frets) {
     const shift = (rootPc + SCALES[scaleId].parent) % 12;
-    const out = { all: [[0, frets]] };
+    const out = {};
     CAGED_ORDER.forEach((id) => {
       const [start, end] = CAGED[id];
       const span = end - start;
       const first = (start + shift) % 12;
-      const ranges = [];
-      for (let o = first - 12; o <= frets; o += 12) {
-        if (o + span >= 0) ranges.push([Math.max(0, o), Math.min(frets, o + span)]);
+      const list = [];
+      for (let o = first - 12; o <= frets + 2; o += 12) {
+        if (o + span >= -2) list.push([o, o + span]);
       }
-      out[id] = ranges;
+      out[id] = list;
     });
     return out;
+  }
+
+  function positionRanges(scaleId, rootPc, frets) {
+    const w = windows(scaleId, rootPc, frets);
+    const out = { all: [[0, frets]] };
+    CAGED_ORDER.forEach((id) => {
+      out[id] = w[id].filter(([a, b]) => a <= frets && b >= 0).map(([a, b]) => [Math.max(0, a), Math.min(frets, b)]);
+    });
+    return out;
+  }
+
+  /**
+   * Notas de la escala que no están en su mayor "madre" (p. ej. el G♯ de La menor armónica sobre Do mayor).
+   * Cada una sustituye a una nota de la madre desplazada un semitono (G → G♯): sourceOf.get(pc) = { pc, delta }.
+   * Las notas de paso sin sustituta (la ♭5 del blues) quedan sin emparejar.
+   */
+  function alterationMap(scaleId, rootPc) {
+    const sc = SCALES[scaleId];
+    const parentRoot = (rootPc + sc.parent) % 12;
+    const P = new Set(LETTER_PC.map((s) => (parentRoot + s) % 12));
+    const Q = new Set(parseFormula(sc.formula).map((t) => (rootPc + t.semi) % 12));
+    const missing = [...P].filter((pc) => !Q.has(pc)).sort((a, b) => a - b);
+    const extras = new Set([...Q].filter((pc) => !P.has(pc)));
+    const sourceOf = new Map();
+    const paired = new Set();
+    // Dos pasadas: primero las notas elevadas (G → G♯), luego las rebajadas (E → E♭). Emparejar nota a nota
+    // en un solo recorrido puede cruzar los pares (C → B en lugar de C → C♯ en Re menor melódica).
+    [1, -1].forEach((d) => {
+      missing.forEach((m) => {
+        const e = (m + d + 12) % 12;
+        if (!paired.has(m) && extras.has(e) && !sourceOf.has(e)) {
+          sourceOf.set(e, { pc: m, delta: d });
+          paired.add(m);
+        }
+      });
+    });
+    return { P, Q, extras, sourceOf };
+  }
+
+  /**
+   * ¿Pertenece la nota (traste, clase de altura) a la caja? Una nota alterada va en la caja de la nota
+   * que sustituye, un traste más arriba o abajo, así la caja no queda con huecos.
+   */
+  function positionPredicate(scaleId, rootPc, shapeId, frets) {
+    if (shapeId === 'all') return () => true;
+    const wins = windows(scaleId, rootPc, frets)[shapeId];
+    const inWin = (f) => wins.some(([a, b]) => f >= a && f <= b);
+    const { sourceOf } = alterationMap(scaleId, rootPc);
+    return (fret, pc) => {
+      const src = sourceOf.get(pc);
+      return inWin(src ? fret - src.delta : fret);
+    };
   }
 
   // ---------- Catálogo de acordes y digitaciones ----------
@@ -428,13 +481,14 @@
    * Busca digitaciones tocables para el acorde en la afinación dada.
    * frets[i]: traste de la cuerda i (0 = la más aguda); -1 = muda. La nota más grave siempre es la fundamental.
    */
-  function findVoicings(tuning, chord, maxFret, limit) {
+  function findVoicings(tuning, chord, maxFret, limit, bassIdx) {
     const n = tuning.length;
-    const root = chord.rootPc;
+    const bass = chord.notes[bassIdx || 0];
+    const root = bass.pc;                       // la nota más grave que suena
     const pcSet = new Set(chord.pcs);
     const fifth = chord.notes.find((x) => x.semi === 7);
     const required = new Set(chord.pcs);
-    if (chord.pcs.length >= 4 && fifth) required.delete(fifth.pc);
+    if (chord.pcs.length >= 4 && fifth && fifth.pc !== bass.pc) required.delete(fifth.pc);
     const minStrings = chord.pcs.length <= 2 ? 3 : 4;
     const top = Math.max(4, Math.min(maxFret, 15));
     const found = new Map();
@@ -487,7 +541,8 @@
     CHORD_GROUPS, CHORD_TYPES, QUALITY_TO_TYPE,
     spellScale, keyLabel, legendFor, stepPattern, diatonicChords,
     chordMidis, scaleMidis, positionRanges, parseFormula, pretty,
-    spellChord, chordLegend, findVoicings, fingering
+    spellChord, chordLegend, findVoicings, fingering,
+    alterationMap, positionPredicate
   };
   global.FretTheory = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

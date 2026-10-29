@@ -16,7 +16,7 @@ const T = createRequire(import.meta.url)(path.join(root, 'theory.js'));
 const server = await startServer(root);
 const browser = await launchBrowser();
 const results = [];
-const PAGES = ['ayuda.html', 'aprender.html'];
+const PAGES = ['ayuda.html', 'aprender.html', 'desarrollo.html'];
 
 async function test(name, fn, opts = {}) {
   const page = await browser.newPage(opts.width || 1280, opts.height || 800, opts.scheme);
@@ -150,6 +150,37 @@ await test('aprender: la autoevaluación se despliega con teclado y muestra la r
   assert.equal(await p.eval('document.querySelector("details.qa").open'), true);
   assert.ok(await p.eval('document.querySelector("details.qa > div").textContent.length > 5'));
 });
+
+await test('desarrollo: la API generada tiene una fila por exportación y ninguna sin descripción', async (p) => {
+  await p.goto(url('desarrollo.html'));
+  const result = await p.eval(`[...document.querySelectorAll('[data-gen=api]')].map(slot => {
+    const name = slot.dataset.api;
+    const obj = name.split('.').reduce((o, k) => o[k], window);
+    return { name, rows: slot.querySelectorAll('tbody tr').length, real: Object.keys(obj).length,
+             sinDescripcion: [...slot.querySelectorAll('tbody tr')].filter(r => r.cells[2].textContent === '—').length };
+  })`);
+  assert.equal(result.length, 8);
+  result.forEach((r) => {
+    assert.equal(r.rows, r.real, `${r.name}: filas ${r.rows} frente a exportaciones ${r.real}`);
+    assert.equal(r.sinDescripcion, 0, `${r.name}: funciones sin descripción`);
+  });
+  assert.ok(result.find((r) => r.name === 'FretTheory').rows >= 25);
+});
+
+await test('desarrollo: el diagrama de arquitectura es accesible y la tabla de estado está completa', async (p) => {
+  await p.goto(url('desarrollo.html'));
+  assert.equal(await p.eval('document.querySelector(".diagram svg").getAttribute("role")'), 'img');
+  assert.ok(await p.eval('document.querySelector(".diagram svg title").textContent.length > 10'));
+  assert.ok(await p.eval('document.querySelector(".diagram svg desc").textContent.length > 50'));
+  assert.equal(await p.eval('document.querySelectorAll("[data-gen=state] tbody tr").length'), await p.eval('Object.keys(FretApp.State.DEFAULTS).length'));
+});
+
+await test('desarrollo: el diagrama se desplaza en móvil sin ensanchar la página', async (p) => {
+  await p.goto(url('desarrollo.html'));
+  const d = await p.eval('(() => { const e = document.querySelector(".diagram"); return { scroll: e.scrollWidth, client: e.clientWidth, page: document.documentElement.scrollWidth - document.documentElement.clientWidth }; })()');
+  assert.ok(d.scroll > d.client, 'el diagrama debería poder desplazarse');
+  assert.ok(d.page <= 1, 'la página se ensancha ' + d.page + ' px');
+}, { width: 375, height: 812 });
 
 await browser.close();
 server.close();

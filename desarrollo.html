@@ -66,7 +66,9 @@
         <li><a href="#teoria">Teoría musical (theory.js)</a>
           <ol><li><a href="#t-datos">Datos y fórmulas</a></li><li><a href="#t-ortografia">Ortografía</a></li><li><a href="#t-roles">Roles</a></li><li><a href="#t-diatonicos">Acordes diatónicos</a></li><li><a href="#t-caged">Cajas CAGED</a></li><li><a href="#t-digitaciones">Buscador de digitaciones</a></li></ol>
         </li>
-        <li><a href="#sintesis">Audio y síntesis</a></li>
+        <li><a href="#sintesis">Audio y síntesis</a>
+          <ol><li><a href="#audio-safari">Safari e iOS</a></li></ol>
+        </li>
         <li><a href="#estado">Estado y persistencia</a></li>
         <li><a href="#interfaz">Interfaz</a>
           <ol><li><a href="#ciclo">Ciclo de actualización</a></li><li><a href="#mastil">El mástil</a></li><li><a href="#explorador">El explorador</a></li><li><a href="#a11y">Accesibilidad</a></li></ol>
@@ -248,7 +250,16 @@
       </ol>
       <p>Al ser una función pura y determinista, se prueba midiendo la <strong>frecuencia por autocorrelación</strong> con interpolación parabólica: la nota queda a menos de 8 centésimas en seis alturas y dos frecuencias de muestreo; además, la energía decae, la señal no satura y las notas agudas se apagan antes.</p>
       <h3>Reproducción</h3>
-      <p><code>audio.js</code> crea el <code>AudioContext</code> la primera vez que hace falta (los navegadores exigen un gesto del usuario). Cada nota MIDI se sintetiza una vez (3 s) y se guarda en una caché (<code data-src="audio.js:const buffers">buffers</code>) por nota y frecuencia de muestreo. Al tocar, se crea una fuente que pasa por un filtro pasa-bajos de 4200 Hz, una envolvente exponencial, una ganancia maestra y un compresor.</p>
+      <p><code>audio.js</code> sintetiza cada nota MIDI una vez (3 s) y la guarda en una caché (<code data-src="audio.js:const buffers">buffers</code>) por nota y frecuencia de muestreo. Al tocar, se crea una fuente que pasa por un filtro pasa-bajos de 4200 Hz, una envolvente exponencial, una ganancia maestra y un compresor.</p>
+      <h3 id="audio-safari">Safari e iOS</h3>
+      <p>El audio web es mucho más estricto en WebKit que en Chrome. El módulo está diseñado alrededor de tres restricciones:</p>
+      <ul>
+        <li><strong>Arranque dentro de un gesto</strong>: el contexto se crea y se reanuda en un manejador de gesto (<code data-src="audio.js:const GESTURES">pointerup, touchend, click, keydown</code>, en fase de captura, antes que los manejadores de la aplicación). Un buffer vacío «calienta» la salida.</li>
+        <li><strong>Reloj de audio, no temporizadores</strong>: <code data-src="audio.js:function pluck">pluck</code> programa cada nota con <code>start(currentTime + retardo)</code>. Escuchar la escala lanza todas las notas (subida y bajada) en una sola pasada desde el gesto; los <code>setTimeout</code> solo iluminan el mástil. Así ninguna nota depende de que el permiso del gesto sobreviva a un temporizador.</li>
+        <li><strong>Recuperación</strong>: WebKit añade el estado <code>interrupted</code> (cambio de pestaña, bloqueo, llamada) además de <code>suspended</code>. El código reanuda siempre que el estado no sea <code>running</code>, no solo cuando es <code>suspended</code>. Si el contexto no arranca en <code data-src="audio.js:START_TIMEOUT_MS">400 ms</code>, la nota se descarta en lugar de quedar pendiente, para que al volver el audio no suenen de golpe las notas acumuladas, y se avisa al usuario (<code data-src="audio.js:function problem">onProblem</code>, con un límite de un aviso cada 6 s).</li>
+        <li><strong>Interruptor de silencio de iOS</strong>: <code data-src="audio.js:function setSessionPlayback">setSessionPlayback</code> usa <code>navigator.audioSession.type = 'playback'</code> si existe; si no, en iOS reproduce en bucle una pista HTML silenciosa generada en memoria (un WAV de ceros), lo que cambia la sesión de audio a reproducción. La pista se pausa cuando la página se oculta.</li>
+      </ul>
+      <p>Las pruebas de <code>tests/e2e/audio.test.mjs</code> usan clics reales del ratón (con activación de usuario), cuentan las fuentes programadas y simulan el estado <code>interrupted</code> sobrescribiendo la propiedad <code>state</code>. Se comprobó que la prueba de recuperación <strong>falla con la lógica anterior</strong> (solo <code>suspended</code>) y pasa con la actual. Esto <em>no</em> sustituye a probar en un Safari o un iPhone reales: ver <a href="#deuda">deuda técnica</a>.</p>
 
       <!-- ===================================================== -->
       <h2 id="estado">Estado y persistencia</h2>
@@ -336,7 +347,7 @@
             <tr><td class="mono">tests/contrast.test.js</td><td>Contraste WCAG de los tokens en los dos temas.</td><td>Node, lee <code>base.css</code></td></tr>
             <tr><td class="mono">tests/docs.test.js</td><td>Los ejemplos de la ayuda y de Aprender coinciden con <code>theory.js</code> (<code>data-verify</code>), los enlaces a la herramienta tienen parámetros válidos, las anclas existen, la navegación es idéntica y todo está en la caché.</td><td>Node, analiza el HTML</td></tr>
             <tr><td class="mono">tests/architecture.test.js</td><td>La API documentada coincide con las exportaciones, el orden de carga respeta las dependencias, las capas puras no tocan el DOM, no hay URL externas y cada archivo está en el README.</td><td>Node, módulos en un contexto aislado</td></tr>
-            <tr><td class="mono">tests/e2e/*.test.mjs</td><td>La aplicación y las páginas en Chrome real: carga sin errores, interacción, estado en la URL, tema automático, teclado, tablas generadas, sin peticiones externas, móvil, service worker. Una auditoría transversal revisa en todas las páginas los nombres accesibles, los niveles de título, el foco visible con teclado y que <em>todas</em> funcionen sin conexión.</td><td>Chrome headless por CDP</td></tr>
+            <tr><td class="mono">tests/e2e/*.test.mjs</td><td>La aplicación y las páginas en Chrome real (incluido el audio con clics reales y la simulación de interrupciones): carga sin errores, interacción, estado en la URL, tema automático, teclado, tablas generadas, sin peticiones externas, móvil, service worker. Una auditoría transversal revisa en todas las páginas los nombres accesibles, los niveles de título, el foco visible con teclado y que <em>todas</em> funcionen sin conexión.</td><td>Chrome headless por CDP</td></tr>
           </tbody>
         </table>
       </div>
@@ -442,7 +453,7 @@ npm run test:all  # todo lo anterior</code></pre>
         <li><strong>Sin integración continua</strong>: las pruebas se ejecutan a mano antes de integrar; no hay un flujo automático en el repositorio.</li>
         <li><strong>Navegador de pruebas único</strong>: las pruebas de interfaz usan solo Chrome. No se ha probado en Safari ni Firefox con un arnés, y el comportamiento del <code>service worker</code> en iOS no está verificado.</li>
         <li><strong>Accesibilidad sin lectores reales</strong>: el contraste y la estructura están comprobados por código, pero la experiencia con VoiceOver, NVDA o TalkBack no se ha evaluado. Las notas atenuadas (opacidad baja) son deliberadamente de bajo contraste.</li>
-        <li><strong>Audio</strong>: la afinación está verificada con señales, pero el timbre no se ha evaluado de oído.</li>
+        <li><strong>Audio</strong>: la afinación está verificada con señales, pero el timbre no se ha evaluado de oído. El comportamiento en <strong>Safari e iOS no se ha verificado en dispositivos reales</strong>: lo cubren tests que simulan sus particularidades en Chrome, pero el interruptor de silencio, la sesión de audio y el estado <code>interrupted</code> solo se pueden confirmar en un iPhone o un Safari de verdad. (El simulador de iOS no respondió a los toques en la sesión de trabajo, y activar la automatización de Safari exige cambiar un ajuste de seguridad del usuario.)</li>
         <li><strong>Ámbito de las cajas CAGED y las digitaciones</strong>: ver la sección de <a href="ayuda.html#limites">límites</a> de la ayuda.</li>
         <li><strong>Espacio de nombres global</strong>: <code>FretApp</code> y los demás objetos son globales; no hay tipos estáticos, y la documentación de la API vive en un bloque JSON y no junto a cada función.</li>
         <li><strong>Mantenimiento manual</strong>: la versión de la caché del service worker se incrementa a mano.</li>
@@ -506,7 +517,11 @@ npm run test:all  # todo lo anterior</code></pre>
     "persist": "Escribe el estado en la dirección y en localStorage."
   },
   "FretApp.Audio": {
-    "pluck": "Toca una nota MIDI con la cuerda sintetizada."
+    "pluck": "Toca una nota MIDI programada en el reloj de audio; reanuda el contexto si hace falta.",
+    "unlock": "Crea o reanuda el contexto de audio y prepara la sesión de iOS; se llama en cada gesto.",
+    "state": "Estado del contexto de audio: none, suspended, running, interrupted o closed.",
+    "info": "Datos de diagnóstico del audio: estado, frecuencia de muestreo y sesión de iOS.",
+    "onProblem": "Registra la función que se llama cuando el navegador impide que suene el audio."
   },
   "FretApp.Fretboard": {
     "init": "Conecta los eventos de clic y de teclado del mástil.",

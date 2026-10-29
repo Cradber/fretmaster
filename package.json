@@ -1,0 +1,12 @@
+{
+  "name": "fretmaster",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Explorador de escalas, modos y acordes para guitarra",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "test": "node tests/theory.test.js && node tests/synth.test.js",
+    "test:e2e": "node tests/e2e/smoke.test.mjs",
+    "test:all": "npm test && npm run test:e2e"
+  }
+}

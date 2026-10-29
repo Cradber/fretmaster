@@ -88,6 +88,16 @@
       return table('Los doce intervalos desde una nota, con el símbolo que usa la app', ['Semitonos', 'Símbolo', 'Nombre'], names, [0, 1]);
     },
 
+    /** Tabla de la API de un módulo: los nombres salen del objeto real; las descripciones, del bloque #api-docs. */
+    api(slot) {
+      const name = slot.dataset.api;
+      const docs = JSON.parse($('#api-docs').textContent)[name] || {};
+      const obj = name.split('.').reduce((o, k) => (o ? o[k] : undefined), global) || {};
+      const kind = (v) => (typeof v === 'function' ? 'función' : Array.isArray(v) ? 'lista' : v === null ? 'nulo' : typeof v === 'object' ? 'objeto' : typeof v);
+      const rows = Object.keys(obj).map((k) => [k, kind(obj[k]), docs[k] || '—']);
+      return table(name, ['Nombre', 'Tipo', 'Qué hace'], rows, [0, 1]);
+    },
+
     state() {
       const D = (A.State && A.State.DEFAULTS) || {};
       const desc = {
@@ -107,7 +117,7 @@
   function generate() {
     $$('[data-gen]').forEach((slot) => {
       const g = GENERATORS[slot.dataset.gen];
-      if (g) slot.replaceChildren(g());
+      if (g) slot.replaceChildren(g(slot));
     });
     const counts = {
       scales: Object.keys(T.SCALES).length, chords: Object.keys(T.CHORD_TYPES).length,

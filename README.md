@@ -14,7 +14,7 @@ Abre <http://localhost:8000>. El service worker (modo offline e instalación com
 
 | Archivo | Contenido |
 | --- | --- |
-| `theory.js` | Teoría musical pura (sin DOM): ortografía de notas, roles, acordes, posiciones CAGED |
+| `theory.js` | Teoría musical pura (sin DOM): ortografía de notas, roles, acordes, catálogo de acordes y buscador de digitaciones, posiciones CAGED |
 | `app.js` | Interfaz, audio (Web Audio), teclado y estado en URL/localStorage |
 | `styles.css` | Estilos y temas claro/oscuro |
 | `sw.js`, `manifest.webmanifest`, `icon*` | PWA y modo offline |
@@ -31,3 +31,4 @@ node tests/theory.test.js
 
 - Las formas CAGED son ventanas de trastes aproximadas, no los patrones completos de 7 notas por cuerda.
 - El audio es sintetizado, no samples de guitarra.
+- Las digitaciones del explorador de acordes se calculan con un buscador (bajo = fundamental, máx. 4 trastes de amplitud, máx. 4 dedos); no es un catálogo curado y la cejilla del ajuste del mástil no las afecta.

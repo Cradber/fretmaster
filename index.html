@@ -131,6 +131,30 @@
       <p id="chord-msg" class="chord-msg" hidden>Los acordes diatónicos solo están disponibles en escalas de siete notas.</p>
       <p id="chord-help" class="chord-help">Toca un acorde para oírlo y ver solo sus notas en el mástil.</p>
       <div id="chord-list" class="chord-list"></div>
+      <button id="open-voicings" class="btn" type="button" hidden>Ver digitaciones ↓</button>
+    </section>
+
+    <section id="explorer" aria-labelledby="explorer-title">
+      <div class="title-row">
+        <h2 id="explorer-title" class="h3">Explorador de acordes</h2>
+        <button id="play-chord" class="btn primary" type="button">▶ Escuchar acorde</button>
+      </div>
+      <div class="selectors">
+        <div>
+          <h3 class="eyebrow" id="chord-root-label">Fundamental</h3>
+          <div class="keys" id="chord-root" role="group" aria-labelledby="chord-root-label"></div>
+        </div>
+        <div>
+          <h3 class="eyebrow" id="chord-type-label">Tipo de acorde</h3>
+          <div class="scales" id="chord-type" role="group" aria-labelledby="chord-type-label"></div>
+        </div>
+      </div>
+      <h3 id="explorer-name" class="explorer-name"></h3>
+      <ul id="explorer-chips" class="note-chips" aria-label="Notas del acorde"></ul>
+      <p id="explorer-formula" class="pattern"></p>
+      <ul id="explorer-legend" class="legend" aria-label="Leyenda del acorde"></ul>
+      <p id="voicing-help" class="chord-help">Toca una digitación para escucharla. Se calculan para la afinación elegida en Ajustes; × = cuerda muda, ○ = al aire. Se muestran de la más cómoda a la más exigente.</p>
+      <div id="voicings" class="voicings"></div>
     </section>
 
     <p id="live" class="sr-only" role="status" aria-live="polite"></p>

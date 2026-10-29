@@ -15,9 +15,9 @@
 
   // ---------- Estado (persistido en la URL y en localStorage) ----------
 
-  const DEFAULTS = { k: 0, s: 'major', p: 'all', m: 'notes', a: 'auto', t: 'standard', f: 22, c: 0, l: 0, z: 3, v: 1 };
+  const DEFAULTS = { k: 0, s: 'major', p: 'all', m: 'notes', a: 'auto', t: 'standard', f: 22, c: 0, l: 0, z: 3, v: 1, r: 0, q: 'maj' };
   const STORE_KEY = 'fm-state';
-  const KEEP_CHORD_KEYS = ['t', 'f', 'c', 'l', 'm', 'v', 'p'];
+  const KEEP_CHORD_KEYS = ['t', 'f', 'c', 'l', 'm', 'v', 'p', 'r', 'q'];
 
   function sanitize(raw) {
     const o = { ...DEFAULTS };
@@ -34,6 +34,9 @@
     if (raw.l !== undefined) o.l = String(raw.l) === '1' ? 1 : 0;
     if (String(raw.z) === '4') o.z = 4;
     if (raw.v !== undefined) o.v = String(raw.v) === '0' ? 0 : 1;
+    const r = parseInt(raw.r, 10);
+    if (r >= 0 && r < 12) o.r = r;
+    if (has(T.CHORD_TYPES, raw.q)) o.q = String(raw.q);
     return o;
   }
 
@@ -56,6 +59,9 @@
   let chords = [];       // acordes diatónicos actuales
   let chordIdx = null;   // acorde seleccionado
   let playTimers = [];
+  let explorer = null;   // acorde del explorador (deletreado)
+  let voicings = [];     // digitaciones calculadas
+  let voicingIdx = 0;
 
   function setState(patch) {
     const keepChord = Object.keys(patch).every((k) => KEEP_CHORD_KEYS.includes(k));
@@ -169,6 +175,28 @@
       sc.appendChild(row);
     });
 
+    const cr = $('#chord-root');
+    for (let pc = 0; pc < 12; pc++) {
+      const b = el('button', 'pill');
+      b.type = 'button';
+      b.dataset.pc = pc;
+      cr.appendChild(b);
+    }
+    const ct = $('#chord-type');
+    T.CHORD_GROUPS.forEach((g) => {
+      const row = el('div', 'scale-group');
+      row.appendChild(el('span', 'glabel', g.title));
+      const items = el('div', 'items');
+      Object.entries(T.CHORD_TYPES).filter(([, t]) => t.group === g.id).forEach(([id, t]) => {
+        const b = el('button', 'chip', t.name + (t.symbol ? ` (${t.symbol})` : ''));
+        b.type = 'button';
+        b.dataset.type = id;
+        items.appendChild(b);
+      });
+      row.appendChild(items);
+      ct.appendChild(row);
+    });
+
     const tun = $('#sel-tuning');
     Object.entries(T.TUNINGS).forEach(([id, t]) => {
       const o = el('option', '', t.name);
@@ -221,6 +249,37 @@
     $('#play-scale').addEventListener('click', playScale);
     $('#share').addEventListener('click', share);
 
+    // Explorador de acordes
+    const explorerChanged = () => announce(`${explorer.name}: ${explorer.notes.map((n) => n.name).join(' ')}`);
+    $('#chord-root').addEventListener('click', (e) => {
+      const b = e.target.closest('.pill');
+      if (!b) return;
+      setState({ r: Number(b.dataset.pc) });
+      explorerChanged();
+    });
+    $('#chord-type').addEventListener('click', (e) => {
+      const b = e.target.closest('.chip');
+      if (!b) return;
+      setState({ q: b.dataset.type });
+      explorerChanged();
+    });
+    $('#play-chord').addEventListener('click', () => playVoicing(voicings[voicingIdx]));
+    $('#voicings').addEventListener('click', (e) => {
+      const b = e.target.closest('.voicing');
+      if (!b) return;
+      voicingIdx = Number(b.dataset.i);
+      $$('#voicings .voicing').forEach((x) => x.setAttribute('aria-pressed', String(Number(x.dataset.i) === voicingIdx)));
+      playVoicing(voicings[voicingIdx]);
+    });
+    $('#open-voicings').addEventListener('click', () => {
+      const c = chords[chordIdx];
+      const type = c && T.QUALITY_TO_TYPE[c.quality];
+      if (!type) return;
+      setState({ r: c.pcs[0], q: type });
+      $('#explorer').scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      explorerChanged();
+    });
+
     $('#theme-toggle').addEventListener('click', () => {
       applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
     });
@@ -252,6 +311,7 @@
       const i = Number(b.dataset.i);
       chordIdx = chordIdx === i ? null : i;
       syncChordButtons();
+      $('#open-voicings').hidden = chordIdx === null;
       applyHighlight();
       if (chordIdx !== null) {
         const c = chords[chordIdx];
@@ -315,6 +375,7 @@
     renderLegend();
     renderChords();
     renderBoard();
+    renderExplorer();
     persist();
     announce(`${S.rootName} ${scale.name}: ${S.notes.map((n) => n.name).join(' ')}`);
   }
@@ -337,6 +398,15 @@
     $('#sel-capo').value = String(state.c);
     $('#chk-lefty').checked = !!state.l;
     $('#chk-sound').checked = !!state.v;
+    $$('#chord-root .pill').forEach((b) => {
+      const pc = Number(b.dataset.pc);
+      const label = T.keyLabel(pc, state.a);
+      b.textContent = label;
+      b.classList.toggle('dual', label.includes('/'));
+      b.setAttribute('aria-pressed', String(pc === state.r));
+    });
+    $$('#chord-type .chip').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.type === state.q)));
+    $('#open-voicings').hidden = chordIdx === null || !chords[chordIdx];
   }
 
   function renderHeading() {
@@ -508,6 +578,126 @@
       const first = $('.note-marker.note-active') || $('.note-marker');
       if (first) first.tabIndex = 0;
     }
+  }
+
+  // ---------- Explorador de acordes ----------
+
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, attrs, parent) {
+    const e = document.createElementNS(SVGNS, tag);
+    Object.entries(attrs || {}).forEach(([k, v]) => e.setAttribute(k, v));
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  function renderExplorer() {
+    explorer = T.spellChord(state.r, state.q, state.a);
+    const type = T.CHORD_TYPES[state.q];
+    const tuning = T.TUNINGS[state.t].midi;
+    voicings = T.findVoicings(tuning, explorer, state.f - 1, 6);
+    voicingIdx = 0;
+
+    const title = $('#explorer-name');
+    title.textContent = '';
+    title.append(el('strong', '', explorer.name), ` · ${type.name}`);
+
+    const chips = $('#explorer-chips');
+    chips.textContent = '';
+    explorer.notes.forEach((n, i) => {
+      const li = el('li');
+      const b = el('button', 'note-chip');
+      b.type = 'button';
+      b.setAttribute('aria-label', `${n.name}, ${n.roleName}, intervalo ${n.display}. Pulsa para escucharla.`);
+      const top = el('b');
+      const dot = el('span', 'dot');
+      dot.style.background = `var(--c-${n.role})`;
+      top.append(dot, n.name);
+      b.append(top, el('small', '', n.display));
+      b.addEventListener('click', () => pluck(T.chordMidis(explorer.pcs)[i]));
+      li.appendChild(b);
+      chips.appendChild(li);
+    });
+    $('#explorer-formula').textContent = `Fórmula: ${explorer.notes.map((n) => n.display).join(' ')}`;
+
+    const legend = $('#explorer-legend');
+    legend.textContent = '';
+    T.chordLegend(explorer).forEach((item) => {
+      const li = el('li');
+      const dot = el('span', 'dot');
+      dot.style.background = `var(--c-${item.role})`;
+      li.append(dot, el('span', '', item.label));
+      legend.appendChild(li);
+    });
+
+    const box = $('#voicings');
+    box.textContent = '';
+    $('#play-chord').disabled = !voicings.length;
+    if (!voicings.length) {
+      box.appendChild(el('p', 'empty-voicings', 'No hay digitaciones cómodas de este acorde en esta afinación.'));
+      return;
+    }
+    voicings.forEach((v, i) => {
+      const b = el('button', 'voicing');
+      b.type = 'button';
+      b.dataset.i = i;
+      b.setAttribute('aria-pressed', String(i === 0));
+      const caption = [...v.frets].reverse().map((f) => (f < 0 ? 'x' : f)).join(' ');
+      b.setAttribute('aria-label', `Digitación ${i + 1} de ${explorer.name}, cuerdas de grave a aguda: ${caption.replace(/x/g, 'muda')}. Pulsa para escucharla.`);
+      b.appendChild(drawVoicing(v));
+      b.append(el('span', 'vcap', caption));
+      const sub = v.frets.includes(0) ? 'Posición abierta' : `Traste ${v.minFret}`;
+      b.append(el('span', 'vsub', `${sub}${v.barre ? ' · cejilla' : ''}`));
+      box.appendChild(b);
+    });
+  }
+
+  function drawVoicing(v) {
+    const n = v.frets.length;
+    const W = 110, H = 134, x0 = 24, x1 = 98, top = 30, rows = 5, rh = 16;
+    const gap = (x1 - x0) / (n - 1);
+    const base = v.maxFret > 4 ? v.minFret : 1;
+    const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, 'aria-hidden': 'true', focusable: 'false' });
+    const xOf = (s) => x0 + gap * (n - 1 - s);        // grave a la izquierda
+    const yOf = (f) => top + rh * (f - base + 0.5);
+
+    const g = svgEl('g', { class: 'vlines' }, svg);
+    for (let r = 0; r <= rows; r++) svgEl('line', { x1: x0, x2: x1, y1: top + r * rh, y2: top + r * rh }, g);
+    for (let i = 0; i < n; i++) svgEl('line', { x1: x0 + gap * i, x2: x0 + gap * i, y1: top, y2: top + rows * rh }, g);
+    if (base === 1) svgEl('rect', { class: 'vnut', x: x0 - 1, y: top - 3, width: x1 - x0 + 2, height: 4, rx: 1 }, svg);
+    else {
+      const t = svgEl('text', { class: 'vfr', x: 2, y: top + rh * 0.5 + 3 }, svg);
+      t.textContent = `${base}fr`;
+    }
+
+    if (v.barre) {
+      const xa = xOf(v.barre.to), xb = xOf(v.barre.from);
+      svgEl('rect', { class: 'vbarre', x: xa - 6.5, y: yOf(v.barre.fret) - 6.5, width: xb - xa + 13, height: 13, rx: 6.5 }, svg);
+    }
+
+    v.frets.forEach((f, s) => {
+      const x = xOf(s);
+      if (f < 0) {
+        const m = svgEl('text', { class: 'vmark', x, y: 22 }, svg);
+        m.textContent = '×';
+      } else if (f === 0) {
+        svgEl('circle', { class: 'vopen', cx: x, cy: 19, r: 3.6 }, svg);
+      } else {
+        const note = explorer.byPc.get((T.TUNINGS[state.t].midi[s] + f) % 12);
+        const dot = svgEl('g', { class: 'vdot' }, svg);
+        svgEl('circle', { cx: x, cy: yOf(f), r: 6.5, fill: `var(--c-${note.role})` }, dot);
+        const label = svgEl('text', { x, y: yOf(f) + 2.4 }, dot);
+        label.textContent = note.name;
+      }
+    });
+    return svg;
+  }
+
+  function playVoicing(v) {
+    if (!v) return;
+    const tuning = T.TUNINGS[state.t].midi;
+    const order = [];
+    for (let s = v.frets.length - 1; s >= 0; s--) if (v.frets[s] >= 0) order.push(s);   // de grave a aguda
+    order.forEach((s, i) => pluck(tuning[s] + v.frets[s], i * 0.055, 1.8, 0.22));
   }
 
   // ---------- Teclado en el mástil ----------

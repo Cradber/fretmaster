@@ -190,4 +190,39 @@ test('las escalas siguen igual tras generalizar el parser', () => {
   assert.equal(names(0, 'major'), 'C D E F G A B');
 });
 
+test('cajas CAGED: en las 12 tonalidades cada caja completa tiene 2–3 notas por cuerda y no queda ninguna nota sin caja', () => {
+  const S = T.TUNINGS.standard.midi;
+  for (let pc = 0; pc < 12; pc++) {
+    const sc = T.spellScale(pc, 'major');
+    const ranges = T.positionRanges('major', pc, 22);
+    let uncovered = 0;
+    S.forEach((m) => {
+      for (let x = 0; x <= 22; x++) {
+        if (sc.byPc.has((m + x) % 12) && !T.CAGED_ORDER.some((id) => ranges[id].some(([a, b]) => x >= a && x <= b))) uncovered++;
+      }
+    });
+    assert.equal(uncovered, 0, 'tonalidad ' + pc);
+    T.CAGED_ORDER.forEach((id) => ranges[id].filter(([a, b]) => b - a >= T.CAGED[id][1] - T.CAGED[id][0]).forEach(([a, b]) => {
+      S.forEach((m, si) => {
+        let count = 0;
+        for (let x = a; x <= b; x++) if (sc.byPc.has((m + x) % 12)) count++;
+        assert.ok(count >= 2 && count <= 3, `tonalidad ${pc}, forma ${id} [${a},${b}], cuerda ${si + 1}: ${count} notas`);
+      });
+    }));
+  }
+});
+
+test('con cejilla en el traste 2, A suena con la forma abierta de G (320003)', () => {
+  const capoTuning = STD.map((m) => m + 2);
+  const shapes = T.findVoicings(capoTuning, T.spellChord(9, 'maj'), 12, 60)
+    .map((v) => [...v.frets].reverse().map((f) => (f < 0 ? 'x' : f)).join(''));
+  assert.ok(shapes.includes('320003'), shapes.join(' '));
+});
+test('el filtro de posición alta y de cejilla encuentran candidatos en acordes comunes', () => {
+  const all = T.findVoicings(STD, T.spellChord(0, 'maj'), 21, 80);
+  assert.ok(all.some((v) => v.barre), 'con cejilla');
+  assert.ok(all.some((v) => v.minFret >= 5), 'posición alta');
+  assert.ok(all.some((v) => v.frets.includes(0)), 'abierta');
+});
+
 console.log(`\n${passed} pruebas pasaron`);

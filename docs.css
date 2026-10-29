@@ -109,3 +109,25 @@ details.qa[open] > summary::before { transform: rotate(90deg); }
 details.qa > div { padding: 0 16px 14px 2.4em; color: var(--muted); }
 .progress-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 14px 18px; border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--surface); }
 .progress-tools p { margin: 0; font-size: 14px; color: var(--muted); }
+
+/* ---------- Documentación de desarrollo ---------- */
+.diagram { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--surface); padding: 8px; }
+.diagram svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.diagram .box { fill: var(--surface-2); stroke: var(--border-strong); stroke-width: 1; }
+.diagram .box--page { fill: var(--surface); }
+.diagram .box--pure { stroke: var(--c-third); stroke-width: 1.6; }
+.diagram .box--glue { stroke: var(--accent); stroke-width: 1.6; }
+.diagram text { fill: var(--fg); font: 600 13px var(--font); text-anchor: middle; }
+.diagram text.sub { fill: var(--muted); font-weight: 400; font-size: 11px; }
+.diagram text.layer { fill: var(--faint); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; text-anchor: start; font-weight: 650; }
+.diagram .arrow { stroke: var(--faint); stroke-width: 1.4; fill: none; }
+.diagram .arrow-head { fill: var(--faint); }
+ol.flow { list-style: none !important; padding: 0 !important; display: grid; gap: 0; counter-reset: flow; }
+ol.flow > li { position: relative; counter-increment: flow; margin: 0 !important; padding: 10px 14px 10px 46px; border: 1px solid var(--border); background: var(--surface); }
+ol.flow > li + li { border-top: 0; }
+ol.flow > li:first-child { border-radius: var(--radius-m) var(--radius-m) 0 0; }
+ol.flow > li:last-child { border-radius: 0 0 var(--radius-m) var(--radius-m); }
+ol.flow > li::before { content: counter(flow); position: absolute; left: 12px; top: 10px; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); font-size: 12px; font-weight: 700; }
+ol.flow code { font-size: .85em; }
+.prose .src { font-family: var(--font-mono); font-size: .85em; }
+.prose table code { white-space: nowrap; }

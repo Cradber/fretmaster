@@ -86,6 +86,11 @@
         </div>
         <label class="check"><input type="checkbox" id="chk-lefty"> Modo zurdo</label>
         <label class="check"><input type="checkbox" id="chk-sound"> Sonido al tocar una nota</label>
+        <div class="field audio-test">
+          <span id="audio-label">Diagnóstico de audio</span>
+          <button type="button" class="btn" id="audio-test" aria-describedby="audio-status">Probar sonido</button>
+          <p id="audio-status" class="hint" role="status">¿No suena? Pulsa «Probar sonido». En iPhone, desactiva el interruptor de silencio y sube el volumen.</p>
+        </div>
       </div>
     </div>
   </header>
@@ -207,6 +212,7 @@
     </section>
 
     <p id="live" class="sr-only" role="status" aria-live="polite"></p>
+    <div id="toast" class="toast" role="status" hidden></div>
   </main>
 
   <script src="theme.js"></script>

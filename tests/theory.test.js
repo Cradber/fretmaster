@@ -225,4 +225,100 @@ test('el filtro de posición alta y de cejilla encuentran candidatos en acordes 
   assert.ok(all.some((v) => v.frets.includes(0)), 'abierta');
 });
 
+// ---------- Inversiones ----------
+const bassShapes = (pc, type, idx, pref) => T.findVoicings(STD, T.spellChord(pc, type, pref), 15, 80, idx)
+  .map((v) => [...v.frets].reverse().map((f) => (f < 0 ? 'x' : f)).join(''));
+
+test('inversiones clásicas: C/E, D/F♯, G/B', () => {
+  assert.ok(bassShapes(0, 'maj', 1).includes('032010'), 'C/E');
+  assert.ok(bassShapes(2, 'maj', 1).includes('200232'), 'D/F♯');
+  assert.ok(bassShapes(7, 'maj', 1).includes('x20003'), 'G/B');
+});
+test('2ª inversión: C/G (332010)', () => {
+  assert.ok(bassShapes(0, 'maj', 2).includes('332010'), 'C/G');
+});
+test('en toda digitación la nota más grave es la nota de bajo pedida', () => {
+  ['maj', 'min', '7', 'maj7', 'm7', 'dim', 'sus4', '9'].forEach((type) => {
+    for (let pc = 0; pc < 12; pc++) {
+      const ch = T.spellChord(pc, type);
+      ch.notes.forEach((note, idx) => {
+        T.findVoicings(STD, ch, 15, 10, idx).forEach((v) => {
+          const low = v.frets.map((f, s) => (f >= 0 ? s : -1)).filter((s) => s >= 0).pop();
+          assert.equal((STD[low] + v.frets[low]) % 12, note.pc, `${ch.name} bajo ${note.name}`);
+          const seen = new Set(v.frets.map((f, s) => (f >= 0 ? (STD[s] + f) % 12 : -1)));
+          ch.pcs.filter((p) => !(ch.pcs.length >= 4 && p === (ch.notes.find((x) => x.semi === 7) || {}).pc && p !== note.pc)).forEach((p) => assert.ok(seen.has(p), `${ch.name}/${note.name}: falta una nota`));
+        });
+      });
+    }
+  });
+});
+test('toda tríada mayor y menor tiene digitación en 1ª y 2ª inversión en las 12 tonalidades', () => {
+  ['maj', 'min'].forEach((type) => {
+    for (let pc = 0; pc < 12; pc++) {
+      [1, 2].forEach((idx) => assert.ok(T.findVoicings(STD, T.spellChord(pc, type), 15, 1, idx).length > 0, `${type} ${pc} bajo ${idx}`));
+    }
+  });
+});
+
+// ---------- Cajas CAGED en escalas con notas alteradas ----------
+test('mapa de alteraciones: armónica, melódica y frigio dominante', () => {
+  const a = T.alterationMap('harmonic_minor', 9);        // La menor armónica sobre Do mayor
+  assert.deepEqual([...a.sourceOf.entries()], [[8, { pc: 7, delta: 1 }]]);   // G♯ sustituye a G
+  const m = T.alterationMap('melodic_minor', 9);
+  assert.deepEqual([...m.sourceOf.entries()].sort((x, y) => x[0] - y[0]), [[6, { pc: 5, delta: 1 }], [8, { pc: 7, delta: 1 }]]);   // F → F♯, G → G♯
+  const d = T.alterationMap('melodic_minor', 2);           // Re menor melódica: Si♭ → Si y Do → Do♯ (no cruzados)
+  assert.deepEqual([...d.sourceOf.entries()].sort((x, y) => x[0] - y[0]), [[1, { pc: 0, delta: 1 }], [11, { pc: 10, delta: 1 }]]);
+  const p = T.alterationMap('phrygian_dominant', 4);       // Mi frigio dominante
+  assert.deepEqual([...p.sourceOf.keys()], [8]);
+  assert.equal(T.alterationMap('major', 0).sourceOf.size, 0);
+});
+test('A menor armónica: el G♯ va en la caja donde estaba el G, un traste más arriba', () => {
+  const inC = T.positionPredicate('harmonic_minor', 9, 'C', 22);
+  assert.equal(inC(4, 8), true, 'G♯ en traste 4, caja C (su G está en el 3)');
+  const inG = T.positionPredicate('harmonic_minor', 9, 'G', 22);
+  assert.equal(inG(4, 8), false, 'el G♯ del traste 4 no pertenece a la caja G (ventana 4–8, su G está en el 3)');
+});
+test('cajas completas de escalas alteradas: 2–3 notas por cuerda y sin notas huérfanas, en 12 tonalidades', () => {
+  const S = T.TUNINGS.standard.midi;
+  ['harmonic_minor', 'melodic_minor', 'phrygian_dominant'].forEach((id) => {
+    for (let pc = 0; pc < 12; pc++) {
+      const sc = T.spellScale(pc, id);
+      let orphans = 0;
+      S.forEach((m) => {
+        for (let x = 0; x <= 22; x++) {
+          if (!sc.byPc.has((m + x) % 12)) continue;
+          if (!T.CAGED_ORDER.some((sh) => T.positionPredicate(id, pc, sh, 22)(x, (m + x) % 12))) orphans++;
+        }
+      });
+      assert.equal(orphans, 0, `${id} tonalidad ${pc}: ${orphans} notas sin caja`);
+      const wins = T.positionRanges(id, pc, 22);
+      T.CAGED_ORDER.forEach((sh) => {
+        const pred = T.positionPredicate(id, pc, sh, 22);
+        wins[sh].filter(([a, b]) => b - a >= T.CAGED[sh][1] - T.CAGED[sh][0]).forEach(([a, b]) => {
+          S.forEach((m, si) => {
+            let count = 0;
+            for (let x = Math.max(0, a - 1); x <= b + 1; x++) if (sc.byPc.has((m + x) % 12) && pred(x, (m + x) % 12)) count++;
+            assert.ok(count >= 2 && count <= 3, `${id} ${pc} ${sh} [${a},${b}] cuerda ${si + 1}: ${count}`);
+          });
+        });
+      });
+    }
+  });
+});
+test('en escalas sin alteraciones la caja coincide con la ventana de siempre', () => {
+  const S = T.TUNINGS.standard.midi;
+  const ranges = T.positionRanges('major', 0, 22);
+  const sc = T.spellScale(0, 'major');
+  T.CAGED_ORDER.forEach((sh) => {
+    const pred = T.positionPredicate('major', 0, sh, 22);
+    S.forEach((m) => {
+      for (let x = 0; x <= 22; x++) {
+        const pc = (m + x) % 12;
+        if (!sc.byPc.has(pc)) continue;
+        assert.equal(pred(x, pc), ranges[sh].some(([a, b]) => x >= a && x <= b));
+      }
+    });
+  });
+});
+
 console.log(`\n${passed} pruebas pasaron`);

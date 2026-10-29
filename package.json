@@ -5,7 +5,7 @@
   "description": "Explorador de escalas, modos y acordes para guitarra",
   "scripts": {
     "start": "python3 -m http.server 8000",
-    "test": "node tests/theory.test.js && node tests/synth.test.js && node tests/contrast.test.js && node tests/docs.test.js",
+    "test": "node tests/theory.test.js && node tests/synth.test.js && node tests/contrast.test.js && node tests/docs.test.js && node tests/architecture.test.js",
     "test:e2e": "node tests/e2e/smoke.test.mjs && node tests/e2e/docs.test.mjs",
     "test:all": "npm test && npm run test:e2e"
   }

@@ -274,15 +274,17 @@
     if (state.p === 'all') { n.hidden = true; return; }
     const scale = T.SCALES[state.s];
     const parentName = T.spellScale((state.k + scale.parent) % 12, 'major', state.a).rootName;
+    const { extras, sourceOf } = T.alterationMap(state.s, state.k);
     n.hidden = false;
     if (scale.symmetric) {
       n.textContent = `Forma ${state.p}: ventana de trastes tomando ${S.rootName} como referencia (la escala es simétrica).`;
-    } else if (scale.parent === 0) {
-      n.textContent = `Forma ${state.p}: caja CAGED de ${parentName} Mayor.`;
+    } else if (state.s === 'major') {
+      n.textContent = `Forma ${state.p}: caja CAGED de ${parentName} mayor.`;
     } else {
-      n.textContent = `Forma ${state.p}: caja CAGED de ${parentName} Mayor, la tonalidad que comparte las notas de ${S.rootName} ${scale.name}.`;
+      // Con notas ajenas a la mayor (menor armónica, blues…) la mayor no las contiene todas: solo es la referencia de las cajas.
+      const relation = extras.size ? 'la mayor de referencia de' : 'que contiene todas las notas de';
+      n.textContent = `Forma ${state.p}: caja CAGED de ${parentName} mayor, ${relation} ${S.rootName} ${scale.name.toLowerCase()}.`;
     }
-    const { sourceOf } = T.alterationMap(state.s, state.k);
     const alt = S.notes.filter((x) => sourceOf.has(x.pc)).map((x) => x.name);
     if (alt.length) {
       n.textContent += ` Las notas ajenas a esa mayor (${alt.join(', ')}) van en la caja de la nota a la que sustituyen, un traste más arriba o abajo.`;

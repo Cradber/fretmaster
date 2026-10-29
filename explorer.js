@@ -109,7 +109,10 @@
 
     renderBass();
 
-    const inversion = bassIdx === 0 ? '' : bassIdx <= 3 ? ` · ${bassIdx}ª inversión` : ` · bajo en la ${chord.notes[bassIdx].display}`;
+    // Las inversiones se nombran por el grado del bajo (3ª, 5ª, 7ª); con otra nota (la 2ª de un sus2, la 6ª, la 9ª) no hay número de inversión.
+    const bass = chord.notes[bassIdx];
+    const INVERSIONS = { 3: '1ª inversión', 5: '2ª inversión', 7: '3ª inversión' };
+    const inversion = bassIdx === 0 ? '' : ` · ${INVERSIONS[bass.deg] || `bajo en la ${bass.display}ª`}`;
     const title = $('#explorer-name');
     title.textContent = '';
     title.append(el('strong', '', label), ` · ${type.name}${inversion}`);

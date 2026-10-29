@@ -127,7 +127,7 @@
       <pre><code>nota = nota de la cuerda al aire + número de traste   (en semitonos, módulo 12)</code></pre>
       <p>Dos consecuencias importantes:</p>
       <ul>
-        <li>En el <strong>traste 12</strong> cada cuerda repite su nota al aire una octava más arriba, así que el dibujo del mástil se repite a partir de ahí. Los puntos del mástil marcan los trastes 3, 5, 7, 9 y 12 (doble), y siguen en 15, 17, 19, 21 y 24.</li>
+        <li>En el <strong>traste 12</strong> cada cuerda repite su nota al aire una octava más arriba, así que el dibujo del mástil se repite a partir de ahí. Los puntos del mástil marcan los trastes 3, 5, 7, 9 y 12 (doble), y siguen en 15, 17, 19, 21 y 24 (doble).</li>
         <li>Una misma nota aparece en <strong>varios sitios</strong> del mástil. En afinación estándar las cuerdas contiguas están a una cuarta justa (5 semitonos), salvo la pareja Sol–Si, que está a una tercera mayor (4 semitonos). Esa diferencia es la razón de que las formas de los acordes y de las escalas cambien al cruzar entre la 3ª y la 2ª cuerda.</li>
       </ul>
       <p>La cuerda 1 es la más aguda (Mi aguda) y la última es la más grave. En el mástil, la cuerda 1 está arriba, como en una tablatura.</p>
@@ -157,7 +157,7 @@
         <li><strong>Otras</strong>: el frigio dominante (quinto modo de la menor armónica), la escala de tonos enteros (seis notas, todas a un tono) y la disminuida tono–semitono (ocho notas simétricas).</li>
       </ul>
       <div data-gen="scales"></div>
-      <p>La columna <em>Mayor madre</em> es la escala mayor que comparte las notas de cada escala; se usa para calcular las <a href="#caged">formas CAGED</a>. Las escalas simétricas (tonos enteros y disminuida) se repiten a intervalos regulares y no tienen una madre propia.</p>
+      <p>La columna <em>Mayor madre</em> es la escala mayor que se usa como referencia para calcular las <a href="#caged">formas CAGED</a>. En los modos y en la menor natural tiene exactamente las mismas notas; en las pentatónicas las contiene todas; en las escalas con notas alteradas (menor armónica y melódica, frigio dominante, blues) es la mayor de su relativa, que no contiene la nota alterada. Las escalas simétricas (tonos enteros y disminuida) se repiten a intervalos regulares y no tienen madre: sus formas usan como referencia la mayor de su propia tónica.</p>
 
       <h3 id="modos">Los modos</h3>
       <p>Un <strong>modo</strong> es la misma serie de notas de una escala, pero empezando por otro grado y tratándolo como tónica. De la escala mayor salen siete modos, uno por grado. No es una escala distinta, sino otra «cara» de la misma: lo que cambia es dónde se descansa, y con ello el carácter. Fíjate en que todos los modos de esta tabla contienen exactamente las mismas siete notas.</p>
@@ -177,7 +177,7 @@
       <ul>
         <li>Re bemol mayor: <span class="notes" data-verify="scale:1:major">D♭ E♭ F G♭ A♭ B♭ C</span> (cinco bemoles, en vez de los siete sostenidos de C♯ mayor).</li>
         <li>Do sostenido menor: <span class="notes" data-verify="scale:1:minor">C♯ D♯ E F♯ G♯ A B</span> (cuatro sostenidos, en vez de ocho bemoles).</li>
-        <li>La disminuida tono–semitono sobre Do usa una doble alteración, porque necesita una letra B para el grado 7: <span class="notes" data-verify="scale:0:diminished">C D E♭ F G♭ A♭ B♭♭ B</span>.</li>
+        <li>La disminuida tono–semitono tiene ocho notas y solo hay siete letras, así que una se repite. Su fórmula nombra los grados ♭♭7 y 7, de modo que la letra B aparece dos veces: <span class="notes" data-verify="scale:0:diminished">C D E♭ F G♭ A♭ B♭♭ B</span>. Muchos músicos escriben <span class="notes">A</span> en lugar de <span class="notes">B♭♭</span>; es la misma altura.</li>
       </ul>
       <p>Por eso las teclas negras del selector de tonalidad se muestran con los dos nombres (<span class="notes">C♯/D♭</span>): el nombre que de verdad se usa depende de la escala elegida y aparece en el título. En <em>Ajustes → Alteraciones</em> puedes forzar sostenidos (♯) o bemoles (♭) en las tonalidades que admiten ambos.</p>
 
@@ -219,7 +219,7 @@
 
       <!-- ===================================================== -->
       <h2 id="acordes">Acordes</h2>
-      <p>Un <strong>acorde</strong> son varias notas que suenan a la vez. Los acordes se construyen apilando <strong>terceras</strong>: tónica, tercera, quinta y, si hay, séptima. Según las distancias que se apilen se obtiene la <em>calidad</em> del acorde: mayor (3ª mayor + 5ª justa), menor (3ª menor + 5ª justa), disminuido (3ª menor + 5ª disminuida) o aumentado (3ª mayor + 5ª aumentada). Un acorde de tres notas es una <strong>tríada</strong>; con séptima es una <strong>cuatriada</strong>.</p>
+      <p>Un <strong>acorde</strong> son varias notas que suenan a la vez. Las tríadas y las cuatriadas se construyen apilando <strong>terceras</strong>: tónica, tercera, quinta y, si hay, séptima. Según las distancias que se apilen se obtiene la <em>calidad</em> del acorde: mayor (3ª mayor + 5ª justa), menor (3ª menor + 5ª justa), disminuido (3ª menor + 5ª disminuida) o aumentado (3ª mayor + 5ª aumentada). Un acorde de tres notas es una <strong>tríada</strong>; con séptima es una <strong>cuatriada</strong>. Otros acordes del catálogo no siguen esa regla: los <em>sus</em> sustituyen la tercera por la 2ª o la 4ª, los de sexta y los <em>add9</em> añaden una nota que no es la séptima, y el power chord solo tiene fundamental y quinta.</p>
 
       <h3 id="diatonicos">Acordes de la escala</h3>
       <p>Bajo el mástil, <em>Acordes de la escala</em> muestra los acordes que se forman sobre cada grado <strong>usando solo notas de la escala</strong> (sobre cada grado se apilan el grado 1, el 3, el 5 y, en las cuatriadas, el 7 <em>contando desde ese grado</em>). Solo existen para escalas de siete notas. Cada acorde lleva su <strong>cifrado romano</strong>:</p>
@@ -243,7 +243,7 @@
       <ul>
         <li><span class="notes" data-verify="chord:0:maj7">C E G B</span> es Cmaj7.</li>
         <li><span class="notes" data-verify="chord:7:7">G B D F</span> es G7, el acorde de dominante de Do.</li>
-        <li><span class="notes" data-verify="chord:0:dim7">C E♭ G♭ B♭♭</span> es Cdim7: sus cuatro notas están a tres semitonos, y por eso el acorde es simétrico.</li>
+        <li><span class="notes" data-verify="chord:0:dim7">C E♭ G♭ B♭♭</span> es Cdim7: cada nota está a tres semitonos de la siguiente, y por eso el acorde es simétrico.</li>
       </ul>
 
       <!-- ===================================================== -->
@@ -261,7 +261,7 @@
         <li>Las notas pisadas caben en <strong>cuatro trastes</strong> de amplitud como máximo.</li>
         <li>Se necesitan <strong>cuatro dedos o menos</strong>. Una cejilla cuenta como un solo dedo.</li>
       </ol>
-      <p>Se buscan combinaciones hasta el <strong>traste 15</strong>. De todas las que cumplen las reglas, se ordenan por comodidad y se muestran hasta ocho. La puntuación favorece que haya poca amplitud entre trastes, que estén cerca del extremo del mástil, que haya pocas cuerdas mudas, que se aprovechen las cuerdas al aire, que esté la quinta, que se usen pocos dedos y que suenen muchas cuerdas.</p>
+      <p>Se buscan combinaciones hasta el <strong>traste 15</strong>. De todas las que cumplen las reglas, se ordenan por comodidad y se muestran hasta ocho. La puntuación favorece que haya poca amplitud entre trastes, que estén en trastes bajos, cerca de la cejuela, que haya pocas cuerdas mudas, que se aprovechen las cuerdas al aire, que esté la quinta, que se usen pocos dedos y que suenen muchas cuerdas.</p>
       <p>Una <strong>cejilla</strong> se detecta cuando el traste más bajo pisado aparece en dos o más cuerdas y todas las cuerdas entre ellas están pisadas en ese traste o más arriba: ninguna puede quedar al aire ni muda. Así se obtiene <span class="notes" data-verify="voicing:5:maj:0">1 3 3 2 1 1</span> para Fa mayor, la clásica forma E con cejilla (de la cuerda grave a la aguda).</p>
       <p>Los botones <strong>Todas, Abiertas, Con cejilla y Posición alta</strong> filtran los resultados: <em>abiertas</em> son las que usan alguna cuerda al aire; <em>posición alta</em>, las que empiezan en el traste 5 o más arriba.</p>
 
@@ -277,8 +277,8 @@
       <p>Pulsa una digitación para oírla rasgueada de grave a aguda.</p>
 
       <h3 id="inversiones">Inversiones</h3>
-      <p>Una <strong>inversión</strong> es el mismo acorde con otra de sus notas en el bajo. El selector <em>Nota en el bajo</em> ofrece cada nota del acorde. Con la 3ª en el bajo es la <em>primera inversión</em>; con la 5ª, la <em>segunda</em>; con la 7ª, la <em>tercera</em>. Se escriben con barra: <span class="notes" data-verify="chordname:0:maj:1">C/E</span> es Do mayor con Mi en el bajo, y <span class="notes" data-verify="chordname:0:maj:2">C/G</span> con Sol.</p>
-      <p>Las inversiones suavizan las líneas de bajo (Do, Do/Si, La menor…). Digitaciones conocidas: <span class="notes" data-verify="voicing-first:0:maj:1">0 3 2 0 1 0</span> para C/E, <span class="notes" data-verify="voicing:2:maj:1">2 0 0 2 3 2</span> para D/F♯ y <span class="notes" data-verify="voicing:7:maj:1">x 2 0 0 0 3</span> para G/B. <a class="try" href="index.html#w=acordes&amp;r=0&amp;q=maj&amp;b=1">C/E en el explorador</a></p>
+      <p>Una <strong>inversión</strong> es el mismo acorde con otra de sus notas en el bajo. El selector <em>Nota en el bajo</em> ofrece cada nota del acorde. Con la 3ª en el bajo es la <em>primera inversión</em>; con la 5ª, la <em>segunda</em>; con la 7ª, la <em>tercera</em>. Si eliges otra nota (la 2ª de un sus2, la 6ª, la 9ª), no tiene número de inversión y el título dice «bajo en la 9ª». Se escriben con barra: <span class="notes" data-verify="chordname:0:maj:1">C/E</span> es Do mayor con Mi en el bajo, y <span class="notes" data-verify="chordname:0:maj:2">C/G</span> con Sol.</p>
+      <p>Las inversiones suavizan las líneas de bajo: en <em>C – G/B – Am</em> el bajo baja por grados (Do, Si, La) en lugar de saltar. Digitaciones conocidas: <span class="notes" data-verify="voicing-first:0:maj:1">0 3 2 0 1 0</span> para C/E, <span class="notes" data-verify="voicing:2:maj:1">2 0 0 2 3 2</span> para D/F♯ y <span class="notes" data-verify="voicing:7:maj:1">x 2 0 0 0 3</span> para G/B. <a class="try" href="index.html#w=acordes&amp;r=0&amp;q=maj&amp;b=1">C/E en el explorador</a></p>
       <p>No hay acordes «con bajo ajeno» (como C/D, con un Re que no es del acorde): el bajo siempre es una nota del acorde.</p>
 
       <!-- ===================================================== -->
@@ -333,12 +333,12 @@
           </tbody>
         </table>
       </div>
-      <p>Cada nota del mástil tiene una etiqueta accesible con cuerda, traste, nombre, función e intervalo (por ejemplo, <em>Cuerda 2, traste 3: D, grado de la escala (4)</em>). Los cambios de escala o de acorde se anuncian en una región de estado para lectores de pantalla. El color no es el único canal: cada nota lleva escrito su nombre o su intervalo y la tónica un anillo.</p>
+      <p>Cada nota del mástil tiene una etiqueta accesible con cuerda, traste, nombre, función e intervalo (por ejemplo, en Do mayor, <em>Cuerda 2, traste 3: D, grado de la escala (2)</em>). Los cambios de escala o de acorde se anuncian en una región de estado para lectores de pantalla. El color no es el único canal: cada nota lleva escrito su nombre o su intervalo y la tónica un anillo.</p>
       <ul>
         <li><strong>Contraste</strong>: los colores del texto y de las notas cumplen el nivel AA de WCAG 2.1 en los dos temas; lo comprueba un test.</li>
         <li><strong>Tema</strong>: <em>Automático</em> sigue el modo claro u oscuro del sistema y cambia solo cuando el sistema cambia; <em>Claro</em> y <em>Oscuro</em> lo fijan.</li>
         <li><strong>Movimiento</strong>: con «reducir movimiento» activado en el sistema, las animaciones se desactivan.</li>
-        <li>Se puede ampliar el tamaño de la página sin límite.</li>
+        <li><strong>Zoom</strong>: la página no bloquea la ampliación del navegador y la maquetación se adapta al tamaño.</li>
       </ul>
 
       <!-- ===================================================== -->
@@ -370,18 +370,22 @@
         <dt>Arpegio</dt><dd>Las notas de un acorde tocadas una a una.</dd>
         <dt>Caja</dt><dd>Región del mástil donde se toca una escala sin desplazar la mano; en CAGED, cada una de las cinco.</dd>
         <dt>Cejilla</dt><dd>Dispositivo que acorta todas las cuerdas a la vez (capo), o un dedo que pisa varias cuerdas en el mismo traste (barré). La app usa la palabra para las dos cosas y distingue por el contexto.</dd>
+        <dt>Cejuela</dt><dd>Pieza al final del mástil, junto al clavijero, sobre la que apoyan las cuerdas al aire. En los diagramas es la línea gruesa de arriba.</dd>
         <dt>Cifrado romano</dt><dd>Forma de nombrar los acordes por el grado de la escala sobre el que se forman (I, ii, V7…), independiente de la tonalidad.</dd>
         <dt>Diatónico</dt><dd>Que usa solo las notas de una escala de siete notas.</dd>
         <dt>Digitación</dt><dd>Forma concreta de tocar un acorde: cuerdas, trastes y dedos.</dd>
         <dt>Enarmónico</dt><dd>Dos nombres para la misma altura, como C♯ y D♭.</dd>
         <dt>Fórmula</dt><dd>Lista de grados que define una escala o un acorde respecto a la escala mayor.</dd>
+        <dt>Fundamental</dt><dd>La nota sobre la que se construye un acorde y que le da nombre (la C de Cmaj7). No tiene por qué ser la más grave.</dd>
         <dt>Grado</dt><dd>Posición de una nota dentro de la escala: 1 es la tónica, 2 la siguiente, etc.</dd>
         <dt>Intervalo</dt><dd>Distancia entre dos notas.</dd>
         <dt>Inversión</dt><dd>Acorde con una nota distinta de la fundamental en el bajo.</dd>
-        <dt>Mayor madre</dt><dd>En FretMaster, la escala mayor que comparte las notas de una escala; sirve para calcular las cajas CAGED.</dd>
+        <dt>Mayor madre</dt><dd>En FretMaster, la escala mayor que sirve de referencia para calcular las cajas CAGED de otra escala (Do mayor para La menor o Re dórico).</dd>
         <dt>Modo</dt><dd>Escala obtenida empezando por otro grado de una escala madre.</dd>
         <dt>Octava</dt><dd>Distancia de doce semitonos; la nota se repite con el mismo nombre.</dd>
+        <dt>Relativa</dt><dd>Escalas mayor y menor con las mismas notas: La menor es la relativa de Do mayor, y su tónica está tres semitonos por debajo.</dd>
         <dt>Semitono / tono</dt><dd>La distancia de un traste / de dos trastes.</dd>
+        <dt>Sensible</dt><dd>El 7º grado cuando está a un semitono de la tónica (Si en Do mayor, Sol♯ en La menor armónica): pide resolver hacia ella.</dd>
         <dt>Tónica</dt><dd>La nota principal de una escala o tonalidad, sobre la que se descansa.</dd>
         <dt>Tritono</dt><dd>Intervalo de seis semitonos (♯4 o ♭5), la mitad exacta de una octava.</dd>
         <dt>Tríada / cuatriada</dt><dd>Acorde de tres / de cuatro notas apiladas por terceras.</dd>

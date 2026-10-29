@@ -64,7 +64,7 @@ await test('el estado se guarda en la URL y se recupera al recargar', async (p) 
   assert.match(hash, /k=9/);
   assert.match(hash, /s=minor/);
   await p.goto(base(hash));
-  assert.match(await p.eval('document.title'), /^A Menor Natural/);
+  assert.match(await p.eval('document.title'), /^A Menor natural/);
 });
 
 await test('formas CAGED: filtran notas y la menor armónica lleva el G♯ en la caja C', async (p) => {
@@ -91,6 +91,17 @@ await test('explorador: tipo, bajo y filtros', async (p) => {
   assert.match(await p.eval('document.querySelector("#explorer-name").textContent'), /^C\/E · Mayor · 1ª inversión/);
   const first = await p.eval('document.querySelector("#voicings .vcap").textContent');
   assert.equal(first, '0 3 2 0 1 0');
+  // La inversión se nombra por el grado del bajo, no por su posición en la fórmula.
+  const nameWith = async (type, bass) => {
+    await p.click(`#chord-type [data-type="${type}"]`);
+    await p.click(`#bass-seg [data-b="${bass}"]`);
+    return p.eval('document.querySelector("#explorer-name").textContent');
+  };
+  assert.match(await nameWith('sus2', 1), /· bajo en la 2ª$/);
+  assert.match(await nameWith('6', 3), /· bajo en la 6ª$/);
+  assert.match(await nameWith('7', 3), /· 3ª inversión$/);
+  await p.click('#chord-type [data-type="maj"]');
+  await p.click('#bass-seg [data-b="1"]');
   await p.click('#voicing-filter [data-vf="barre"]');
   assert.ok(await p.eval('document.querySelectorAll("#voicings .voicing").length') > 0);
 });

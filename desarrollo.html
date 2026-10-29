@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark" data-theme-mode="auto">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Desarrollo · FretMaster</title>
+  <meta name="description" content="Arquitectura de FretMaster a nivel de código: módulos, algoritmos, estado, interfaz, pruebas y cómo ampliarlo.">
+  <meta name="theme-color" content="#0b0b0e">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <script>
+    (function () {
+      var m = null;
+      try { m = localStorage.getItem('fm-theme'); } catch (e) {}
+      var t = m === 'light' || m === 'dark' ? m
+        : (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      var r = document.documentElement;
+      r.setAttribute('data-theme', t);
+      r.setAttribute('data-theme-mode', m === 'light' || m === 'dark' ? m : 'auto');
+      var c = document.querySelector('meta[name="theme-color"]');
+      if (c) c.setAttribute('content', t === 'dark' ? '#0b0b0e' : '#f7f7f8');
+    })();
+  </script>
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+  <a class="skip" href="#contenido">Saltar al contenido</a>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="brand" href="index.html" aria-label="FretMaster, inicio">Fret<strong>Master</strong></a>
+      <nav class="site-nav" aria-label="Principal">
+        <a href="index.html">Herramienta</a>
+        <a href="aprender.html">Aprender</a>
+        <a href="ayuda.html">Ayuda</a>
+        <a href="desarrollo.html" aria-current="page">Desarrollo</a>
+      </nav>
+      <div class="site-tools">
+        <div class="theme-switch" role="group" aria-label="Tema">
+          <button type="button" data-theme-set="auto" aria-label="Tema automático, según el sistema" title="Automático (sistema)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+          </button>
+          <button type="button" data-theme-set="light" aria-label="Tema claro" title="Claro">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          </button>
+          <button type="button" data-theme-set="dark" aria-label="Tema oscuro" title="Oscuro">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="doc">
+    <details class="toc">
+      <summary>Contenido de esta página</summary>
+      <p class="eyebrow">En esta página</p>
+      <ol>
+        <li><a href="#vision">Visión general</a></li>
+        <li><a href="#estructura">Estructura del proyecto</a></li>
+        <li><a href="#arquitectura">Arquitectura</a>
+          <ol><li><a href="#capas">Capas y dependencias</a></li><li><a href="#carga">Orden de carga y módulos</a></li></ol>
+        </li>
+        <li><a href="#teoria">Teoría musical (theory.js)</a>
+          <ol><li><a href="#t-datos">Datos y fórmulas</a></li><li><a href="#t-ortografia">Ortografía</a></li><li><a href="#t-roles">Roles</a></li><li><a href="#t-diatonicos">Acordes diatónicos</a></li><li><a href="#t-caged">Cajas CAGED</a></li><li><a href="#t-digitaciones">Buscador de digitaciones</a></li></ol>
+        </li>
+        <li><a href="#sintesis">Audio y síntesis</a></li>
+        <li><a href="#estado">Estado y persistencia</a></li>
+        <li><a href="#interfaz">Interfaz</a>
+          <ol><li><a href="#ciclo">Ciclo de actualización</a></li><li><a href="#mastil">El mástil</a></li><li><a href="#explorador">El explorador</a></li><li><a href="#a11y">Accesibilidad</a></li></ol>
+        </li>
+        <li><a href="#diseno">Diseño y temas</a></li>
+        <li><a href="#offline">Sin conexión (PWA)</a></li>
+        <li><a href="#pruebas">Pruebas</a></li>
+        <li><a href="#api">Referencia de la API</a></li>
+        <li><a href="#extender">Cómo ampliarlo</a></li>
+        <li><a href="#flujo">Flujo de trabajo</a></li>
+        <li><a href="#decisiones">Decisiones de diseño</a></li>
+        <li><a href="#deuda">Límites y deuda técnica</a></li>
+      </ol>
+    </details>
+
+    <main id="contenido" class="prose">
+      <h1>Desarrollo de <strong>FretMaster</strong></h1>
+      <p class="lead">Cómo está construida la aplicación por dentro: sus módulos, los algoritmos que contienen, cómo fluye la información y cómo se comprueba que todo sigue funcionando. Está pensada para quien quiera entender el código, corregirlo o ampliarlo.</p>
+      <p>Esta página se verifica contra el propio código: la referencia de la API se genera con los módulos reales, y un test comprueba que cada función documentada existe y que ninguna función exportada queda sin documentar. Las referencias al código están marcadas con <code>data-src</code> y otro test comprueba que los símbolos citados siguen existiendo.</p>
+
+      <!-- ===================================================== -->
+      <h2 id="vision">Visión general</h2>
+      <ul>
+        <li><strong>Tecnología</strong>: HTML, CSS y JavaScript sin dependencias de ejecución. No hay paso de compilación ni empaquetado: lo que está en el repositorio es lo que se sirve.</li>
+        <li><strong>Principio central</strong>: la teoría musical es un conjunto de <em>funciones puras</em> que reciben números y devuelven estructuras de datos; la interfaz es una capa fina que las llama y dibuja el resultado. Así la parte difícil se prueba en Node, sin navegador.</li>
+        <li><strong>Estado único en la URL</strong>: todo lo que el usuario elige vive en un objeto pequeño que se guarda en la dirección de la página. Compartir una vista es copiar la dirección.</li>
+        <li><strong>Sin red</strong>: no hay peticiones a servidores externos, ni fuentes ni scripts remotos. Lo comprueban un test estático (las fuentes no contienen URL externas) y un test en navegador (ninguna petición sale del origen).</li>
+        <li><strong>Funciona sin conexión</strong>: un service worker guarda la aplicación tras la primera visita.</li>
+      </ul>
+      <p>Código fuente: <a href="https://github.com/Cradber/fretmaster">github.com/Cradber/fretmaster</a>.</p>
+
+      <!-- ===================================================== -->
+      <h2 id="estructura">Estructura del proyecto</h2>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Archivos del proyecto">
+        <table>
+          <caption>Archivos del repositorio y su responsabilidad</caption>
+          <thead><tr><th scope="col">Archivo</th><th scope="col">Capa</th><th scope="col">Responsabilidad</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">theory.js</td><td>Datos y reglas</td><td>Teoría pura: catálogos, ortografía, roles, acordes, cajas CAGED, buscador de digitaciones. Sin DOM.</td></tr>
+            <tr><td class="mono">synth.js</td><td>Datos y reglas</td><td>Síntesis de cuerda pulsada (Karplus-Strong). Pura: devuelve muestras.</td></tr>
+            <tr><td class="mono">state.js</td><td>Estado</td><td>Valores por defecto, validación y persistencia del estado.</td></tr>
+            <tr><td class="mono">util.js</td><td>Interfaz</td><td>Utilidades de DOM y SVG.</td></tr>
+            <tr><td class="mono">audio.js</td><td>Interfaz</td><td>Salida de audio con Web Audio; usa synth.js.</td></tr>
+            <tr><td class="mono">fretboard.js</td><td>Interfaz</td><td>Dibujo del mástil, resaltado y teclado.</td></tr>
+            <tr><td class="mono">explorer.js</td><td>Interfaz</td><td>Explorador de acordes y diagramas SVG.</td></tr>
+            <tr><td class="mono">app.js</td><td>Orquestación</td><td>Controles, ciclo de actualización, pestañas, ajustes; une los módulos.</td></tr>
+            <tr><td class="mono">theme.js</td><td>Compartido</td><td>Tema Automático, Claro y Oscuro, común a todas las páginas.</td></tr>
+            <tr><td class="mono">docs.js</td><td>Documentación</td><td>Tablas generadas desde el código, índice y anclas de las páginas de documentación.</td></tr>
+            <tr><td class="mono">aprender.js</td><td>Documentación</td><td>Progreso de la ruta de aprendizaje.</td></tr>
+            <tr><td class="mono">base.css</td><td>Diseño</td><td>Tokens de color, cabecera y controles comunes.</td></tr>
+            <tr><td class="mono">app.css</td><td>Diseño</td><td>Estilos de la herramienta.</td></tr>
+            <tr><td class="mono">docs.css</td><td>Diseño</td><td>Estilos de las páginas de documentación.</td></tr>
+            <tr><td class="mono">index.html</td><td>Páginas</td><td>La herramienta.</td></tr>
+            <tr><td class="mono">aprender.html</td><td>Páginas</td><td>Ruta de aprendizaje.</td></tr>
+            <tr><td class="mono">ayuda.html</td><td>Páginas</td><td>Descripción del contenido.</td></tr>
+            <tr><td class="mono">desarrollo.html</td><td>Páginas</td><td>Esta página.</td></tr>
+            <tr><td class="mono">sw.js</td><td>PWA</td><td>Service worker: caché y modo sin conexión.</td></tr>
+            <tr><td class="mono">manifest.webmanifest</td><td>PWA</td><td>Nombre, colores e iconos para instalar la aplicación.</td></tr>
+            <tr><td class="mono">tests/</td><td>Pruebas</td><td>Pruebas de teoría, síntesis, contraste, documentación, arquitectura y de navegador.</td></tr>
+            <tr><td class="mono">original/index.html</td><td>Historia</td><td>La primera versión, conservada como referencia.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="arquitectura">Arquitectura</h2>
+      <h3 id="capas">Capas y dependencias</h3>
+      <p>Los módulos se organizan en capas. Las dependencias van <strong>siempre hacia abajo</strong>: una capa solo conoce las que tiene debajo, nunca las de arriba. Las dos capas inferiores (datos y reglas) son <em>puras</em>: no tocan el DOM, el almacenamiento, la red ni los temporizadores, y por eso se ejecutan en Node.</p>
+      <figure class="diagram">
+        <svg viewBox="0 0 960 470" role="img" aria-labelledby="dg-t dg-d">
+          <title id="dg-t">Arquitectura por capas de FretMaster</title>
+          <desc id="dg-d">De arriba abajo: las páginas HTML; la orquestación (app.js, aprender.js, docs.js); la interfaz y el estado (state.js, fretboard.js, explorer.js, audio.js, util.js, theme.js); y los datos y reglas puros (theory.js y synth.js). app.js usa state, fretboard, explorer y audio; fretboard, explorer y state usan theory; explorer usa audio; audio usa synth.</desc>
+          <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrow-head"/></marker></defs>
+          <text class="layer" x="20" y="22">Páginas</text>
+          <rect class="box box--page" x="40" y="32" width="200" height="40" rx="8"/><text x="140" y="57">index.html</text>
+          <rect class="box box--page" x="270" y="32" width="200" height="40" rx="8"/><text x="370" y="57">aprender.html</text>
+          <rect class="box box--page" x="500" y="32" width="200" height="40" rx="8"/><text x="600" y="57">ayuda.html</text>
+          <rect class="box box--page" x="730" y="32" width="190" height="40" rx="8"/><text x="825" y="57">desarrollo.html</text>
+
+          <text class="layer" x="20" y="116">Orquestación</text>
+          <rect class="box box--glue" x="40" y="126" width="200" height="50" rx="8"/><text x="140" y="148">app.js</text><text class="sub" x="140" y="165">controles y ciclo de actualización</text>
+          <rect class="box box--glue" x="270" y="126" width="200" height="50" rx="8"/><text x="370" y="148">aprender.js</text><text class="sub" x="370" y="165">progreso de la ruta</text>
+          <rect class="box box--glue" x="500" y="126" width="420" height="50" rx="8"/><text x="710" y="148">docs.js</text><text class="sub" x="710" y="165">tablas generadas · lee theory.js y state.js (solo lectura)</text>
+          <path class="arrow" d="M140 72V126" marker-end="url(#ah)"/><path class="arrow" d="M370 72V126" marker-end="url(#ah)"/><path class="arrow" d="M600 72V126" marker-end="url(#ah)"/><path class="arrow" d="M825 72V126" marker-end="url(#ah)"/>
+
+          <text class="layer" x="20" y="222">Interfaz y estado</text>
+          <rect class="box" x="40" y="232" width="110" height="50" rx="8"/><text x="95" y="254">state.js</text><text class="sub" x="95" y="271">estado y URL</text>
+          <rect class="box" x="170" y="232" width="130" height="50" rx="8"/><text x="235" y="254">fretboard.js</text><text class="sub" x="235" y="271">el mástil</text>
+          <rect class="box" x="320" y="232" width="130" height="50" rx="8"/><text x="385" y="254">explorer.js</text><text class="sub" x="385" y="271">acordes</text>
+          <rect class="box" x="470" y="232" width="110" height="50" rx="8"/><text x="525" y="254">audio.js</text><text class="sub" x="525" y="271">Web Audio</text>
+          <rect class="box" x="600" y="232" width="100" height="50" rx="8"/><text x="650" y="254">util.js</text><text class="sub" x="650" y="271">DOM y SVG</text>
+          <rect class="box" x="720" y="232" width="200" height="50" rx="8"/><text x="820" y="254">theme.js</text><text class="sub" x="820" y="271">tema · todas las páginas</text>
+          <path class="arrow" d="M110 176L95 232" marker-end="url(#ah)"/><path class="arrow" d="M160 176L235 232" marker-end="url(#ah)"/><path class="arrow" d="M200 176L385 232" marker-end="url(#ah)"/><path class="arrow" d="M230 176L525 232" marker-end="url(#ah)"/>
+          <path class="arrow" d="M450 257H470" marker-end="url(#ah)"/>
+
+          <text class="layer" x="20" y="332">Datos y reglas · puros, sin DOM</text>
+          <rect class="box box--pure" x="40" y="342" width="420" height="60" rx="8"/><text x="250" y="366">theory.js</text><text class="sub" x="250" y="386">ortografía · acordes · CAGED · digitaciones</text>
+          <rect class="box box--pure" x="500" y="342" width="200" height="60" rx="8"/><text x="600" y="366">synth.js</text><text class="sub" x="600" y="386">cuerda pulsada</text>
+          <path class="arrow" d="M95 282V342" marker-end="url(#ah)"/><path class="arrow" d="M235 282V342" marker-end="url(#ah)"/><path class="arrow" d="M385 282V342" marker-end="url(#ah)"/><path class="arrow" d="M545 282L570 342" marker-end="url(#ah)"/>
+          <text class="sub" x="480" y="440" style="font-size:11px">Flechas: «usa» (se omiten las de app.js y docs.js hacia theory.js). Nunca hay una flecha hacia arriba.</text>
+        </svg>
+        <figcaption class="hint" style="padding:6px 10px 2px">Figura 1. Capas del código. Verde: puro y probado en Node. Violeta: une módulos y toca el DOM.</figcaption>
+      </figure>
+      <ul>
+        <li><strong>Datos y reglas</strong> (<code data-src="theory.js:spellScale">theory.js</code> y <code data-src="synth.js:pluckSamples">synth.js</code>): se comprueba por test que no usan <code>document</code>, <code>localStorage</code>, <code>fetch</code>, <code>setTimeout</code> ni <code>location</code>.</li>
+        <li><strong>Interfaz</strong>: cada módulo se ocupa de una región de la pantalla o de un servicio (audio, estado), y expone una API pequeña (<a href="#api">ver referencia</a>).</li>
+        <li><strong>Orquestación</strong>: <code data-src="app.js:function update">app.js</code> es el único módulo que conoce a todos los demás. Conecta los eventos con el estado y ordena el redibujado.</li>
+      </ul>
+
+      <h3 id="carga">Orden de carga y módulos</h3>
+      <p>Los scripts son <strong>clásicos</strong> (no módulos ES) y se cargan en un orden fijo que respeta las dependencias. Cada archivo es una función que se ejecuta al instante (IIFE) y publica su API en un objeto global con nombre propio:</p>
+      <pre><code>&lt;script src="theme.js"&gt;&lt;/script&gt;      →  window.FretTheme
+&lt;script src="theory.js"&gt;&lt;/script&gt;     →  window.FretTheory
+&lt;script src="synth.js"&gt;&lt;/script&gt;      →  window.FretSynth
+&lt;script src="util.js"&gt;&lt;/script&gt;       →  window.FretApp.Util
+&lt;script src="state.js"&gt;&lt;/script&gt;      →  window.FretApp.State
+&lt;script src="audio.js"&gt;&lt;/script&gt;      →  window.FretApp.Audio
+&lt;script src="fretboard.js"&gt;&lt;/script&gt;  →  window.FretApp.Fretboard
+&lt;script src="explorer.js"&gt;&lt;/script&gt;   →  window.FretApp.Explorer
+&lt;script src="app.js"&gt;&lt;/script&gt;        →  (arranca la aplicación al cargar el DOM)</code></pre>
+      <p>Un test lee ese orden en <code>index.html</code> y comprueba, mirando el código fuente de cada archivo, que todo módulo que usa otro se carga <em>después</em> de él. Si alguien reordena las etiquetas o añade una dependencia nueva, el test falla.</p>
+      <p><code data-src="theory.js:typeof window">theory.js</code> y <code data-src="synth.js:typeof module">synth.js</code> además se exportan como módulos de Node (<code>module.exports</code>) para poder probarlos sin navegador. El resto, que depende del DOM, no.</p>
+
+      <!-- ===================================================== -->
+      <h2 id="teoria">Teoría musical (<code>theory.js</code>)</h2>
+      <h3 id="t-datos">Datos y fórmulas</h3>
+      <p>La teoría es <strong>datos más pocas funciones</strong>. Las escalas, los acordes y las afinaciones son tablas declarativas; las funciones las interpretan.</p>
+      <ul>
+        <li><code data-src="theory.js:const SCALES">SCALES</code>: cada escala tiene <code>name</code>, <code>group</code>, <code>formula</code> (grados respecto a la mayor, como <code>1 2 b3 4 5 b6 b7</code>), <code>parent</code> (semitonos desde su tónica hasta la tónica de su mayor madre), <code>desc</code> y <code>use</code>, y opcionalmente <code>symmetric</code>.</li>
+        <li><code data-src="theory.js:const CHORD_TYPES">CHORD_TYPES</code>: <code>name</code>, <code>symbol</code>, <code>group</code> y <code>formula</code>; los grados mayores de 7 (el <code>9</code>) se reducen al módulo 7.</li>
+        <li><code data-src="theory.js:const TUNINGS">TUNINGS</code>: la afinación como lista de notas MIDI de la cuerda <strong>más aguda a la más grave</strong>. La nota de una posición es <code>(midi de la cuerda + traste) % 12</code>.</li>
+      </ul>
+      <p><code data-src="theory.js:function parseFormula">parseFormula</code> convierte una fórmula en una lista de grados: cada elemento guarda el texto original, el grado (<code>deg</code>), la alteración (<code>acc</code>, en semitonos respecto a la mayor) y los semitonos desde la tónica, calculados como <code>[0,2,4,5,7,9,11][(deg−1) % 7] + acc</code>. Con ese esquema, añadir una escala es añadir una línea.</p>
+
+      <h3 id="t-ortografia">Ortografía de las notas</h3>
+      <p><code data-src="theory.js:function spellWith">spellWith</code> recibe una tónica candidata (letra y alteración) y la lista de grados, y asigna a cada grado una <strong>letra</strong> (la de la tónica avanzada <code>deg−1</code> posiciones, módulo 7). Después calcula la alteración que necesita esa letra para llegar a la clase de altura correcta, normalizada al intervalo −5…+6, y suma un <strong>coste</strong> igual al cuadrado de la alteración (cero para natural, 1 para ♯ o ♭, 4 para doble).</p>
+      <p><code data-src="theory.js:function bestSpelling">bestSpelling</code> prueba los nombres posibles de la tónica (<code data-src="theory.js:PC_CANDIDATES">PC_CANDIDATES</code>: natural, sostenido y bemol de cada letra que cae en esa clase de altura) y se queda con el de <strong>menor coste</strong>. En caso de empate gana el primero del orden natural → sostenido → bemol. Antes se descartan las tónicas que nadie escribe (<code data-src="theory.js:EXOTIC_ROOTS">EXOTIC_ROOTS</code>: B♯, E♯, F♭, C♭). La preferencia del usuario (<code>sharp</code> o <code>flat</code>) filtra los candidatos antes de puntuar, y solo se ignora si dejaría la lista vacía.</p>
+      <p>Resultado: <code>spellScale(5, 'major')</code> devuelve <code>F G A B♭ C D E</code> sin tabla de excepciones, porque A♯ repetiría la letra A.</p>
+
+      <h3 id="t-roles">Roles de nota</h3>
+      <p><code data-src="theory.js:function roleFor">roleFor</code> asigna el rol según los semitonos desde la tónica y si la escala tiene quinta justa: <code>0</code> tónica; <code>3</code> y <code>4</code>, tercera; <code>7</code>, quinta; <code>6</code>, nota de color si hay quinta justa y quinta si no la hay; <code>10</code> y <code>11</code>, séptima; el resto, grado de la escala. <code data-src="theory.js:function chordRole">chordRole</code> hace lo equivalente para acordes, donde 6, 7 y 8 son quinta, 9 a 11 son séptima o sexta y 2 y 5 son extensiones. Los colores salen de estas cadenas mediante clases CSS (<code>role-root</code>, <code>role-third</code>…).</p>
+
+      <h3 id="t-diatonicos">Acordes diatónicos</h3>
+      <p><code data-src="theory.js:function diatonicChords">diatonicChords</code> toma una escala de siete notas y, para cada grado <em>i</em>, apila las notas <em>i</em>, <em>i+2</em>, <em>i+4</em> (e <em>i+6</em> en cuatriadas) módulo 7. Mide las distancias en semitonos desde la fundamental y busca la calidad en tablas: <code data-src="theory.js:const TRIADS">TRIADS</code> (por ejemplo <code>'4,7'</code> es mayor) y <code data-src="theory.js:const SEVENTHS">SEVENTHS</code> (calidad de la tríada más semitonos de la séptima). El nombre sale del sufijo y el cifrado romano de la letra, la alteración del grado y <code data-src="theory.js:const ROMAN_SUFFIX">ROMAN_SUFFIX</code>. Una combinación desconocida produce un <code>?</code>, y un test impide que aparezca en ninguna escala del catálogo.</p>
+
+      <h3 id="t-caged">Cajas CAGED</h3>
+      <ol>
+        <li><code data-src="theory.js:function windows">windows</code> toma las ventanas de la mayor de Do (<code data-src="theory.js:const CAGED">CAGED</code>), las desplaza <code>(tónica + parent) % 12</code> y las repite cada 12 trastes, sin recortar (pueden empezar antes del traste 0).</li>
+        <li><code data-src="theory.js:function positionRanges">positionRanges</code> las recorta al mástil.</li>
+        <li><code data-src="theory.js:function alterationMap">alterationMap</code> compara las clases de altura de la escala con las de su mayor madre. Las notas de la escala que no están en la madre se emparejan con las notas de la madre que faltan, a un semitono de distancia, en <strong>dos pasadas</strong>: primero las elevadas (+1), después las rebajadas (−1). Con una sola pasada, nota a nota, el Do de la mayor de Fa se emparejaba con el Si en vez de con el Do♯ en Re menor melódica: un test lo cubre.</li>
+        <li><code data-src="theory.js:function positionPredicate">positionPredicate</code> devuelve una función <code>(traste, altura) → bool</code>. Una nota alterada se evalúa en el traste <code>traste − delta</code>, es decir, en la posición de la nota a la que sustituye. Las no emparejadas (la ♭5 del blues) usan su propio traste.</li>
+      </ol>
+
+      <h3 id="t-digitaciones">Buscador de digitaciones</h3>
+      <p><code data-src="theory.js:function findVoicings">findVoicings(afinación, acorde, trasteMáximo, límite, índiceDeBajo)</code> es una búsqueda exhaustiva con poda, no un catálogo.</p>
+      <ol>
+        <li><strong>Ventanas</strong>: para cada traste base <em>b</em> de 0 a <code>top−3</code> (con <code>top = max(4, min(trasteMáximo, 15))</code>) se explora el rango <code>[b, b+3]</code>; la ventana 0 abarca <code>[0, 4]</code> para incluir las cuerdas al aire.</li>
+        <li><strong>Recorrido</strong>: una búsqueda en profundidad va de la cuerda grave a la aguda. Cada cuerda puede estar muda o tocar un traste de la ventana cuya nota sea del acorde. Una vez ha empezado a sonar, una cuerda muda <em>termina</em> la digitación (no hay mudas intercaladas). La primera nota que suena tiene que ser la del bajo elegido. Esta poda reduce de forma drástica el espacio de búsqueda.</li>
+        <li><strong>Validación</strong> al llegar a la cuerda 1: al menos 4 cuerdas (3 si el acorde tiene dos notas), todas las notas del acorde presentes (se admite que falte la quinta justa en acordes de cuatro o más notas, salvo que sea el bajo), amplitud entre trastes pisados ≤ 3 y como mucho 4 dedos según <code data-src="theory.js:function fingering">fingering</code>.</li>
+        <li><strong>Deduplicación</strong> por la clave de trastes, porque ventanas contiguas encuentran la misma forma.</li>
+        <li><strong>Puntuación</strong> (menor es mejor):</li>
+      </ol>
+      <pre><code>puntuación = amplitud × 1,5 + traste_más_bajo × 0,12 + mudas × 1,2
+             − cuerdas_al_aire × 0,4 + (falta la quinta ? 1 : 0)
+             + dedos × 0,3 − cuerdas_que_suenan × 0,3</code></pre>
+      <p><code>fingering</code> detecta la cejilla: si el traste pisado más bajo aparece en dos o más cuerdas y ninguna cuerda <em>entre</em> la primera y la última está por debajo de ese traste (ni al aire ni muda), esas notas cuentan como un solo dedo.</p>
+      <p><strong>Coste</strong>: en las pruebas locales (Node 26) una búsqueda completa tarda <em>menos de un milisegundo</em>, probada en todas las combinaciones de tipo de acorde y fundamental del catálogo, tanto con 6 como con 7 cuerdas; en el navegador es instantánea. Por eso el explorador la ejecuta en cada cambio, sin caché.</p>
+      <p>Para soportar la cejilla, <code data-src="explorer.js:map((m) => m + st.c)">explorer.js</code> no modifica el algoritmo: le pasa una afinación en la que cada cuerda está subida en los trastes de la cejilla y un máximo de trastes reducido en la misma cantidad.</p>
+
+      <!-- ===================================================== -->
+      <h2 id="sintesis">Audio y síntesis</h2>
+      <p>El audio se divide en dos: <code data-src="synth.js:function pluckSamples">synth.js</code> calcula muestras (puro y comprobable) y <code data-src="audio.js:function pluck">audio.js</code> las reproduce con Web Audio.</p>
+      <h3>Síntesis: Karplus–Strong con afinación fraccional</h3>
+      <ol>
+        <li>Una <strong>línea de retardo</strong> de <code>N = floor(fs/f − 0,5)</code> muestras se llena con ruido determinista (generador congruencial sembrado con la frecuencia) suavizado por un filtro de un polo (<code data-src="synth.js:const pick">pick</code>), y se normaliza a un pico de 0,9.</li>
+        <li>Por cada muestra de salida se lee la línea, se promedia con la anterior y se multiplica por <code data-src="synth.js:const rho">rho</code> (la pérdida por vuelta, 0,9992 por defecto): el promedio actúa como filtro pasa-bajos, así los armónicos agudos decaen antes, como en una cuerda real.</li>
+        <li>Como <code>fs/f</code> casi nunca es entero, un <strong>filtro pasatodo de primer orden</strong> con coeficiente <code>C = (1 − frac)/(1 + frac)</code> añade la parte fraccionaria del retardo. El retardo total es <code>N + 0,5 + frac = fs/f</code>.</li>
+        <li>Un fundido de 60 ms evita el chasquido final.</li>
+      </ol>
+      <p>Al ser una función pura y determinista, se prueba midiendo la <strong>frecuencia por autocorrelación</strong> con interpolación parabólica: la nota queda a menos de 8 centésimas en seis alturas y dos frecuencias de muestreo; además, la energía decae, la señal no satura y las notas agudas se apagan antes.</p>
+      <h3>Reproducción</h3>
+      <p><code>audio.js</code> crea el <code>AudioContext</code> la primera vez que hace falta (los navegadores exigen un gesto del usuario). Cada nota MIDI se sintetiza una vez (3 s) y se guarda en una caché (<code data-src="audio.js:const buffers">buffers</code>) por nota y frecuencia de muestreo. Al tocar, se crea una fuente que pasa por un filtro pasa-bajos de 4200 Hz, una envolvente exponencial, una ganancia maestra y un compresor.</p>
+
+      <!-- ===================================================== -->
+      <h2 id="estado">Estado y persistencia</h2>
+      <p>El estado es un objeto plano con <span data-count="params"></span> claves cortas (<a href="ayuda.html#compartir">tabla en la ayuda</a>). <code data-src="state.js:function sanitize">State.sanitize</code> es el único punto de entrada: recibe cualquier objeto (de la URL, de <code>localStorage</code> o un parche de la interfaz) y devuelve un estado <strong>completo y válido</strong>, sustituyendo cada valor inválido por el de <code data-src="state.js:const DEFAULTS">DEFAULTS</code>. Los identificadores se validan contra los catálogos de <code>theory.js</code>, así que un enlace manipulado no puede romper la aplicación ni inyectar contenido.</p>
+      <ul>
+        <li><strong>Carga</strong> (<code data-src="state.js:function load">load</code>): primero la URL (<code>location.hash</code>, leída con <code>URLSearchParams</code>); si está vacía, <code>localStorage</code>.</li>
+        <li><strong>Escritura</strong> (<code data-src="state.js:function persist">persist</code>): en ambos sitios, con <code>history.replaceState</code>, que cambia la dirección <em>sin añadir entradas</em> al historial, así que el botón Atrás no recorre cada clic.</li>
+        <li>Todo acceso a <code>localStorage</code> está protegido con <code>try/catch</code> (modo privado, almacenamiento bloqueado): la aplicación funciona igual sin él.</li>
+        <li>El estado es <strong>inmutable por convención</strong>: <code data-src="app.js:function setState">setState</code> crea uno nuevo con <code>sanitize({...state, ...parche})</code>.</li>
+      </ul>
+      <p>Algunos cambios <strong>conservan el acorde diatónico seleccionado</strong> (<code data-src="app.js:KEEP_CHORD_KEYS">KEEP_CHORD_KEYS</code>: afinación, trastes, cejilla, zurdo, notas o intervalos, sonido, forma, explorador y pestaña) y el resto lo deselecciona.</p>
+      <div data-gen="state"></div>
+
+      <!-- ===================================================== -->
+      <h2 id="interfaz">Interfaz</h2>
+      <h3 id="ciclo">Ciclo de actualización</h3>
+      <p>La interfaz sigue un modelo sencillo: <em>evento → nuevo estado → redibujado completo</em>. No hay un framework ni un DOM virtual; cada módulo sabe dibujar su región a partir del estado.</p>
+      <ol class="flow">
+        <li>Un <strong>evento</strong> (clic, cambio, tecla) llega a un manejador en <code>app.js</code> o en el módulo de la región.</li>
+        <li>El manejador llama a <code data-src="app.js:function setState">setState(parche)</code>, que valida el resultado con <code>State.sanitize</code> y decide si conserva el acorde seleccionado.</li>
+        <li><code data-src="app.js:function update">update()</code> detiene la reproducción, <strong>recalcula la escala deletreada</strong> con <code>spellScale</code> y actualiza el título del documento.</li>
+        <li>Se <strong>sincronizan los controles</strong> (estado pulsado, valores de los selectores), y se redibujan el encabezado, la información de la escala, la leyenda y los acordes de la escala.</li>
+        <li><code>Fretboard.render</code> y <code>Explorer.render</code> redibujan el mástil y el explorador.</li>
+        <li>Se actualizan las pestañas, se <strong>persiste</strong> el estado en la URL y en <code>localStorage</code>, y se anuncia el cambio en la región de estado para lectores de pantalla.</li>
+      </ol>
+      <p>Dos interacciones frecuentes <strong>no</strong> pasan por el ciclo completo, para que las transiciones se vean: cambiar de forma CAGED (solo se vuelve a llamar a <code>Fretboard.highlight</code>) y seleccionar un acorde diatónico. El resto del mástil no se destruye.</p>
+      <p>Redibujar todo en cada cambio es viable porque el volumen es pequeño: el mástil son unos cientos de nodos y la teoría tarda microsegundos.</p>
+
+      <h3 id="mastil">El mástil</h3>
+      <ul>
+        <li><strong>Rejilla CSS</strong>: el mástil y la fila de números de traste usan la misma plantilla de columnas (<code data-src="app.css:--cols">--cols</code>: 40 px para la cejuela y una columna por traste). Así los números quedan alineados con las celdas sin calcular posiciones.</li>
+        <li><strong>Capas</strong>: las marcas del mástil y la cejilla son capas superpuestas con la misma rejilla (<code data-src="app.css:.layer">.layer</code>), colocadas por <code>grid-column</code>. Funcionan con cualquier número de cuerdas; las marcas dobles se desplazan una fracción de la altura calculada con variables CSS (<code>--n</code>, <code>--cell</code>).</li>
+        <li><strong>Modo zurdo</strong>: <code>direction: rtl</code> sobre las rejillas invierte el orden de las columnas sin tocar el DOM; las notas fuerzan <code>direction: ltr</code> para que el texto no se espeje.</li>
+        <li><strong>Notas</strong>: cada nota es un <code>&lt;button&gt;</code> con <code>data-s</code>, <code>data-f</code> y <code>data-pc</code>, de modo que el mismo elemento sirve para ratón, teclado y lectores de pantalla.</li>
+        <li><strong>Resaltado</strong>: <code data-src="fretboard.js:function highlight">highlight</code> evalúa para cada nota la pertenencia a la forma CAGED y al acorde y alterna tres clases (<code>note-active</code>, <code>note-dimmed</code>, <code>chord-tone</code>); las transiciones CSS hacen el resto.</li>
+        <li><strong>Teclado</strong>: un único botón del mástil tiene <code>tabindex="0"</code> (<em>roving tabindex</em>) y las flechas mueven el foco. Para subir o bajar de cuerda se elige la nota más cercana en traste (<code data-src="fretboard.js:function onKey">onKey</code>).</li>
+      </ul>
+
+      <h3 id="explorador">El explorador</h3>
+      <p><code data-src="explorer.js:function render">Explorer.render</code> calcula el acorde con <code>spellChord</code>, la afinación efectiva (con cejilla), las digitaciones con <code>findVoicings</code> (hasta 80 candidatas) y las filtra y recorta a ocho. Cada una se dibuja con <code data-src="explorer.js:function drawVoicing">drawVoicing</code>, que genera un <strong>SVG</strong> de 110 × 134 unidades con cuerdas verticales, cejilla, mudas y cuerdas al aire. Los colores de los puntos son variables CSS (<code>var(--c-third)</code>), de modo que los diagramas cambian de tema sin volver a dibujarse. La selección del bajo (inversiones) es un parámetro más del buscador.</p>
+
+      <h3 id="a11y">Accesibilidad</h3>
+      <ul>
+        <li><strong>Semántica</strong>: los controles son <code>&lt;button&gt;</code> o <code>&lt;select&gt;</code> reales, con <code>aria-pressed</code> en los de estado y etiquetas accesibles en los botones de icono.</li>
+        <li><strong>Pestañas</strong>: patrón ARIA de pestañas (<code>role="tablist"</code>, <code>aria-selected</code>, <code>tabindex</code> en movimiento) con flechas, Inicio y Fin.</li>
+        <li><strong>Ajustes</strong>: ventana no modal con <code>aria-expanded</code>, cierre con Escape y devolución del foco.</li>
+        <li><strong>Anuncios</strong>: una región <code>role="status"</code> informa de cada cambio de escala o acorde.</li>
+        <li><strong>Color no esencial</strong>: cada nota escribe su nombre o intervalo, y la tónica lleva un anillo.</li>
+        <li><strong>Movimiento</strong>: <code>prefers-reduced-motion</code> desactiva animaciones y transiciones.</li>
+      </ul>
+
+      <!-- ===================================================== -->
+      <h2 id="diseno">Diseño y temas</h2>
+      <ul>
+        <li><strong>Tokens</strong>: todos los colores y medidas son variables CSS en <code data-src="base.css:--surface">base.css</code>, con un bloque para el tema claro (<code>:root</code>) y otro para el oscuro (<code>[data-theme="dark"]</code>). Los componentes nunca usan colores literales.</li>
+        <li><strong>Roles de nota</strong>: en el tema oscuro los colores son más claros y el texto de la nota oscuro, y en el claro al revés (<code>--on-role</code>), de modo que el contraste del texto cumple en ambos.</li>
+        <li><strong>Tema</strong>: el atributo <code>data-theme</code> (<code>light</code> o <code>dark</code>) selecciona los tokens y <code>data-theme-mode</code> guarda la elección del usuario (<code>auto</code>, <code>light</code>, <code>dark</code>). <code data-src="theme.js:function resolve">theme.js</code> resuelve <code>auto</code> con <code>matchMedia('(prefers-color-scheme: light)')</code> y escucha sus cambios para seguir al sistema en vivo.</li>
+        <li><strong>Sin parpadeo</strong>: un pequeño script <em>en línea</em> en el <code>&lt;head&gt;</code> de cada página aplica el tema antes del primer pintado. Duplica a propósito la lógica de <code>theme.js</code>, que carga más tarde.</li>
+        <li><strong>Contraste</strong>: <code data-src="tests/contrast.test.js:function ratio">tests/contrast.test.js</code> lee los tokens de <code>base.css</code> y calcula la razón de contraste WCAG 2.1 de cada pareja relevante en los dos temas: texto normal ≥ 4,5, objetos gráficos ≥ 3. Se comprobó que falla con un gris demasiado claro.</li>
+        <li><strong>Adaptación</strong>: diseño móvil primero con puntos de corte en 720, 768, 900 y 1040 px; el mástil se desplaza en horizontal con una indicación en móvil.</li>
+        <li><strong>Impresión</strong>: las hojas de estilo ocultan la navegación y los controles.</li>
+      </ul>
+
+      <!-- ===================================================== -->
+      <h2 id="offline">Sin conexión (PWA)</h2>
+      <ul>
+        <li><strong>Estrategia</strong> (<code data-src="sw.js:addEventListener('fetch'">sw.js</code>): para peticiones GET del mismo origen, responde con la copia en caché si la hay y, a la vez, pide la versión de red y la guarda. Es <em>«caché primero, revalidar en segundo plano»</em>: la carga es inmediata y los cambios se ven en la visita siguiente.</li>
+        <li><strong>Instalación</strong>: guarda la lista <code data-src="sw.js:const ASSETS">ASSETS</code> con <code>addAll</code> y llama a <code>skipWaiting</code> para activarse enseguida. En <code>activate</code> borra las cachés de versiones anteriores y toma el control de las pestañas abiertas.</li>
+        <li><strong>Versionado</strong>: el nombre de la caché (<code data-src="sw.js:const CACHE">fretmaster-vN</code>) se <strong>incrementa manualmente</strong> cuando cambia cualquier archivo; sin eso, quien ya la tenga instalada seguiría viendo la versión vieja.</li>
+        <li><strong>Garantía</strong>: un test comprueba que cada página y cada hoja de estilo o script que usa está en <code>ASSETS</code>.</li>
+        <li><strong>Limitación</strong>: los service workers solo funcionan sobre HTTP(S) o <code>localhost</code>, no abriendo el archivo directamente (<code>file://</code>). <code>app.js</code> solo lo registra en esos casos.</li>
+        <li><strong>Iconos</strong>: PNG para iOS (que no admite SVG en el icono de la pantalla de inicio), y una versión «maskable» con margen de seguridad.</li>
+      </ul>
+
+      <!-- ===================================================== -->
+      <h2 id="pruebas">Pruebas</h2>
+      <p>Hay seis suites, todas sin dependencias externas (solo Node y, para las de navegador, un Chrome instalado):</p>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Suites de pruebas">
+        <table>
+          <caption>Suites de pruebas</caption>
+          <thead><tr><th scope="col">Archivo</th><th scope="col">Qué comprueba</th><th scope="col">Cómo</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">tests/theory.test.js</td><td>Ortografía, roles, acordes diatónicos, cajas CAGED (cobertura en las 12 tonalidades), mapa de alteraciones, catálogo de acordes, digitaciones clásicas (C = x32010, F con cejilla = 133211…), inversiones y cejilla.</td><td>Node, funciones puras</td></tr>
+            <tr><td class="mono">tests/synth.test.js</td><td>Afinación del sintetizador (autocorrelación), decaimiento, ausencia de saturación y determinismo.</td><td>Node, señales</td></tr>
+            <tr><td class="mono">tests/contrast.test.js</td><td>Contraste WCAG de los tokens en los dos temas.</td><td>Node, lee <code>base.css</code></td></tr>
+            <tr><td class="mono">tests/docs.test.js</td><td>Los ejemplos de la ayuda y de Aprender coinciden con <code>theory.js</code> (<code>data-verify</code>), los enlaces a la herramienta tienen parámetros válidos, las anclas existen, la navegación es idéntica y todo está en la caché.</td><td>Node, analiza el HTML</td></tr>
+            <tr><td class="mono">tests/architecture.test.js</td><td>La API documentada coincide con las exportaciones, el orden de carga respeta las dependencias, las capas puras no tocan el DOM, no hay URL externas y cada archivo está en el README.</td><td>Node, módulos en un contexto aislado</td></tr>
+            <tr><td class="mono">tests/e2e/*.test.mjs</td><td>La aplicación y las páginas en Chrome real: carga sin errores, interacción, estado en la URL, tema automático, teclado, tablas generadas, sin peticiones externas, móvil, service worker.</td><td>Chrome headless por CDP</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Arnés de navegador</h3>
+      <p><code data-src="tests/e2e/harness.mjs:launchBrowser">tests/e2e/harness.mjs</code> levanta un servidor estático en un puerto libre, lanza Chrome con <code>--headless=new</code> y un perfil temporal, y habla con él por el protocolo DevTools usando el <code>WebSocket</code> y el <code>fetch</code> que ya trae Node. Cada prueba recibe una página nueva y parte con el almacenamiento vacío, y falla si la consola registra cualquier error. Si no encuentra Chrome, se omite con un aviso (<code>CHROME_PATH</code> permite indicarlo).</p>
+      <h3>Cómo se ejecutan</h3>
+      <pre><code>npm test          # teoría, síntesis, contraste, documentación y arquitectura
+npm run test:e2e  # interfaz y páginas en Chrome headless
+npm run test:all  # todo lo anterior</code></pre>
+      <h3>Práctica de pruebas</h3>
+      <ul>
+        <li><strong>Datos conocidos</strong>: las digitaciones se prueban contra acordes que cualquier guitarrista conoce (C, G, Am, E, Dm, F con cejilla, C/E, D/F♯, G/B).</li>
+        <li><strong>Las pruebas deben poder fallar</strong>: tras escribir un verificador se introducen errores a propósito (una nota, una digitación, un enlace, una ancla) y se comprueba que los detecta. Así se validaron los verificadores de la documentación y de la arquitectura.</li>
+        <li><strong>Propiedades en lugar de ejemplos</strong>: «cada caja diatónica tiene 2 o 3 notas por cuerda en las 12 tonalidades» o «en toda digitación la nota más grave es la pedida». Una propiedad de este tipo destapó un error real en el emparejamiento de notas alteradas de las cajas CAGED.</li>
+        <li><strong>Los tests no sustituyen mirar</strong>: se hicieron capturas en escritorio y en móvil, y revelaron defectos de maquetación que ningún test detecta.</li>
+      </ul>
+
+      <!-- ===================================================== -->
+      <h2 id="api">Referencia de la API</h2>
+      <p>Las tablas se generan al cargar la página con los objetos reales (<code>Object.keys</code> de cada módulo); las descripciones están en un bloque JSON de esta página. Un test comprueba que ambos coinciden nombre por nombre, de modo que una función nueva sin documentar o una descripción de una función borrada <strong>rompen la comprobación</strong>.</p>
+      <h3>FretTheory (theory.js)</h3><div data-gen="api" data-api="FretTheory"></div>
+      <h3>FretSynth (synth.js)</h3><div data-gen="api" data-api="FretSynth"></div>
+      <h3>FretTheme (theme.js)</h3><div data-gen="api" data-api="FretTheme"></div>
+      <h3>FretApp.Util (util.js)</h3><div data-gen="api" data-api="FretApp.Util"></div>
+      <h3>FretApp.State (state.js)</h3><div data-gen="api" data-api="FretApp.State"></div>
+      <h3>FretApp.Audio (audio.js)</h3><div data-gen="api" data-api="FretApp.Audio"></div>
+      <h3>FretApp.Fretboard (fretboard.js)</h3><div data-gen="api" data-api="FretApp.Fretboard"></div>
+      <h3>FretApp.Explorer (explorer.js)</h3><div data-gen="api" data-api="FretApp.Explorer"></div>
+
+      <!-- ===================================================== -->
+      <h2 id="extender">Cómo ampliarlo</h2>
+      <p>La mayoría de las ampliaciones son <strong>datos</strong>. Las pruebas recorren los catálogos enteros, así que una entrada nueva queda cubierta sin escribir tests nuevos.</p>
+      <h3>Añadir una escala</h3>
+      <ol>
+        <li>En <code data-src="theory.js:const SCALES">SCALES</code> (<code>theory.js</code>) añade una entrada con <code>name</code>, <code>group</code>, <code>formula</code>, <code>parent</code>, <code>desc</code> y <code>use</code>. <code>parent</code> son los semitonos desde la tónica de la escala hasta la tónica de su mayor madre (por ejemplo, 3 para una menor, porque su relativa mayor está 3 semitonos por encima).</li>
+        <li>Si es simétrica, añade <code>symmetric: true</code>.</li>
+        <li>Ejecuta <code>npm test</code>: el test recorre todas las escalas en las 12 tonalidades.</li>
+        <li>No hay nada más que cambiar: el selector, la tabla de la ayuda y los contadores se generan solos. Si la escala tiene notas ajenas a su mayor madre, el test de cajas alteradas es el que valida su comportamiento; añádela a su lista.</li>
+      </ol>
+      <h3>Añadir un tipo de acorde</h3>
+      <ol>
+        <li>En <code data-src="theory.js:const CHORD_TYPES">CHORD_TYPES</code> añade <code>name</code>, <code>symbol</code>, <code>group</code> y <code>formula</code>.</li>
+        <li>Si puede salir como acorde de la escala, añade su calidad a <code data-src="theory.js:const QUALITY_TO_TYPE">QUALITY_TO_TYPE</code>.</li>
+        <li>Los tests exigen al menos una digitación en las 12 fundamentales y que todas respeten las reglas.</li>
+      </ol>
+      <h3>Añadir una afinación</h3>
+      <p>Añade una entrada en <code data-src="theory.js:const TUNINGS">TUNINGS</code> con las notas MIDI de la más aguda a la más grave. Los tests prueban que el explorador encuentra digitaciones en todas las afinaciones. Para que la tabla de la ayuda escriba bemoles en una afinación bajada, hay un caso especial en <code data-src="docs.js:id === 'eb'">docs.js</code>.</p>
+      <h3>Añadir un parámetro de estado</h3>
+      <ol>
+        <li>Añádelo a <code>DEFAULTS</code> y a <code>sanitize</code> en <code>state.js</code>.</li>
+        <li>Describe el parámetro en el diccionario de <code>docs.js</code>: un test de navegador falla si algún parámetro sale con «—» en la tabla de la ayuda.</li>
+      </ol>
+      <h3>Añadir una página de documentación</h3>
+      <ol>
+        <li>Copia la cabecera de otra página (incluido el script que aplica el tema) y añade el enlace en <strong>todas</strong> las páginas.</li>
+        <li>Añade la página y sus recursos a <code>ASSETS</code> en <code>sw.js</code>.</li>
+        <li>El test de navegación exige que la barra sea idéntica en todas las páginas y que cada una marque la suya como actual; el de caché, que los recursos estén incluidos.</li>
+      </ol>
+      <h3>Publicar un cambio</h3>
+      <ol>
+        <li>Ejecuta <code>npm run test:all</code>.</li>
+        <li>Incrementa la versión de la caché en <code>sw.js</code> si cambió algún archivo.</li>
+        <li>Integra la rama y súbela (ver <a href="#flujo">flujo de trabajo</a>).</li>
+      </ol>
+
+      <!-- ===================================================== -->
+      <h2 id="flujo">Flujo de trabajo y trazabilidad</h2>
+      <ul>
+        <li><strong>Ramas por fase</strong>: cada bloque de trabajo (<code>fase/N-nombre</code>) se desarrolla en su propia rama y se integra en <code>main</code> con <code>--no-ff</code>, de modo que el historial muestra qué cambió en cada fase.</li>
+        <li><strong>Commits pequeños y descriptivos</strong>, en español, con una línea de resumen en imperativo y, si hace falta, una explicación del <em>porqué</em>.</li>
+        <li><strong>Pruebas antes de integrar</strong>: ninguna fase se integra sin que pasen todas las suites.</li>
+        <li><strong>Versión original conservada</strong>: <code>original/index.html</code> es el punto de partida, para poder comparar.</li>
+        <li>El historial anterior del repositorio se conservó con un <em>merge</em> en lugar de un <em>push</em> forzado.</li>
+      </ul>
+
+      <!-- ===================================================== -->
+      <h2 id="decisiones">Decisiones de diseño</h2>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Decisiones de diseño">
+        <table>
+          <caption>Qué se eligió, por qué y qué se pierde</caption>
+          <thead><tr><th scope="col">Decisión</th><th scope="col">Motivo</th><th scope="col">Coste</th></tr></thead>
+          <tbody>
+            <tr><td>Sin frameworks ni paso de compilación</td><td>Código legible de principio a fin; se sirve tal cual; sin dependencias que mantener.</td><td>Hay que dibujar el DOM a mano.</td></tr>
+            <tr><td>Sin Tailwind por CDN (la versión original lo usaba)</td><td>Necesitaba red y compilaba estilos en el navegador en cada carga, lo que impedía el modo sin conexión.</td><td>Hojas de estilo propias, más largas.</td></tr>
+            <tr><td>Fuentes del sistema</td><td>Sin descargas, sin peticiones externas, carga inmediata.</td><td>El aspecto varía un poco entre dispositivos.</td></tr>
+            <tr><td>Scripts clásicos, no módulos ES</td><td>Los navegadores bloquean los scripts de tipo módulo cuando se abre el archivo directamente (<code>file://</code>); así la aplicación también se puede abrir con doble clic.</td><td>Un espacio de nombres global y un orden de carga que mantener (lo vigila un test).</td></tr>
+            <tr><td>Estado en la URL</td><td>Cualquier vista se enlaza y se recupera sin servidor.</td><td>La dirección es larga.</td></tr>
+            <tr><td>Teoría pura separada</td><td>Se prueba en Node, sin navegador, con miles de combinaciones.</td><td>Más archivos y una API que mantener.</td></tr>
+            <tr><td>Digitaciones calculadas, no catálogo</td><td>Funciona en cualquier afinación y con cejilla sin escribir tablas.</td><td>No hay curación humana: pueden salir formas correctas pero poco usuales.</td></tr>
+            <tr><td>Síntesis en lugar de muestras</td><td>Cero archivos de audio, arranque inmediato, afinación probable por test.</td><td>El timbre es sintético.</td></tr>
+            <tr><td>Documentación generada y verificada</td><td>No se queda atrás del código.</td><td>Las tablas dependen de JavaScript.</td></tr>
+            <tr><td>Páginas separadas, no una SPA</td><td>Se enlazan, se imprimen y no chocan con el estado guardado en la URL.</td><td>Se repite la cabecera (la comprueba un test).</td></tr>
+            <tr><td>Arnés de navegador propio</td><td>Cero dependencias instaladas.</td><td>Solo Chrome; menos funciones que Playwright.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="deuda">Límites y deuda técnica</h2>
+      <p>Lo que se sabe que no está resuelto, sin adornos:</p>
+      <ul>
+        <li><strong>Prosa sin verificar</strong>: los tests comprueban notas, digitaciones, enlaces y números, pero no las <em>relaciones</em> que la prosa establece entre ellos. Durante la redacción de Aprender apareció un caso: una lección decía que una forma se movía «dos trastes» cuando eran uno, aunque las digitaciones eran correctas. Solo la revisión humana lo detectó.</li>
+        <li><strong>Sin integración continua</strong>: las pruebas se ejecutan a mano antes de integrar; no hay un flujo automático en el repositorio.</li>
+        <li><strong>Navegador de pruebas único</strong>: las pruebas de interfaz usan solo Chrome. No se ha probado en Safari ni Firefox con un arnés, y el comportamiento del <code>service worker</code> en iOS no está verificado.</li>
+        <li><strong>Accesibilidad sin lectores reales</strong>: el contraste y la estructura están comprobados por código, pero la experiencia con VoiceOver, NVDA o TalkBack no se ha evaluado. Las notas atenuadas (opacidad baja) son deliberadamente de bajo contraste.</li>
+        <li><strong>Audio</strong>: la afinación está verificada con señales, pero el timbre no se ha evaluado de oído.</li>
+        <li><strong>Ámbito de las cajas CAGED y las digitaciones</strong>: ver la sección de <a href="ayuda.html#limites">límites</a> de la ayuda.</li>
+        <li><strong>Espacio de nombres global</strong>: <code>FretApp</code> y los demás objetos son globales; no hay tipos estáticos, y la documentación de la API vive en un bloque JSON y no junto a cada función.</li>
+        <li><strong>Mantenimiento manual</strong>: la versión de la caché del service worker se incrementa a mano.</li>
+        <li><strong>Un solo idioma</strong>: la interfaz y los textos están en español, sin infraestructura de traducción.</li>
+      </ul>
+    </main>
+  </div>
+
+  <script type="application/json" id="api-docs">
+{
+  "FretTheory": {
+    "LETTERS": "Letras de las notas naturales en orden: C D E F G A B.",
+    "GROUPS": "Familias de escalas del selector, con su identificador y título.",
+    "SCALES": "Catálogo de escalas: nombre, familia, fórmula, mayor madre, descripción y uso.",
+    "TUNINGS": "Catálogo de afinaciones: nombre y notas MIDI de la cuerda más aguda a la más grave.",
+    "CAGED": "Ventanas de trastes de las cinco formas, medidas para la mayor de Do.",
+    "CAGED_ORDER": "Orden de las formas a lo largo del mástil: C, A, G, E, D.",
+    "INLAY_FRETS": "Trastes que llevan un punto de referencia en el mástil.",
+    "ROLE_NAMES": "Nombre en español de cada rol de nota en una escala.",
+    "CHORD_GROUPS": "Familias de acordes del explorador, con su identificador y título.",
+    "CHORD_TYPES": "Catálogo de tipos de acorde: nombre, símbolo, familia y fórmula.",
+    "QUALITY_TO_TYPE": "Traduce la calidad de un acorde diatónico al tipo del catálogo.",
+    "spellScale": "Deletrea una escala desde una tónica: nombre, roles e intervalo de cada nota.",
+    "keyLabel": "Etiqueta de una tecla del selector, con los dos nombres si hay dos posibles (C♯/D♭).",
+    "legendFor": "Lista de roles presentes en una escala deletreada, con su etiqueta.",
+    "stepPattern": "Patrón de tonos y semitonos de una escala: T, S y T½.",
+    "diatonicChords": "Acordes por terceras sobre cada grado de una escala de siete notas, con cifrado romano.",
+    "chordMidis": "Notas MIDI ascendentes de un acorde a partir de sus clases de altura.",
+    "scaleMidis": "Notas MIDI de una escala durante una octava, hasta la octava de la tónica.",
+    "positionRanges": "Ventanas de trastes de cada forma CAGED, recortadas al mástil.",
+    "parseFormula": "Convierte una fórmula de grados (1 b3 5…) en grados, alteraciones y semitonos.",
+    "pretty": "Sustituye # y b por ♯ y ♭ para mostrarlos.",
+    "spellChord": "Deletrea un acorde: nombre, notas, roles y clases de altura.",
+    "chordLegend": "Lista de roles presentes en un acorde deletreado, con su etiqueta.",
+    "findVoicings": "Busca digitaciones tocables de un acorde en una afinación, ordenadas por comodidad.",
+    "fingering": "Calcula los dedos necesarios y la cejilla de un vector de trastes.",
+    "alterationMap": "Notas de una escala ajenas a su mayor madre y la nota que sustituye cada una.",
+    "positionPredicate": "Devuelve una función que dice si una nota (traste, altura) pertenece a una forma CAGED."
+  },
+  "FretSynth": {
+    "pluckSamples": "Sintetiza una cuerda pulsada con Karplus-Strong y devuelve las muestras.",
+    "midiToFreq": "Frecuencia en hercios de una nota MIDI."
+  },
+  "FretTheme": {
+    "get": "Modo de tema guardado: auto, light o dark.",
+    "set": "Fija el modo de tema, lo guarda y lo aplica.",
+    "resolve": "Tema efectivo (light o dark) de un modo, consultando al sistema si es auto."
+  },
+  "FretApp.Util": {
+    "$": "Devuelve el primer elemento que coincide con un selector.",
+    "$$": "Devuelve todos los elementos que coinciden con un selector, como lista.",
+    "has": "Comprueba que un objeto tiene una propiedad propia.",
+    "el": "Crea un elemento HTML con clase y texto.",
+    "svgEl": "Crea un elemento SVG con atributos y lo añade a su padre."
+  },
+  "FretApp.State": {
+    "DEFAULTS": "Valores por defecto de todos los parámetros de estado.",
+    "STORE_KEY": "Clave de localStorage donde se guarda el estado.",
+    "sanitize": "Valida cualquier entrada y devuelve un estado completo y válido.",
+    "load": "Lee el estado de la dirección o, si está vacía, de localStorage.",
+    "persist": "Escribe el estado en la dirección y en localStorage."
+  },
+  "FretApp.Audio": {
+    "pluck": "Toca una nota MIDI con la cuerda sintetizada."
+  },
+  "FretApp.Fretboard": {
+    "init": "Conecta los eventos de clic y de teclado del mástil.",
+    "render": "Dibuja el mástil completo para una escala deletreada.",
+    "highlight": "Atenúa las notas fuera de la forma CAGED o del acorde elegidos.",
+    "flash": "Ilumina un momento las notas que cumplan una condición."
+  },
+  "FretApp.Explorer": {
+    "init": "Crea los controles del explorador y conecta sus eventos.",
+    "render": "Calcula y dibuja el acorde, sus notas y sus digitaciones.",
+    "open": "Abre el explorador con un acorde concreto."
+  }
+}
+  </script>
+
+  <script src="theme.js"></script>
+  <script src="theory.js"></script>
+  <script src="synth.js"></script>
+  <script src="util.js"></script>
+  <script src="state.js"></script>
+  <script src="audio.js"></script>
+  <script src="fretboard.js"></script>
+  <script src="explorer.js"></script>
+  <script src="docs.js"></script>
+</body>
+</html>

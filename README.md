@@ -16,6 +16,7 @@ Abre <http://localhost:8000>. El service worker (modo offline e instalación com
 | --- | --- |
 | `index.html` | La herramienta: cabecera, pestañas Escala y Explorador de acordes |
 | `ayuda.html` | Documentación del contenido (notas, escalas, CAGED, acordes, digitaciones…). Tablas generadas desde `theory.js` |
+| `aprender.html`, `aprender.js` | Ruta de estudio autodidacta por niveles (0–4) con lecciones, comprobaciones guardadas en el navegador y autoevaluación |
 | `docs.css`, `docs.js` | Estilo y comportamiento comunes de las páginas de documentación (índice, tablas generadas) |
 | `base.css` | Sistema de diseño compartido: tokens de color (claro/oscuro), cabecera, botones, controles |
 | `app.css` | Estilos de la herramienta: mástil, notas, diagramas de acordes |

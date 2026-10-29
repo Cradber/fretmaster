@@ -28,7 +28,42 @@ const STD = T.TUNINGS.standard.midi;
 const shape = (v) => [...v.frets].reverse().map((f) => (f < 0 ? 'x' : f)).join(' ');
 const voicings = (tuning, pc, type, bass, maxFret) => T.findVoicings(tuning, T.spellChord(pc, type), maxFret, 80, bass).map(shape);
 
+const NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
+const list = (arr) => (arr.length > 1 ? arr.slice(0, -1).join(', ') + ' y ' + arr[arr.length - 1] : arr[0]);
+
+/** Trastes mínimo y máximo de las notas de una caja (la primera completa) de una escala, en afinación estándar. */
+function boxFrets(pc, id, shape) {
+  const [a0, b0] = T.CAGED[shape];
+  const win = T.positionRanges(id, pc, 22)[shape].find(([a, b]) => b - a >= b0 - a0);
+  const pred = T.positionPredicate(id, pc, shape, 22);
+  const sc = T.spellScale(pc, id);
+  const frets = [];
+  STD.forEach((m) => { for (let x = win[0]; x <= win[1]; x++) if (sc.byPc.has((m + x) % 12) && pred(x, (m + x) % 12)) frets.push(x); });
+  return Math.min(...frets) + '-' + Math.max(...frets);
+}
+
 const CHECKS = {
+  octave: (from, to) => String(STD[+from - 1] + 12 - STD[+to - 1]),
+  fretnote: (string, fret) => NAMES[(STD[+string - 1] + +fret) % 12],
+  stringfrets: (string, id, pc, max) => {
+    const sc = T.spellScale(+pc, id);
+    const out = [];
+    for (let f = 0; f <= +max; f++) if (sc.byPc.has((STD[+string - 1] + f) % 12)) out.push(f);
+    return out.join(' ');
+  },
+  boxfrets: (pc, id, shape) => boxFrets(+pc, id, shape),
+  modeorder: () => ['lydian', 'major', 'mixolydian', 'dorian', 'minor', 'phrygian', 'locrian']
+    .map((id) => [id, T.parseFormula(T.SCALES[id].formula).reduce((a, t) => a + t.semi, 0)])
+    .sort((x, y) => y[1] - x[1]).map(([id]) => T.SCALES[id].name).join(' › '),
+  samepcs: (pcs, type) => {
+    const chords = pcs.split(',').map((p) => T.spellChord(+p, type));
+    const key = (c) => [...c.pcs].sort((a, b) => a - b).join(',');
+    return chords.every((c) => key(c) === key(chords[0])) ? list(chords.map((c) => c.name)) : 'DISTINTAS';
+  },
+  prog: (pc, id, romans) => {
+    const chords = T.diatonicChords(T.spellScale(+pc, id), 3);
+    return romans.split(' ').map((r) => { const c = chords.find((x) => x.roman === r); return c ? c.name : '?' + r; }).join(' ');
+  },
   scale: (pc, id) => T.spellScale(+pc, id).notes.map((n) => n.name).join(' '),
   chord: (pc, type) => T.spellChord(+pc, type).notes.map((n) => n.name).join(' '),
   steps: (id) => T.stepPattern(id).join(' '),
@@ -56,13 +91,17 @@ pages.forEach((page) => {
         const list = voicings(STD, +pc, type, +bass, 21);
         if (kind === 'voicing-first') assert.equal(list[0], text, spec);
         else assert.ok(list.includes(text), `${spec}: «${text}» no está entre ${list.slice(0, 6).join(' | ')}`);
+      } else if (kind === 'voicing-tuning') {
+        const [tuning, pc, type, bass] = args;
+        const l = voicings(T.TUNINGS[tuning].midi, +pc, type, +bass, 21);
+        assert.equal(l[0], text, spec);
       } else if (kind === 'voicingcapo') {
         const [pc, type, capo] = args;
         const list = voicings(STD.map((m) => m + +capo), +pc, type, 0, 22 - +capo - 1);
         assert.ok(list.includes(text), `${spec}: «${text}» no está entre ${list.slice(0, 6).join(' | ')}`);
       } else {
         assert.ok(CHECKS[kind], 'tipo de verificación desconocido: ' + kind);
-        assert.equal(text, CHECKS[kind](...args), spec);
+        assert.equal(text.replace(/–/g, '-'), CHECKS[kind](...args), spec);
       }
     });
   });

@@ -39,6 +39,7 @@
 .prose strong { font-weight: 650; }
 .prose code, .prose .notes { font-family: var(--font-mono); font-size: .88em; background: var(--surface-2); padding: .1em .4em; border-radius: 5px; border: 1px solid var(--border); }
 .prose .notes { white-space: nowrap; }
+.prose .notes--wrap { white-space: normal; }
 .prose pre { overflow-x: auto; padding: 14px 16px; border-radius: var(--radius-m); background: var(--surface); border: 1px solid var(--border); font: 13px/1.6 var(--font-mono); }
 .prose pre code { background: none; border: 0; padding: 0; font-size: inherit; }
 .prose a.try { display: inline-flex; align-items: center; gap: 4px; padding: 1px 10px; border-radius: 999px; border: 1px solid var(--border-strong); font-size: .88em; font-weight: 550; text-decoration: none; white-space: nowrap; }
@@ -79,3 +80,32 @@ dl.glossary dd { margin: .2em 0 0; color: var(--muted); line-height: 1.65; }
   .prose h2 { break-after: avoid; }
   .table-wrap { break-inside: avoid; }
 }
+
+/* ---------- Ruta de aprendizaje ---------- */
+.level-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.level-badge { display: inline-block; padding: 2px 10px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 12px; font-weight: 650; letter-spacing: .04em; vertical-align: middle; white-space: nowrap; }
+.progress-count { font-size: 13px; font-weight: 500; color: var(--faint); font-variant-numeric: tabular-nums; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 0 !important; list-style: none !important; font-size: 13.5px; color: var(--muted); }
+.meta li { margin: 0 !important; }
+.meta strong { color: var(--fg); }
+.lesson { border: 1px solid var(--border); border-radius: var(--radius-l); background: var(--surface); padding: 6px 22px 20px; }
+.lesson h3 { margin-top: 1em; }
+.lesson > * + * { margin-top: .9em; }
+.lesson h4 { margin-top: 1.3em; font-size: 12px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+.steps { counter-reset: step; list-style: none !important; padding-left: 0 !important; display: grid; gap: .6em; }
+.steps > li { counter-increment: step; position: relative; padding-left: 2.2em; margin: 0 !important; }
+.steps > li::before { content: counter(step); position: absolute; left: 0; top: .15em; width: 1.5em; height: 1.5em; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--border-strong); font-size: .78em; font-weight: 650; display: grid; place-items: center; }
+.checklist { list-style: none !important; padding-left: 0 !important; display: grid; gap: .5em; }
+.checklist li { margin: 0 !important; }
+.checklist label { display: flex; gap: .6em; align-items: flex-start; cursor: pointer; line-height: 1.5; }
+.checklist input { margin-top: .3em; width: 1.05em; height: 1.05em; accent-color: var(--accent); flex: none; }
+.checklist input:checked + span { color: var(--faint); text-decoration: line-through; text-decoration-thickness: 1px; }
+details.qa { border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--surface); }
+details.qa + details.qa { margin-top: 8px; }
+details.qa > summary { cursor: pointer; padding: 11px 16px; font-weight: 550; list-style: none; }
+details.qa > summary::-webkit-details-marker { display: none; }
+details.qa > summary::before { content: "▸"; display: inline-block; width: 1.2em; color: var(--faint); transition: transform .15s; }
+details.qa[open] > summary::before { transform: rotate(90deg); }
+details.qa > div { padding: 0 16px 14px 2.4em; color: var(--muted); }
+.progress-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 14px 18px; border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--surface); }
+.progress-tools p { margin: 0; font-size: 14px; color: var(--muted); }

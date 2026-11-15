@@ -97,9 +97,11 @@
 
   <main id="main" class="app">
     <h1 class="sr-only">FretMaster: escalas, modos y acordes para guitarra</h1>
+    <a id="back-lesson" class="back-link" href="aprender.html" hidden>← Volver a la lección</a>
     <div class="tabs" role="tablist" aria-label="Secciones de la herramienta" id="view-tabs">
       <button type="button" role="tab" id="tab-escala" aria-controls="panel-escala" data-view="escala">Escala</button>
       <button type="button" role="tab" id="tab-acordes" aria-controls="panel-acordes" data-view="acordes">Explorador de acordes</button>
+      <button type="button" role="tab" id="tab-practica" aria-controls="panel-practica" data-view="practica">Práctica</button>
     </div>
 
     <!-- ===== Pestaña: Escala ===== -->
@@ -122,6 +124,7 @@
         <h2 id="scale-title"><span id="scale-root-text" class="root">C</span> <span id="scale-name-text">Mayor</span></h2>
         <button id="play-scale" class="btn btn--primary" type="button">▶ Escuchar escala</button>
       </div>
+      <p id="scale-desc" class="scale-desc"></p>
 
       <div class="toolbar">
         <div class="seg seg--rect" role="group" aria-label="Forma CAGED" id="caged-seg">
@@ -166,8 +169,8 @@
       </section>
 
       <section class="card about" aria-labelledby="about-title">
-        <h3 id="about-title">Sobre esta escala</h3>
-        <p id="scale-desc" class="scale-desc"></p>
+        <h3 id="about-title">Notas de la escala</h3>
+        <p class="hint">Toca una nota para oírla y ver dónde está en el mástil.</p>
         <ul id="note-chips" class="note-chips" aria-label="Notas de la escala"></ul>
         <p id="pattern" class="pattern"></p>
       </section>
@@ -211,6 +214,43 @@
       <div id="voicings" class="voicings"></div>
     </section>
 
+    <!-- ===== Pestaña: Práctica ===== -->
+    <section id="panel-practica" role="tabpanel" aria-labelledby="tab-practica" class="panel" hidden>
+      <div class="toolbar">
+        <div class="seg seg--rect" role="group" aria-label="Ejercicio" id="quiz-kind"></div>
+        <div class="seg" role="group" aria-label="Nivel" id="quiz-level"></div>
+      </div>
+      <p id="quiz-level-desc" class="hint"></p>
+
+      <div class="quiz-head">
+        <h2 id="quiz-prompt" class="quiz-prompt"></h2>
+        <p id="quiz-sub" class="quiz-sub"></p>
+      </div>
+
+      <div class="board-card">
+        <div class="board-scroll" tabindex="-1">
+          <div id="quiz-inner" class="board-inner">
+            <div id="quiz-numbers" class="fretgrid fret-numbers" aria-hidden="true"></div>
+            <div id="quiz-board" class="fretboard" role="group" aria-label="Mástil con la pregunta"></div>
+          </div>
+        </div>
+        <p id="quiz-ear" class="quiz-note" hidden>Solo de oído: el mástil se muestra cuando respondas.</p>
+        <p id="quiz-tap" class="quiz-note" hidden>Toca el traste en la cuerda resaltada.</p>
+      </div>
+
+      <div id="quiz-answers" class="quiz-answers" role="group" aria-label="Respuestas"></div>
+
+      <div class="quiz-foot">
+        <p id="quiz-feedback" class="quiz-feedback" role="status"></p>
+        <div class="quiz-actions">
+          <button id="quiz-replay" class="btn" type="button">▶ Escuchar</button>
+          <button id="quiz-next" class="btn btn--primary" type="button" hidden>Siguiente →</button>
+        </div>
+      </div>
+      <p id="quiz-score" class="quiz-score"></p>
+      <p class="hint">Se practica con la afinación elegida en Ajustes, en los trastes 0 a 12 y sin cejilla. La mejor racha de cada ejercicio y nivel se guarda en este navegador.</p>
+    </section>
+
     <p id="live" class="sr-only" role="status" aria-live="polite"></p>
     <div id="toast" class="toast" role="status" hidden></div>
   </main>
@@ -218,11 +258,14 @@
   <script src="theme.js"></script>
   <script src="theory.js"></script>
   <script src="synth.js"></script>
+  <script src="quiz.js"></script>
   <script src="util.js"></script>
   <script src="state.js"></script>
   <script src="audio.js"></script>
   <script src="fretboard.js"></script>
+  <script src="diagram.js"></script>
   <script src="explorer.js"></script>
+  <script src="practice.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

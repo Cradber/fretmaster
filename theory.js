@@ -97,6 +97,9 @@
 
   const CAGED = { C: [0, 3], A: [2, 5], G: [4, 8], E: [7, 10], D: [9, 13] };
   const CAGED_ORDER = ['C', 'A', 'G', 'E', 'D'];
+  // Número con el que los métodos de guitarra llaman a cada caja de la pentatónica menor (y del blues): la «caja 1»,
+  // con la tónica en la 6ª cuerda, es la Forma G de su mayor madre (La penta menor, trastes 5–8).
+  const PENTA_BOX = { G: 1, E: 2, D: 3, C: 4, A: 5 };
 
   // MIDI de la cuerda más aguda a la más grave.
   const TUNINGS = {
@@ -477,7 +480,11 @@
     return out;
   }
 
-  /** Dedos necesarios y cejilla (si la hay) para un vector de trastes (-1 = cuerda muda). */
+  /**
+   * Dedos necesarios y cejilla (si la hay) para un vector de trastes (-1 = cuerda muda).
+   * Con cuerdas al aire, la cejilla solo se usa si hace falta (más de cuatro notas pisadas): A (x02220), D (xx0232)
+   * o Em (022000) se tocan con un dedo por nota, no con cejilla.
+   */
   function fingering(frets) {
     const fretted = frets.filter((f) => f > 0);
     if (!fretted.length) return { fingers: 0, barre: null };
@@ -485,7 +492,7 @@
     const idx = frets.map((f, i) => (f === f0 ? i : -1)).filter((i) => i >= 0);
     const from = Math.min(...idx);
     const to = Math.max(...idx);
-    let barreOk = idx.length >= 2;
+    let barreOk = idx.length >= 2 && (fretted.length > 4 || !frets.includes(0));
     for (let i = from; i <= to && barreOk; i++) if (frets[i] < f0) barreOk = false;
     if (barreOk) {
       return { fingers: 1 + fretted.filter((f) => f > f0).length, barre: { fret: f0, from, to } };
@@ -553,7 +560,7 @@
   }
 
   const api = {
-    LETTERS, GROUPS, SCALES, TUNINGS, CAGED, CAGED_ORDER, INLAY_FRETS, ROLE_NAMES,
+    LETTERS, GROUPS, SCALES, TUNINGS, CAGED, CAGED_ORDER, PENTA_BOX, INLAY_FRETS, ROLE_NAMES,
     CHORD_GROUPS, CHORD_TYPES, QUALITY_TO_TYPE,
     spellScale, keyLabel, legendFor, stepPattern, diatonicChords,
     chordMidis, scaleMidis, positionRanges, parseFormula, pretty,

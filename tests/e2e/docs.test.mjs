@@ -135,6 +135,37 @@ await test('aprender: los identificadores de progreso son únicos y cada casilla
   assert.deepEqual([...levels].sort(), ['n0', 'n1', 'n2', 'n3', 'n4']);
 });
 
+await test('aprender: los diagramas del mástil y de los acordes se dibujan con el código de la herramienta', async (p) => {
+  await p.goto(url('aprender.html'));
+  const boards = await p.eval('document.querySelectorAll("[data-gen=board]").length');
+  const chords = await p.eval('document.querySelectorAll("[data-gen=voicing]").length');
+  assert.ok(boards >= 10 && chords >= 15, `diagramas: ${boards} mástiles y ${chords} acordes`);
+  assert.equal(await p.eval('document.querySelectorAll("[data-gen=board] svg.mini-board").length'), boards);
+  assert.equal(await p.eval('document.querySelectorAll("[data-gen=voicing] svg.chord-diagram").length'), chords);
+  // Cada diagrama tiene pie y una descripción para quien no lo ve.
+  assert.equal(await p.eval('[...document.querySelectorAll("figure.fig")].filter(f => !f.querySelector("figcaption").textContent.trim() || !(f.querySelector("svg").getAttribute("aria-label") || "").length).length'), 0);
+  // La caja 1 de La penta menor (Forma G): doce notas entre los trastes 5 y 8, con la tónica en la 6ª cuerda.
+  const penta = 'document.querySelector(\'[data-gen=board][data-s="minor_pentatonic"] svg\')';
+  assert.equal(await p.eval(`${penta}.querySelectorAll(".mb-dot").length`), 12);
+  assert.match(await p.eval(`${penta}.getAttribute("aria-label")`), /cuerda 6: 1 en el traste 5, ♭3 en el traste 8/);
+  // Las notas naturales de las cuerdas 6 y 5: ocho por cuerda hasta el traste 12.
+  assert.equal(await p.eval('document.querySelector(\'[data-gen=board][data-strings="6,5"] svg\').querySelectorAll(".mb-dot").length'), 16);
+  // Ningún diagrama desborda la página en una pantalla estrecha: los anchos se desplazan dentro de su caja.
+  assert.ok(await p.eval('document.documentElement.scrollWidth - document.documentElement.clientWidth') <= 1);
+});
+
+await test('aprender: las barras de avance siguen a las casillas', async (p) => {
+  await p.goto(url('aprender.html'));
+  const bar = (id) => p.eval(`(() => { const b = document.querySelector('progress[data-progress-bar="${id}"]'); return [b.value, b.max]; })()`);
+  const total = await p.eval('document.querySelectorAll("input[data-progress]").length');
+  const n0 = await p.eval('document.querySelectorAll("input[data-progress^=n0-]").length');
+  assert.deepEqual(await bar('all'), [0, total]);
+  await p.click('input[data-progress="n0-em-am"]');
+  assert.deepEqual(await bar('n0'), [1, n0]);
+  assert.deepEqual(await bar('all'), [1, total]);
+  assert.deepEqual(await bar('n1'), [0, await p.eval('document.querySelectorAll("input[data-progress^=n1-]").length')]);
+});
+
 await test('aprender: las tablas generadas y los enlaces "Abrir" funcionan', async (p) => {
   await p.goto(url('aprender.html'));
   assert.equal(await p.eval('document.querySelectorAll("[data-gen=caged] tbody tr").length'), 5);
@@ -159,7 +190,7 @@ await test('desarrollo: la API generada tiene una fila por exportación y ningun
     return { name, rows: slot.querySelectorAll('tbody tr').length, real: Object.keys(obj).length,
              sinDescripcion: [...slot.querySelectorAll('tbody tr')].filter(r => r.cells[2].textContent === '—').length };
   })`);
-  assert.equal(result.length, 8);
+  assert.equal(result.length, 11);
   result.forEach((r) => {
     assert.equal(r.rows, r.real, `${r.name}: filas ${r.rows} frente a exportaciones ${r.real}`);
     assert.equal(r.sinDescripcion, 0, `${r.name}: funciones sin descripción`);

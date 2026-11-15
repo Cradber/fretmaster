@@ -23,7 +23,7 @@
 /* Texto */
 .prose { min-width: 0; }
 /* El texto mantiene una medida cómoda de lectura; las tablas usan todo el ancho de la columna. */
-.prose > :not(.table-wrap):not([data-gen]):not(.cards) { max-width: 78ch; }
+.prose > :not(.table-wrap):not([data-gen]):not(.cards):not(.fig-row) { max-width: 78ch; }
 .prose > * + * { margin-top: 1em; }
 .prose h1 { font-size: clamp(30px, 5vw, 42px); font-weight: 300; letter-spacing: -.025em; line-height: 1.12; margin-top: 0; }
 .prose h1 strong { font-weight: 650; }
@@ -55,6 +55,31 @@
 @media (max-width: 767px) { .table-wrap table { min-width: 620px; } }
 .table-wrap td.mono, .table-wrap .mono { font-family: var(--font-mono); font-size: 12.5px; white-space: nowrap; }
 .table-wrap tbody tr:hover { background: var(--surface-2); }
+
+/* Diagramas generados (diagram.js): tramos del mástil y digitaciones */
+.fig { margin: 0; display: inline-flex; flex-direction: column; align-items: flex-start; gap: 6px; max-width: 100%; }
+.fig figcaption { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: 13px; font-weight: 600; color: var(--fg); }
+.fig .fig-sub { font-family: var(--font-mono); font-size: 11.5px; font-weight: 400; color: var(--faint); white-space: nowrap; }
+.fig--chord { align-items: center; padding: 10px 10px 8px; border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--surface); }
+.fig--chord svg { width: 128px; height: auto; }
+/* En el móvil caben dos diagramas de acorde por fila. */
+@media (max-width: 520px) { .fig--chord { padding: 8px 6px 6px; } .fig--chord svg { width: 108px; } }
+.fig--chord figcaption { flex-direction: column; align-items: center; gap: 0; }
+.fig-row { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-start; }
+.lesson .fig-row, .lesson [data-gen="board"] { padding: 12px 14px; border-radius: var(--radius-m); background: var(--surface-2); overflow-x: auto; }
+.lesson .fig-row [data-gen="board"] { padding: 0; background: none; overflow: visible; }
+.lesson .fig-row--chords { background: none; padding: 0; gap: 10px; }
+.mini-board { display: block; max-width: none; height: auto; }
+.mini-board .mb-fret { stroke: var(--border-strong); stroke-width: 1; }
+.mini-board .mb-nut { stroke: var(--nut); stroke-width: 4; }
+.mini-board .mb-string { stroke: var(--string); }
+.mini-board .mb-inlay { fill: var(--inlay); }
+.mini-board .mb-nums text { fill: var(--faint); font-size: 10px; font-weight: 500; text-anchor: middle; }
+.mini-board .mb-nums .mark { fill: var(--fg); font-weight: 700; }
+.mini-board .mb-dot text { fill: var(--on-role); font-size: 10px; font-weight: 700; text-anchor: middle; }
+.mini-board .mb-dot text.long { font-size: 8px; letter-spacing: -.3px; }
+.mini-board .mb-scale text { fill: var(--c-scale-fg); }
+.mini-board .mb-ring { fill: none; stroke: var(--c-root); stroke-width: 1.4; }
 
 /* Avisos y tarjetas */
 .callout { padding: 14px 18px; border-radius: var(--radius-m); border: 1px solid var(--border); border-left: 4px solid var(--accent); background: var(--surface); }
@@ -107,6 +132,13 @@ details.qa > summary::-webkit-details-marker { display: none; }
 details.qa > summary::before { content: "▸"; display: inline-block; width: 1.2em; color: var(--faint); transition: transform .15s; }
 details.qa[open] > summary::before { transform: rotate(90deg); }
 details.qa > div { padding: 0 16px 14px 2.4em; color: var(--muted); }
+.prose progress { appearance: none; -webkit-appearance: none; width: 72px; height: 6px; border: 0; border-radius: 999px; overflow: hidden; background: var(--surface-2); vertical-align: middle; accent-color: var(--accent); }
+.prose progress::-webkit-progress-bar { background: var(--surface-2); border-radius: 999px; }
+.prose progress::-webkit-progress-value { background: var(--accent); border-radius: 999px; transition: width .3s; }
+.prose progress::-moz-progress-bar { background: var(--accent); border-radius: 999px; }
+.progress-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--surface); }
+.progress-top progress { flex: 1 1 180px; width: auto; height: 8px; }
+.progress-top p { margin: 0; font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .progress-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 14px 18px; border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--surface); }
 .progress-tools p { margin: 0; font-size: 14px; color: var(--muted); }
 

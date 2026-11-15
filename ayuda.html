@@ -88,6 +88,7 @@
             <li><a href="#inversiones">Inversiones</a></li>
           </ol>
         </li>
+        <li><a href="#practica">Práctica</a></li>
         <li><a href="#ajustes">Afinación, trastes y cejilla</a></li>
         <li><a href="#audio">Audio</a>
           <ol><li><a href="#sin-sonido">Si no se oye nada</a></li></ol>
@@ -105,12 +106,13 @@
 
       <!-- ===================================================== -->
       <h2 id="que-es">Qué es FretMaster</h2>
-      <p>FretMaster es un explorador de teoría musical para <strong>guitarra</strong>. Dibuja sobre un mástil las notas de una escala o de un acorde, las colorea según la función que cumplen y calcula digitaciones tocables. Cubre cuatro áreas:</p>
+      <p>FretMaster es un explorador de teoría musical para <strong>guitarra</strong>. Dibuja sobre un mástil las notas de una escala o de un acorde, las colorea según la función que cumplen y calcula digitaciones tocables. Cubre cinco áreas:</p>
       <ul>
         <li><strong>Escalas y modos</strong>: <span data-count="scales"></span> escalas en las 12 tonalidades, con su fórmula, sus notas y su carácter.</li>
         <li><strong>Formas CAGED</strong>: las <span data-count="shapes"></span> cajas en las que se reparte una escala a lo largo del mástil.</li>
         <li><strong>Acordes de la escala</strong>: tríadas y cuatriadas que se forman sobre cada grado, con su cifrado romano.</li>
         <li><strong>Explorador de acordes</strong>: <span data-count="chords"></span> tipos de acorde en las 12 fundamentales, con digitaciones, inversiones y cejilla.</li>
+        <li><strong>Práctica</strong>: ejercicios para nombrar y encontrar notas en el mástil y para reconocer intervalos, con tres niveles y rachas.</li>
       </ul>
       <p>Es una herramienta de <em>estudio y consulta</em>, no un afinador, un metrónomo ni un editor de tablaturas. Funciona sin conexión una vez cargada, y no envía ningún dato a ningún servidor.</p>
       <p><a class="try" href="index.html">Abrir la herramienta</a></p>
@@ -203,7 +205,7 @@
       <!-- ===================================================== -->
       <h2 id="caged">Formas CAGED</h2>
       <p>CAGED es un sistema para ver el mástil entero a través de cinco formas de acorde abierto: <strong>C, A, G, E y D</strong>. Cada una de esas formas, desplazada por el mástil, abarca una región donde las notas de la escala mayor forman una «caja». Las cinco cajas se encadenan sin huecos de un extremo a otro y se repiten cada doce trastes. Estudiar una escala caja a caja ayuda a no memorizar el mástil como una sola mancha de notas.</p>
-      <p>Los botones <em>Forma C, A, G, E, D</em> resaltan una caja y atenúan el resto. Para la mayor de Do, las cajas ocupan estos trastes:</p>
+      <p>Los botones <em>Forma C, A, G, E, D</em> resaltan una caja: una franja de color la enmarca en el mástil y las notas de fuera quedan atenuadas, pero a la vista, para que se vea cómo enlaza con las cajas vecinas. En la pentatónica menor y en el blues, la línea de debajo indica además el número de caja que usan los métodos de guitarra (la Forma G es la «caja <span data-verify="pentabox:G">1</span>»). Para la mayor de Do, las cajas ocupan estos trastes:</p>
       <div data-gen="caged"></div>
       <h3>Cómo se calcula</h3>
       <ul>
@@ -263,10 +265,15 @@
         <li>Se necesitan <strong>cuatro dedos o menos</strong>. Una cejilla cuenta como un solo dedo.</li>
       </ol>
       <p>Se buscan combinaciones hasta el <strong>traste 15</strong>. De todas las que cumplen las reglas, se ordenan por comodidad y se muestran hasta ocho. La puntuación favorece que haya poca amplitud entre trastes, que estén en trastes bajos, cerca de la cejuela, que haya pocas cuerdas mudas, que se aprovechen las cuerdas al aire, que esté la quinta, que se usen pocos dedos y que suenen muchas cuerdas.</p>
-      <p>Una <strong>cejilla</strong> se detecta cuando el traste más bajo pisado aparece en dos o más cuerdas y todas las cuerdas entre ellas están pisadas en ese traste o más arriba: ninguna puede quedar al aire ni muda. Así se obtiene <span class="notes" data-verify="voicing:5:maj:0">1 3 3 2 1 1</span> para Fa mayor, la clásica forma E con cejilla (de la cuerda grave a la aguda).</p>
+      <p>Una <strong>cejilla</strong> se detecta cuando el traste más bajo pisado aparece en dos o más cuerdas y todas las cuerdas entre ellas están pisadas en ese traste o más arriba: ninguna puede quedar al aire ni muda. Si la digitación usa cuerdas al aire, la cejilla solo se cuenta cuando hace falta, es decir, cuando hay más de cuatro notas pisadas: La mayor abierto (<span class="notes" data-verify="voicing-first:9:maj:0">x 0 2 2 2 0</span>) se muestra con un dedo por nota, sin cejilla. Así se obtiene <span class="notes" data-verify="voicing:5:maj:0">1 3 3 2 1 1</span> para Fa mayor, la clásica forma E con cejilla (de la cuerda grave a la aguda).</p>
       <p>Los botones <strong>Todas, Abiertas, Con cejilla y Posición alta</strong> filtran los resultados: <em>abiertas</em> son las que usan alguna cuerda al aire; <em>posición alta</em>, las que empiezan en el traste 5 o más arriba.</p>
 
       <h3 id="diagramas">Cómo leer un diagrama</h3>
+      <div class="fig-row fig-row--chords">
+        <div data-gen="voicing" data-chord="0:maj:0" data-frets="x 3 2 0 1 0"></div>
+        <div data-gen="voicing" data-chord="5:maj:0" data-frets="1 3 3 2 1 1"></div>
+        <div data-gen="voicing" data-chord="9:maj:0" data-frets="5 7 7 6 5 5"></div>
+      </div>
       <ul>
         <li>Las cuerdas van en vertical, con la <strong>más grave a la izquierda</strong>; los trastes, en horizontal.</li>
         <li><span class="notes">×</span> sobre una cuerda: está muda. <span class="notes">○</span>: suena al aire.</li>
@@ -283,6 +290,17 @@
       <p>No hay acordes «con bajo ajeno» (como C/D, con un Re que no es del acorde): el bajo siempre es una nota del acorde.</p>
 
       <!-- ===================================================== -->
+      <h2 id="practica">Práctica</h2>
+      <p>La pestaña <em>Práctica</em> convierte lo que muestran las otras dos en ejercicios: la aplicación pregunta, tú respondes y ella corrige al momento. Hay tres ejercicios, cada uno con tres niveles:</p>
+      <ul>
+        <li><strong>Nombra la nota</strong>: se marca un punto del mástil con un <span class="notes">?</span> y eliges su nombre. <a class="try" href="index.html#w=practica&amp;x=name&amp;y=1">Probarlo</a></li>
+        <li><strong>Encuentra la nota</strong>: se pide una nota en una cuerda («toca G en la cuerda 5») y la buscas tocando el traste en el mástil. Si la nota aparece dos veces en la cuerda (al aire y en el traste 12), valen las dos. <a class="try" href="index.html#w=practica&amp;x=find&amp;y=1">Probarlo</a></li>
+        <li><strong>Intervalos</strong>: suenan dos notas, de la grave a la aguda, y eliges qué intervalo forman. La primera se marca como tónica (<span class="notes">1</span>) y la segunda con <span class="notes">?</span>. <a class="try" href="index.html#w=practica&amp;x=interval&amp;y=1">Probarlo</a></li>
+      </ul>
+      <p>En los ejercicios de notas, el nivel 1 se limita a las notas naturales de las cuerdas 6 y 5; el 2 las pide en todas las cuerdas, y el 3 añade las notas con alteración. En <em>Intervalos</em>, el nivel 1 usa las terceras, la cuarta, la quinta y la octava; el 2, los doce intervalos, y el 3 los pregunta <strong>solo de oído</strong>: el mástil no se muestra hasta que respondes.</p>
+      <p>Tras cada respuesta se ve la solución en el mástil y una explicación breve; si has acertado, la pregunta siguiente llega sola, y si no, cuando pulses <em>Siguiente</em>. Debajo se lleva la cuenta: la racha actual, la mejor racha de ese ejercicio y nivel (se guarda en tu navegador) y los aciertos de la sesión. El ejercicio y el nivel forman parte de la dirección de la página, así que se pueden enlazar.</p>
+      <p>Se practica con la afinación elegida en Ajustes y con el modo zurdo si lo tienes activado, siempre en los trastes 0 a 12 y sin cejilla.</p>
+
       <h2 id="ajustes">Afinación, trastes y cejilla</h2>
       <p>El botón de ajustes de la cabecera abre una ventana con las opciones del mástil:</p>
       <ul>
@@ -346,6 +364,7 @@
       <h2 id="compartir">Enlaces, estado y privacidad</h2>
       <p>Todo lo que eliges se guarda en la dirección de la página, tras el símbolo <span class="notes">#</span>, y también en el navegador. El icono de enlace de la cabecera copia la dirección de la vista actual: quien la abra verá lo mismo que tú. Estos son los parámetros:</p>
       <div data-gen="state"></div>
+      <p>Un enlace puede traer solo algunos parámetros, como los botones <em>Abrir</em> de la página Aprender. Los que faltan toman su valor por defecto, salvo tus preferencias de instrumento (modo zurdo, número de trastes, alteraciones y sonido), que se conservan tal como las tenías.</p>
       <p>Un valor no válido se ignora y se usa el valor por defecto, de modo que un enlace manipulado no puede romper la aplicación.</p>
       <div class="callout callout--ok">
         <p class="title">Privacidad</p>
@@ -369,6 +388,7 @@
         <li><strong>Acordes</strong>: solo los <span data-count="chords"></span> tipos del <a href="#catalogo">catálogo</a>, de cinco notas como máximo. No hay 7♭9, 7♯9, 6/9, 11 ni 13, ni bajos ajenos al acorde (C/D).</li>
         <li><strong>Escalas</strong>: solo las de la <a href="#familias">tabla</a>. No están la disminuida semitono–tono, la alterada ni el lidio dominante, aunque algunas descripciones las mencionan como relación, ni la mayor armónica. La menor melódica es la ascendente.</li>
         <li><strong>Escuchar escala</strong>: toca una octava en un registro fijo (la tónica entre Do3 y Si3), sin seguir la forma CAGED elegida.</li>
+        <li><strong>Práctica</strong>: tres ejercicios (nombrar notas, encontrarlas e intervalos ascendentes de hasta una octava), en los trastes 0 a 12 y sin cejilla. No hay ejercicios de acordes, de escalas ni de ritmo, y la aplicación no escucha tu guitarra: corrige lo que marcas en pantalla, no lo que tocas.</li>
         <li><strong>Audio</strong>: sintético; su afinación está probada, pero el timbre no pretende imitar una guitarra real. En Safari y iOS el audio es más estricto y su comportamiento no se ha verificado en dispositivos reales (<a href="#sin-sonido">ver arriba</a>).</li>
         <li><strong>Instrumento</strong>: guitarra de 6 o 7 cuerdas con trastes normales, 22 o 24 trastes y cejilla hasta el traste 9; no hay bajo, ukelele ni instrumentos sin trastes.</li>
       </ul>
@@ -407,6 +427,7 @@
   <script src="theory.js"></script>
   <script src="util.js"></script>
   <script src="state.js"></script>
+  <script src="diagram.js"></script>
   <script src="docs.js"></script>
 </body>
 </html>

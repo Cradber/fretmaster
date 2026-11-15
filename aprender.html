@@ -61,7 +61,7 @@
         <li><a href="#como-usar">Cómo usar esta guía</a></li>
         <li><a href="#mapa">Mapa de la ruta</a></li>
         <li><a href="#nivel-0">Nivel 0 · Orientarse</a>
-          <ol><li><a href="#l0-1">Las notas naturales</a></li><li><a href="#l0-2">Tonos y semitonos</a></li><li><a href="#l0-3">Octavas entre cuerdas</a></li><li><a href="#ev-0">Autoevaluación</a></li></ol>
+          <ol><li><a href="#l0-1">Las notas naturales</a></li><li><a href="#l0-2">Tonos y semitonos</a></li><li><a href="#l0-3">Octavas entre cuerdas</a></li><li><a href="#l0-4">Dos primeros acordes</a></li><li><a href="#ev-0">Autoevaluación</a></li></ol>
         </li>
         <li><a href="#nivel-1">Nivel 1 · Primera escala y acordes</a>
           <ol><li><a href="#l1-1">La escala mayor</a></li><li><a href="#l1-2">La penta menor</a></li><li><a href="#l1-3">Acordes abiertos</a></li><li><a href="#l1-4">Los acordes del tono</a></li><li><a href="#ev-1">Autoevaluación</a></li></ol>
@@ -84,17 +84,22 @@
     <main id="contenido" class="prose">
       <h1>Aprender con <strong>FretMaster</strong></h1>
       <p class="lead">Una ruta de estudio para aprender por tu cuenta, de menos a más. Cada nivel parte de lo anterior, tiene objetivos claros y se estudia con la herramienta abierta: la miras, la tocas y compruebas que lo has entendido.</p>
+      <div class="progress-top">
+        <progress data-progress-bar="all" max="1" value="0" aria-label="Progreso de toda la ruta"></progress>
+        <p><strong data-progress-total></strong> comprobaciones marcadas</p>
+      </div>
 
       <!-- ===================================================== -->
       <h2 id="como-usar">Cómo usar esta guía</h2>
       <h3 id="estructura">Cómo está organizada</h3>
       <p>Hay cinco niveles, del 0 al 4. Cada <strong>lección</strong> sigue siempre el mismo orden, para que sepas qué hacer en cada momento:</p>
       <ol class="steps">
-        <li><strong>Idea</strong>: qué se va a aprender y por qué, en pocas líneas.</li>
+        <li><strong>Idea</strong>: qué se va a aprender y por qué, en pocas líneas, con un diagrama del mástil o del acorde cuando ayuda a verlo.</li>
         <li><strong>En la herramienta</strong>: pasos concretos. Los botones <a class="try" href="index.html">Abrir</a> cargan la herramienta con la vista exacta de la lección.</li>
         <li><strong>Práctica</strong>: qué tocar, cuánto tiempo y cómo.</li>
         <li><strong>Compruébalo</strong>: una lista de cosas que deberías poder hacer sin mirar. Márcalas cuando las logres: tu progreso se guarda en tu navegador, y en ningún otro sitio.</li>
       </ol>
+      <p>Varias lecciones enlazan además un ejercicio de la pestaña <strong>Práctica</strong> de la herramienta, que pregunta y corrige al momento: sirve para comprobar con una racha de aciertos lo que crees que ya sabes.</p>
       <p>Al final de cada nivel hay una <strong>autoevaluación</strong> con preguntas y respuestas ocultas. Intenta responder antes de abrirlas; si fallas, vuelve a la lección correspondiente.</p>
 
       <h3 id="principios">Cómo estudiar</h3>
@@ -121,23 +126,24 @@
           <caption>Niveles de la ruta</caption>
           <thead><tr><th scope="col">Nivel</th><th scope="col">Meta</th><th scope="col">Qué usarás de la herramienta</th><th scope="col">Tiempo orientativo</th><th scope="col">Tu avance</th></tr></thead>
           <tbody>
-            <tr><td><a href="#nivel-0">0 · Orientarse</a></td><td>Saber dónde están las notas</td><td>Do mayor en modo Notas; Intervalos</td><td>1–2 semanas</td><td class="mono"><span data-progress-level="n0"></span></td></tr>
-            <tr><td><a href="#nivel-1">1 · Primera escala y acordes</a></td><td>Una escala, una caja de penta y acordes abiertos</td><td>Formas, acordes de la escala, explorador</td><td>3–6 semanas</td><td class="mono"><span data-progress-level="n1"></span></td></tr>
-            <tr><td><a href="#nivel-2">2 · El mástil completo</a></td><td>Las cinco cajas, los modos y las séptimas</td><td>Formas CAGED, modos, inversiones</td><td>6–10 semanas</td><td class="mono"><span data-progress-level="n2"></span></td></tr>
-            <tr><td><a href="#nivel-3">3 · Color y armonía</a></td><td>Menor armónica, blues, ii–V–I y escalas simétricas</td><td>Escalas alteradas, cuatriadas, extendidos</td><td>8–12 semanas</td><td class="mono"><span data-progress-level="n3"></span></td></tr>
-            <tr><td><a href="#nivel-4">4 · Hacerlo tuyo</a></td><td>Aplicar lo aprendido a cualquier tono y afinación</td><td>Formas móviles, cejilla, afinaciones</td><td>Continuo</td><td class="mono"><span data-progress-level="n4"></span></td></tr>
+            <tr><td><a href="#nivel-0">0 · Orientarse</a></td><td>Saber dónde están las notas y tocar dos acordes</td><td>Do mayor en modo Notas; Intervalos; explorador</td><td>1–2 semanas</td><td class="mono"><progress data-progress-bar="n0" max="1" value="0" aria-label="Avance del nivel 0"></progress> <span data-progress-level="n0"></span></td></tr>
+            <tr><td><a href="#nivel-1">1 · Primera escala y acordes</a></td><td>Una escala, una caja de penta y acordes abiertos</td><td>Formas, acordes de la escala, explorador</td><td>3–6 semanas</td><td class="mono"><progress data-progress-bar="n1" max="1" value="0" aria-label="Avance del nivel 1"></progress> <span data-progress-level="n1"></span></td></tr>
+            <tr><td><a href="#nivel-2">2 · El mástil completo</a></td><td>Las cinco cajas, los modos y las séptimas</td><td>Formas CAGED, modos, inversiones</td><td>6–10 semanas</td><td class="mono"><progress data-progress-bar="n2" max="1" value="0" aria-label="Avance del nivel 2"></progress> <span data-progress-level="n2"></span></td></tr>
+            <tr><td><a href="#nivel-3">3 · Color y armonía</a></td><td>Menor armónica, blues, ii–V–I y escalas simétricas</td><td>Escalas alteradas, cuatriadas, extendidos</td><td>8–12 semanas</td><td class="mono"><progress data-progress-bar="n3" max="1" value="0" aria-label="Avance del nivel 3"></progress> <span data-progress-level="n3"></span></td></tr>
+            <tr><td><a href="#nivel-4">4 · Hacerlo tuyo</a></td><td>Aplicar lo aprendido a cualquier tono y afinación</td><td>Formas móviles, cejilla, afinaciones</td><td>Continuo</td><td class="mono"><progress data-progress-bar="n4" max="1" value="0" aria-label="Avance del nivel 4"></progress> <span data-progress-level="n4"></span></td></tr>
           </tbody>
         </table>
       </div>
 
       <!-- ===================================================== -->
       <h2 id="nivel-0"><span class="level-badge">Nivel 0</span> Orientarse</h2>
-      <ul class="meta"><li><strong>Meta:</strong> nombrar las notas de las cuerdas 6 y 5 y moverte por el mástil con criterio.</li><li><strong>Tiempo:</strong> 1–2 semanas.</li><li><strong>Avance:</strong> <span data-progress-level="n0"></span></li></ul>
+      <ul class="meta"><li><strong>Meta:</strong> nombrar las notas de las cuerdas 6 y 5, moverte por el mástil con criterio y tocar tus dos primeros acordes.</li><li><strong>Tiempo:</strong> 1–2 semanas.</li><li><strong>Avance:</strong> <span data-progress-level="n0"></span></li></ul>
 
       <section class="lesson" aria-labelledby="l0-1">
         <h3 id="l0-1">0.1 · Las notas naturales del mástil</h3>
         <h4>Idea</h4>
         <p>Las siete notas naturales son <span class="notes">C D E F G A B</span> (Do Re Mi Fa Sol La Si). La escala de Do mayor está formada <em>solo</em> por ellas, así que mostrar Do mayor en modo <em>Notas</em> es mostrar todas las notas naturales del mástil.</p>
+        <div data-gen="board" data-k="0" data-s="major" data-from="0" data-to="12" data-strings="6,5" data-caption="Las notas naturales de las cuerdas 6 y 5"></div>
         <h4>En la herramienta</h4>
         <ol class="steps">
           <li>Abre <a class="try" href="index.html#k=0&amp;s=major&amp;m=notes">Do mayor, Notas</a>.</li>
@@ -149,11 +155,13 @@
           <li>Sube por la cuerda 6 hasta el traste 12 tocando solo las notas naturales y diciendo su nombre. Luego baja.</li>
           <li>Repite en la cuerda 5.</li>
           <li>Busca todas las <strong>E</strong> del mástil en las 6 cuerdas, en los trastes del 0 al 12. Después, todas las <strong>A</strong>.</li>
+          <li>Ponte a prueba en la pestaña Práctica: <a class="try" href="index.html#w=practica&amp;x=name&amp;y=1">Nombra la nota</a> te señala un punto de las cuerdas 6 y 5 y tú dices qué nota es; <a class="try" href="index.html#w=practica&amp;x=find&amp;y=1">Encuentra la nota</a> hace lo contrario.</li>
         </ul>
         <h4>Compruébalo</h4>
         <ul class="checklist">
           <li><label><input type="checkbox" data-progress="n0-cuerda6"><span>Digo el nombre de las notas naturales de la cuerda 6 hasta el traste 12 sin mirar.</span></label></li>
           <li><label><input type="checkbox" data-progress="n0-cuerda5"><span>Hago lo mismo en la cuerda 5.</span></label></li>
+          <li><label><input type="checkbox" data-progress="n0-racha-notas"><span>Consigo una racha de 10 en «Nombra la nota», nivel 1.</span></label></li>
         </ul>
       </section>
 
@@ -186,6 +194,7 @@
           <li>de la cuerda 6 a la 4, y de la 5 a la 3: <strong data-verify="octave:6:4">2</strong> trastes más arriba;</li>
           <li>de la cuerda 4 a la 2, y de la 3 a la 1: <strong data-verify="octave:4:2">3</strong> trastes más arriba (la pareja Sol–Si, a solo una tercera mayor, desplaza el dibujo un traste más, como explica la <a href="ayuda.html#mastil">ayuda</a>).</li>
         </ul>
+        <div data-gen="board" data-k="0" data-s="major" data-from="0" data-to="12" data-roles="root" data-caption="Todas las Do hasta el traste 12: cada pareja cercana dibuja una octava"></div>
         <h4>En la herramienta</h4>
         <ol class="steps">
           <li>Abre <a class="try" href="index.html#k=0&amp;s=major&amp;m=intervals">Do mayor, Intervalos</a>. Todas las Do llevan el número <strong>1</strong> y un anillo.</li>
@@ -195,10 +204,37 @@
         <ul>
           <li>Pisa una nota cualquiera de la cuerda 6; encuentra su octava en la 4 y vuelve a la 6. Repítelo con 10 notas distintas.</li>
           <li>Haz lo mismo desde la cuerda 5 hasta la 3.</li>
+          <li>En <a class="try" href="index.html#w=practica&amp;x=interval&amp;y=1">Intervalos, nivel 1</a> aparecen la octava (<span class="notes">8</span>) y otros cuatro intervalos: fíjate en el dibujo que forma cada uno y en cómo suena.</li>
         </ul>
         <h4>Compruébalo</h4>
         <ul class="checklist">
           <li><label><input type="checkbox" data-progress="n0-octavas"><span>Dada una nota en la cuerda 6 o 5, encuentro su octava sin contar notas.</span></label></li>
+        </ul>
+      </section>
+
+      <section class="lesson" aria-labelledby="l0-4">
+        <h3 id="l0-4">0.4 · Tus dos primeros acordes</h3>
+        <h4>Idea</h4>
+        <p>Nombrar notas es necesario, pero la guitarra está para hacer música desde el primer día. Con dos acordes abiertos ya puedes acompañar: <strong>Mi menor</strong> (<span class="notes" data-verify="chord:4:min">E G B</span>) y <strong>La menor</strong> (<span class="notes" data-verify="chord:9:min">A C E</span>). Los dos contienen la nota Mi, y por eso pasar de uno a otro suena tan natural.</p>
+        <div class="fig-row fig-row--chords">
+          <div data-gen="voicing" data-chord="4:min:0" data-frets="0 2 2 0 0 0"></div>
+          <div data-gen="voicing" data-chord="9:min:0" data-frets="x 0 2 2 1 0"></div>
+        </div>
+        <p>Cómo leer el diagrama: las cuerdas van en vertical, con la más grave a la izquierda. Cada punto es un dedo y lleva el nombre de la nota que suena; <span class="notes">○</span> es una cuerda al aire y <span class="notes">×</span>, una cuerda que no se toca. La cifra de debajo dice lo mismo traste a traste, de la cuerda grave a la aguda.</p>
+        <h4>En la herramienta</h4>
+        <ol class="steps">
+          <li>Abre <a class="try" href="index.html#w=acordes&amp;r=4&amp;q=min">Mi menor en el explorador</a> y pulsa la primera digitación, <span class="notes" data-verify="voicing-first:4:min:0">0 2 2 0 0 0</span>, para oír cómo debe sonar.</li>
+          <li>Haz lo mismo con <a class="try" href="index.html#w=acordes&amp;r=9&amp;q=min">La menor</a>: <span class="notes" data-verify="voicing-first:9:min:0">x 0 2 2 1 0</span>.</li>
+        </ol>
+        <h4>Práctica · 5 minutos</h4>
+        <ul>
+          <li>Coloca Mi menor y toca las seis cuerdas una a una: todas deben sonar limpias. En La menor, empieza por la cuerda 5.</li>
+          <li>Rasguea cuatro veces cada acorde, despacio, y cambia sin detener el pulso: <em>Em – Am – Em – Am</em>. Al principio el cambio te hará esperar; es normal.</li>
+        </ul>
+        <h4>Compruébalo</h4>
+        <ul class="checklist">
+          <li><label><input type="checkbox" data-progress="n0-em-am"><span>Toco Em y Am con todas las cuerdas limpias.</span></label></li>
+          <li><label><input type="checkbox" data-progress="n0-cambio"><span>Cambio entre Em y Am sin perder el pulso, a ritmo lento.</span></label></li>
         </ul>
       </section>
 
@@ -215,6 +251,7 @@
         <h3 id="l1-1">1.1 · La escala mayor en posición abierta</h3>
         <h4>Idea</h4>
         <p>Es la escala que más oyes y sobre la que se explica casi toda la teoría. La <strong>Forma C</strong> de Do mayor la reúne en los trastes <strong data-verify="boxfrets:0:major:C">0-3</strong>, la zona donde se tocan los acordes abiertos.</p>
+        <div data-gen="board" data-k="0" data-s="major" data-p="C" data-caption="Do mayor, Forma C"></div>
         <h4>En la herramienta</h4>
         <ol class="steps">
           <li>Abre <a class="try" href="index.html#k=0&amp;s=major&amp;p=C">Do mayor, Forma C</a>. Las notas fuera de la forma se atenúan.</li>
@@ -237,7 +274,8 @@
       <section class="lesson" aria-labelledby="l1-2">
         <h3 id="l1-2">1.2 · La pentatónica menor, caja 1</h3>
         <h4>Idea</h4>
-        <p>Cinco notas y ningún semitono entre ellas, así que es difícil que alguna choque: es la escala con la que se empieza a improvisar. La penta menor de La es <span class="notes" data-verify="scale:9:minor_pentatonic">A C D E G</span>, y su caja más conocida ocupa los trastes <strong data-verify="boxfrets:9:minor_pentatonic:G">5-8</strong>. En la herramienta es la <strong>Forma G</strong>, porque se calcula sobre la mayor madre (Do mayor).</p>
+        <p>Cinco notas y ningún semitono entre ellas, así que es difícil que alguna choque: es la escala con la que se empieza a improvisar. La penta menor de La es <span class="notes" data-verify="scale:9:minor_pentatonic">A C D E G</span>, y su caja más conocida, la que casi todos los métodos llaman <strong>caja <span data-verify="pentabox:G">1</span></strong>, ocupa los trastes <strong data-verify="boxfrets:9:minor_pentatonic:G">5-8</strong>. En la herramienta es la <strong>Forma G</strong>, porque las formas se calculan sobre la mayor madre (Do mayor); al elegirla, la herramienta te recuerda que es la caja 1.</p>
+        <div data-gen="board" data-k="9" data-s="minor_pentatonic" data-p="G" data-m="intervals" data-caption="La penta menor, caja 1 (Forma G), en intervalos"></div>
         <h4>En la herramienta</h4>
         <ol class="steps">
           <li>Abre <a class="try" href="index.html#k=9&amp;s=minor_pentatonic&amp;p=G">La penta menor, Forma G</a>.</li>
@@ -247,6 +285,7 @@
         <ul>
           <li>Toca la caja subiendo y bajando, dos notas por cuerda, sin saltarte ninguna.</li>
           <li>Termina siempre en una <strong>La</strong> (la tónica): suena a «llegada».</li>
+          <li>Los números de la caja (♭3, 4, 5…) son intervalos desde la tónica. Apréndelos de vista y de oído con <a class="try" href="index.html#w=practica&amp;x=interval&amp;y=1">Intervalos, nivel 1</a>.</li>
           <li>Improvisa frases cortas de 3 o 4 notas sobre una pista en La menor; repite una idea que te guste antes de cambiarla.</li>
         </ul>
         <h4>Compruébalo</h4>
@@ -259,7 +298,18 @@
       <section class="lesson" aria-labelledby="l1-3">
         <h3 id="l1-3">1.3 · Acordes abiertos</h3>
         <h4>Idea</h4>
-        <p>Los acordes abiertos usan cuerdas al aire y se tocan en los primeros trastes. Con unos pocos se pueden tocar miles de canciones. La tabla muestra los trastes de cada cuerda <strong>de la grave a la aguda</strong> (<span class="notes">x</span> = cuerda muda, no se toca).</p>
+        <p>Los acordes abiertos usan cuerdas al aire y se tocan en los primeros trastes. Con unos pocos se pueden tocar miles de canciones; dos de ellos, Em y Am, ya los conoces de la lección 0.4.</p>
+        <div class="fig-row fig-row--chords">
+          <div data-gen="voicing" data-chord="0:maj:0" data-frets="x 3 2 0 1 0"></div>
+          <div data-gen="voicing" data-chord="7:maj:0" data-frets="3 2 0 0 0 3"></div>
+          <div data-gen="voicing" data-chord="2:maj:0" data-frets="x x 0 2 3 2"></div>
+          <div data-gen="voicing" data-chord="9:maj:0" data-frets="x 0 2 2 2 0"></div>
+          <div data-gen="voicing" data-chord="4:maj:0" data-frets="0 2 2 1 0 0"></div>
+          <div data-gen="voicing" data-chord="9:min:0" data-frets="x 0 2 2 1 0"></div>
+          <div data-gen="voicing" data-chord="4:min:0" data-frets="0 2 2 0 0 0"></div>
+          <div data-gen="voicing" data-chord="2:min:0" data-frets="x x 0 2 3 1"></div>
+        </div>
+        <p>La tabla muestra los trastes de cada cuerda <strong>de la grave a la aguda</strong> (<span class="notes">x</span> = cuerda muda, no se toca).</p>
         <div class="table-wrap" tabindex="0" role="region" aria-label="Acordes abiertos">
           <table>
             <caption>Acordes abiertos básicos (calculados por el explorador)</caption>
@@ -338,22 +388,34 @@
         <p>Hasta ahora has tocado la escala en una zona del mástil. El sistema <a href="ayuda.html#caged">CAGED</a> reparte la escala en cinco cajas que se encadenan y cubren todo el mástil. Para Do mayor, la ventana de cada una es:</p>
         <div data-gen="caged"></div>
         <p>La Forma C ocupa <span class="notes" data-verify="boxfrets:0:major:C">0-3</span> y la A, <span class="notes" data-verify="boxfrets:0:major:A">2-5</span>; la G, <span class="notes" data-verify="boxfrets:0:major:G">4-8</span>; la E, <span class="notes" data-verify="boxfrets:0:major:E">7-10</span>, y la D, <span class="notes" data-verify="boxfrets:0:major:D">9-13</span>.</p>
+        <div class="fig-row">
+          <div data-gen="board" data-k="0" data-s="major" data-p="C" data-caption="Forma C"></div>
+          <div data-gen="board" data-k="0" data-s="major" data-p="A" data-caption="Forma A"></div>
+          <div data-gen="board" data-k="0" data-s="major" data-p="G" data-caption="Forma G"></div>
+          <div data-gen="board" data-k="0" data-s="major" data-p="E" data-caption="Forma E"></div>
+          <div data-gen="board" data-k="0" data-s="major" data-p="D" data-caption="Forma D"></div>
+        </div>
+        <p>La pentatónica se reparte en las mismas cinco zonas, pero los métodos de guitarra numeran sus cajas en lugar de nombrarlas por la forma. En la penta menor, la caja <span data-verify="pentabox:G">1</span> es la Forma G; la <span data-verify="pentabox:E">2</span>, la E; la <span data-verify="pentabox:D">3</span>, la D; la <span data-verify="pentabox:C">4</span>, la C, y la <span data-verify="pentabox:A">5</span>, la A.</p>
         <h4>En la herramienta</h4>
         <ol class="steps">
           <li>Abre <a class="try" href="index.html#k=0&amp;s=major&amp;p=C">Do mayor, Forma C</a> y ve pulsando las formas en orden: C, A, G, E, D.</li>
-          <li>Observa que cada caja <strong>comparte notas</strong> con la siguiente; ahí es donde se pasa de una a otra.</li>
+          <li>Observa que cada caja <strong>comparte notas</strong> con la siguiente; ahí es donde se pasa de una a otra. La franja de color marca la caja elegida y las notas de fuera siguen a la vista, más tenues.</li>
+          <li>Recorre igual las cinco cajas de <a class="try" href="index.html#k=9&amp;s=minor_pentatonic&amp;p=G&amp;m=intervals">La penta menor</a>, empezando por la caja 1 (Forma G) y siguiendo por las formas E, D, C y A.</li>
         </ol>
         <h4>Práctica · 15 minutos</h4>
         <ul>
           <li>Aprende <strong>una caja por semana</strong>: tócala subiendo y bajando, y luego salta a la siguiente por las notas que comparten.</li>
           <li>Cuando conozcas dos, enlázalas: sube por una caja y baja por la siguiente.</li>
           <li>Repite en <strong>otra tonalidad</strong> (por ejemplo, Sol mayor): las cajas son las mismas, desplazadas.</li>
+          <li>Para moverte entre cajas necesitas las notas de todas las cuerdas: súbelas con <a class="try" href="index.html#w=practica&amp;x=name&amp;y=2">Nombra la nota, nivel 2</a> y <a class="try" href="index.html#w=practica&amp;x=find&amp;y=2">Encuentra la nota, nivel 2</a>.</li>
         </ul>
         <h4>Compruébalo</h4>
         <ul class="checklist">
           <li><label><input type="checkbox" data-progress="n2-cajas"><span>Toco Do mayor en las cinco cajas, subiendo y bajando.</span></label></li>
           <li><label><input type="checkbox" data-progress="n2-enlace"><span>Enlazo dos cajas contiguas sin parar.</span></label></li>
           <li><label><input type="checkbox" data-progress="n2-otro-tono"><span>Reproduzco una caja en otra tonalidad.</span></label></li>
+          <li><label><input type="checkbox" data-progress="n2-racha-notas"><span>Consigo una racha de 10 en «Encuentra la nota», nivel 2.</span></label></li>
+          <li><label><input type="checkbox" data-progress="n2-penta-cajas"><span>Toco La penta menor en sus cinco cajas y sé qué número tiene cada una.</span></label></li>
         </ul>
       </section>
 
@@ -390,6 +452,12 @@
         <h3 id="l2-3">2.3 · Séptimas e inversiones</h3>
         <h4>Idea</h4>
         <p>Añadir la séptima da acordes más ricos. Sobre Do mayor, las cuatriadas son <span class="notes" data-verify="diatonic:0:major:4">Cmaj7 Dm7 Em7 Fmaj7 G7 Am7 Bm7♭5</span>. Y una <strong>inversión</strong> pone otra nota en el bajo: <span class="notes" data-verify="chordname:0:maj:1">C/E</span> es el mismo Do mayor con Mi como nota más grave, y se toca <span class="notes" data-verify="voicing-first:0:maj:1">0 3 2 0 1 0</span>.</p>
+        <div class="fig-row fig-row--chords">
+          <div data-gen="voicing" data-chord="0:maj7:0" data-frets="x 3 2 0 0 0"></div>
+          <div data-gen="voicing" data-chord="7:7:0" data-frets="3 2 0 0 0 1"></div>
+          <div data-gen="voicing" data-chord="9:7:0" data-frets="x 0 2 0 2 0"></div>
+          <div data-gen="voicing" data-chord="0:maj:1" data-frets="0 3 2 0 1 0"></div>
+        </div>
         <h4>En la herramienta</h4>
         <ol class="steps">
           <li>En <a class="try" href="index.html#k=0&amp;s=major&amp;z=4">Do mayor, cuatriadas</a> pulsa cada acorde y mira cómo cambian las notas respecto a la tríada.</li>
@@ -441,6 +509,7 @@
         <h3 id="l3-1">3.1 · La menor armónica y el acorde V7</h3>
         <h4>Idea</h4>
         <p>En una tonalidad menor, el acorde V natural es menor y no «empuja» hacia la tónica. La <strong>menor armónica</strong> sube la 7ª un semitono, y eso crea una sensible: el V pasa a ser un dominante, <span class="notes" data-verify="chord:4:7">E G♯ B D</span> (E7), que resuelve con fuerza en Am. Es la escala de La menor armónica: <span class="notes" data-verify="scale:9:harmonic_minor">A B C D E F G♯</span>.</p>
+        <div data-gen="board" data-k="9" data-s="harmonic_minor" data-p="C" data-caption="La menor armónica, Forma C: el G♯ ocupa el sitio del G"></div>
         <h4>En la herramienta</h4>
         <ol class="steps">
           <li>Abre <a class="try" href="index.html#k=9&amp;s=harmonic_minor&amp;z=4">La menor armónica, cuatriadas</a>. Pulsa el acorde V: es E7.</li>
@@ -464,6 +533,12 @@
         <h4>Idea</h4>
         <p>El blues mezcla una escala y una estructura. La escala, en La: <span class="notes" data-verify="scale:9:blues">A C D E♭ E G</span>, es la penta menor con la <strong>♭5</strong> (E♭, la nota «blue»). La estructura más habitual es el blues de <strong>doce compases</strong> con tres acordes de séptima, el I, el IV y el V: <span class="notes" data-verify="chord:9:7">A C♯ E G</span> (A7), <span class="notes" data-verify="chord:2:7">D F♯ A C</span> (D7) y <span class="notes" data-verify="chord:4:7">E G♯ B D</span> (E7).</p>
         <p>Una de las variantes más usadas de los doce compases (cada cifra, un compás): <strong>A7 A7 A7 A7 · D7 D7 A7 A7 · E7 D7 A7 E7</strong> (el último compás, con E7, prepara la vuelta al principio).</p>
+        <div data-gen="board" data-k="9" data-s="blues" data-p="G" data-m="intervals" data-caption="La blues, caja 1 (Forma G): la ♭5 es la nota de color"></div>
+        <div class="fig-row fig-row--chords">
+          <div data-gen="voicing" data-chord="9:7:0" data-frets="x 0 2 0 2 0"></div>
+          <div data-gen="voicing" data-chord="2:7:0" data-frets="x x 0 2 1 2"></div>
+          <div data-gen="voicing" data-chord="4:7:0" data-frets="0 2 0 1 0 0"></div>
+        </div>
         <h4>En la herramienta</h4>
         <ol class="steps">
           <li>Abre <a class="try" href="index.html#k=9&amp;s=blues">La blues</a>. La nota de color (♭5) sale en cian: es la que la distingue de la penta menor.</li>
@@ -534,6 +609,11 @@
         <h3 id="l4-1">4.1 · Formas móviles</h3>
         <h4>Idea</h4>
         <p>Un acorde sin cuerdas al aire se puede <strong>mover</strong> por el mástil sin cambiar la forma; si la forma abierta usaba cuerdas al aire, el dedo índice en cejilla hace de cejuela. La forma de Fa mayor <span class="notes" data-verify="voicing:5:maj:0">1 3 3 2 1 1</span> es la forma de Mi mayor desplazada un traste y con cejilla. Un traste más arriba, <span class="notes" data-verify="voicing:6:maj:0">2 4 4 3 2 2</span> es Fa♯ mayor; y otro más, <span class="notes" data-verify="voicing:7:maj:0">3 5 5 4 3 3</span> es Sol mayor. Cada traste que subes la forma, subes un semitono el acorde. Una sola forma te da los doce acordes mayores.</p>
+        <div class="fig-row fig-row--chords">
+          <div data-gen="voicing" data-chord="5:maj:0" data-frets="1 3 3 2 1 1"></div>
+          <div data-gen="voicing" data-chord="6:maj:0" data-frets="2 4 4 3 2 2"></div>
+          <div data-gen="voicing" data-chord="7:maj:0" data-frets="3 5 5 4 3 3"></div>
+        </div>
         <h4>En la herramienta</h4>
         <ol class="steps">
           <li>Abre <a class="try" href="index.html#w=acordes&amp;r=5&amp;q=maj">Fa mayor</a> y filtra por <em>Con cejilla</em>.</li>
@@ -577,7 +657,7 @@
           <li><label><input type="checkbox" data-progress="n4-analisis"><span><strong>Analiza una canción</strong> que te guste: escribe sus acordes con cifrado romano e identifica la tonalidad y la escala del solo.</span></label></li>
           <li><label><input type="checkbox" data-progress="n4-compone"><span><strong>Compón</strong> una progresión de cuatro acordes con una inversión y una séptima, y grábala.</span></label></li>
           <li><label><input type="checkbox" data-progress="n4-modal"><span><strong>Improvisa modal</strong>: elige un acorde (Dm7 o G7), un bordón y el modo que le corresponde, y toca durante cinco minutos.</span></label></li>
-          <li><label><input type="checkbox" data-progress="n4-oido"><span><strong>Entrena el oído</strong>: pulsa «Escuchar escala» sin mirar, adivina el modo, y comprueba.</span></label></li>
+          <li><label><input type="checkbox" data-progress="n4-oido"><span><strong>Entrena el oído</strong>: con la misma tónica, escucha dos modos seguidos con «Escuchar escala» (por ejemplo, Do mayor y Do lidio), canta la nota que cambia y búscala después en el mástil. Para los intervalos, <a class="try" href="index.html#w=practica&amp;x=interval&amp;y=3">Intervalos, nivel 3</a> los pregunta sin enseñar el mástil.</span></label></li>
           <li><label><input type="checkbox" data-progress="n4-transporta"><span><strong>Transporta</strong> un solo que sepas de memoria a otro tono, usando las cajas.</span></label></li>
         </ul>
       </section>
@@ -629,6 +709,7 @@
   <script src="theory.js"></script>
   <script src="util.js"></script>
   <script src="state.js"></script>
+  <script src="diagram.js"></script>
   <script src="docs.js"></script>
   <script src="aprender.js"></script>
 </body>

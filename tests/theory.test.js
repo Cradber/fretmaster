@@ -154,6 +154,19 @@ test('acorde con cejilla: F mayor tiene 133211', () => {
   assert.deepEqual(f.barre, { fret: 1, from: 0, to: 5 });
   assert.equal(f.fingers, 4);
 });
+test('los acordes abiertos no se marcan con cejilla: A, D y Em usan un dedo por nota', () => {
+  const open = (frets) => T.fingering([...frets].reverse());   // de grave a aguda, como se escribe
+  assert.deepEqual(open([-1, 0, 2, 2, 2, 0]), { fingers: 3, barre: null }, 'A');
+  assert.deepEqual(open([-1, -1, 0, 2, 3, 2]), { fingers: 3, barre: null }, 'D');
+  assert.deepEqual(open([0, 2, 2, 0, 0, 0]), { fingers: 2, barre: null }, 'Em');
+  // Sin cuerdas al aire la cejilla sigue contando aunque haya pocas notas (Fa «pequeño», xx3211).
+  assert.deepEqual(open([-1, -1, 3, 2, 1, 1]), { fingers: 3, barre: { fret: 1, from: 0, to: 1 } }, 'F pequeño');
+  // Con cuerdas al aire y más de cuatro notas pisadas, la cejilla es necesaria y se mantiene.
+  assert.equal(open([0, 2, 2, 4, 3, 4]).fingers, 4, 'E7 con cejilla parcial');
+  const firstA = T.findVoicings(STD, T.spellChord(9, 'maj'), 21, 80)[0];
+  assert.equal([...firstA.frets].reverse().join(''), '-102220');
+  assert.equal(firstA.barre, null);
+});
 test('todas las digitaciones respetan las reglas', () => {
   Object.keys(T.CHORD_TYPES).forEach((id) => {
     for (let pc = 0; pc < 12; pc++) {

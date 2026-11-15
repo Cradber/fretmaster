@@ -1,10 +1,10 @@
-/* FretMaster · explorador de acordes: catálogo, inversiones, digitaciones calculadas y diagramas SVG. */
+/* FretMaster · explorador de acordes: catálogo, inversiones y digitaciones calculadas (los diagramas los dibuja diagram.js). */
 (function (global) {
   'use strict';
 
   const T = global.FretTheory;
   const A = global.FretApp;
-  const { $, $$, el, svgEl } = A.Util;
+  const { $, $$, el } = A.Util;
 
   const MAX_VOICINGS = 8;
   const FILTERS = {
@@ -180,52 +180,12 @@
       b.setAttribute('aria-pressed', String(i === 0));
       const caption = [...v.frets].reverse().map((f) => (f < 0 ? 'x' : f)).join(' ');
       b.setAttribute('aria-label', `Digitación ${i + 1} de ${label}, cuerdas de grave a aguda: ${caption.replace(/x/g, 'muda')}. Pulsa para escucharla.`);
-      b.appendChild(drawVoicing(v));
+      b.appendChild(A.Diagram.voicing(v, chord, tuning));
       b.append(el('span', 'vcap', caption));
       const where = v.frets.includes(0) ? 'Posición abierta' : `Traste ${v.minFret}`;
       b.append(el('span', 'vsub', `${where}${v.barre ? ' · cejilla' : ''}`));
       box.appendChild(b);
     });
-  }
-
-  /** Diagrama SVG de una digitación: cuerdas verticales (grave a la izquierda), cejilla, × mudas y ○ al aire. */
-  function drawVoicing(v) {
-    const n = v.frets.length;
-    const W = 110, H = 134, x0 = 24, x1 = 98, top = 30, rows = 5, rh = 16;
-    const gap = (x1 - x0) / (n - 1);
-    const base = v.maxFret > 4 ? v.minFret : 1;
-    const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, 'aria-hidden': 'true', focusable: 'false' });
-    const xOf = (s) => x0 + gap * (n - 1 - s);
-    const yOf = (f) => top + rh * (f - base + 0.5);
-
-    const g = svgEl('g', { class: 'vlines' }, svg);
-    for (let r = 0; r <= rows; r++) svgEl('line', { x1: x0, x2: x1, y1: top + r * rh, y2: top + r * rh }, g);
-    for (let i = 0; i < n; i++) svgEl('line', { x1: x0 + gap * i, x2: x0 + gap * i, y1: top, y2: top + rows * rh }, g);
-    if (base === 1) {
-      svgEl('rect', { class: 'vnut', x: x0 - 1, y: top - 3, width: x1 - x0 + 2, height: 4, rx: 1 }, svg);
-    } else {
-      svgEl('text', { class: 'vfr', x: 2, y: top + rh * 0.5 + 3 }, svg).textContent = `${base}fr`;
-    }
-
-    if (v.barre) {
-      const xa = xOf(v.barre.to), xb = xOf(v.barre.from);
-      svgEl('rect', { class: 'vbarre', x: xa - 6.5, y: yOf(v.barre.fret) - 6.5, width: xb - xa + 13, height: 13, rx: 6.5 }, svg);
-    }
-
-    v.frets.forEach((f, s) => {
-      const x = xOf(s);
-      if (f < 0) {
-        svgEl('text', { class: 'vmark', x, y: 22 }, svg).textContent = '×';
-      } else if (f === 0) {
-        svgEl('circle', { class: 'vopen', cx: x, cy: 19, r: 3.6 }, svg);
-      } else {
-        const note = chord.byPc.get((tuning[s] + f) % 12);
-        const dot = svgEl('g', { class: 'vdot' }, svg);
-        svgEl('circle', { cx: x, cy: yOf(f), r: 6.5, fill: `var(--c-${note.role})` }, dot);
-        svgEl('text', { x, y: yOf(f) + 2.4 }, dot).textContent = note.name;
-      }
-    });
-    return svg;
   }
 
   /** Rasguea la digitación de grave a aguda. */

@@ -1,5 +1,5 @@
 /* FretMaster · comportamiento común de las páginas de documentación:
-   1) genera las tablas a partir de theory.js y state.js (así la documentación no puede contradecir a la app),
+   1) genera las tablas y los diagramas a partir de theory.js, state.js y diagram.js (así la documentación no puede contradecir a la app),
    2) marca la sección activa en el índice, 3) pone enlaces de ancla a los títulos. */
 (function (global) {
   'use strict';
@@ -35,7 +35,66 @@
   const spell = (pc, id) => T.spellScale(pc, id).notes.map((n) => n.name).join(' ');
   const cMajorParent = (id) => `${T.spellScale((0 + T.SCALES[id].parent) % 12, 'major').rootName} mayor`;
 
+  /** Trastes mínimo y máximo de las notas de una caja (la primera completa del mástil), en afinación estándar. */
+  function boxSpan(S, shape) {
+    const [a0, b0] = T.CAGED[shape];
+    const win = T.positionRanges(S.scaleId, S.rootPc, 22)[shape].find(([a, b]) => b - a >= b0 - a0);
+    const inShape = T.positionPredicate(S.scaleId, S.rootPc, shape, 22);
+    const frets = [];
+    T.TUNINGS.standard.midi.forEach((m) => {
+      for (let f = Math.max(0, win[0] - 1); f <= win[1] + 1; f++) {
+        const n = S.byPc.get((m + f) % 12);
+        if (n && inShape(f, n.pc)) frets.push(f);
+      }
+    });
+    return [Math.min(...frets), Math.max(...frets)];
+  }
+
+  const figure = (cls, svg, ...caption) => h('figure', { class: cls }, svg, h('figcaption', null, ...caption));
+
   const GENERATORS = {
+    /**
+     * Tramo del mástil con una escala: data-k (tonalidad 0–11), data-s (escala), data-p (forma CAGED, opcional),
+     * data-from / data-to (trastes; con forma y sin ellos, los de la caja), data-m (notes | intervals),
+     * data-strings (cuerdas con notas, p. ej. "6,5"), data-roles (solo esos roles, p. ej. "root"), data-caption.
+     */
+    board(slot) {
+      const d = slot.dataset;
+      const S = T.spellScale(Number(d.k), d.s);
+      const shape = d.p || 'all';
+      let from = Number(d.from || 0);
+      let to = d.to === undefined ? 12 : Number(d.to);
+      if (shape !== 'all' && d.from === undefined) [from, to] = boxSpan(S, shape);
+      const { svg, label } = A.Diagram.board(S, {
+        from, to, shape, mode: d.m,
+        strings: d.strings ? d.strings.split(',').map(Number) : null,
+        roles: d.roles ? d.roles.split(',') : null
+      });
+      const title = d.caption || `${S.rootName} ${T.SCALES[d.s].name.toLowerCase()}${shape !== 'all' ? ', Forma ' + shape : ''}`;
+      svg.setAttribute('aria-label', `${title}, trastes ${from} a ${to}. De la cuerda grave a la aguda: ${label}.`);
+      return figure('fig', svg, title, h('span', { class: 'fig-sub' }, `trastes ${from}–${to}`));
+    },
+
+    /** Diagrama de una digitación concreta: data-chord="fundamental:tipo:bajo", data-frets="x 3 2 0 1 0" (grave → aguda), data-tuning, data-capo. */
+    voicing(slot) {
+      const d = slot.dataset;
+      const [pc, type, bass] = d.chord.split(':');
+      const chord = T.spellChord(Number(pc), type);
+      const tuning = T.TUNINGS[d.tuning || 'standard'].midi.map((m) => m + Number(d.capo || 0));
+      const frets = d.frets.trim().split(/\s+/).map((x) => (x === 'x' ? -1 : Number(x))).reverse();
+      const fretted = frets.filter((f) => f > 0);
+      const v = {
+        frets, barre: T.fingering(frets).barre,
+        minFret: fretted.length ? Math.min(...fretted) : 0, maxFret: fretted.length ? Math.max(...fretted) : 0
+      };
+      const name = Number(bass) ? `${chord.name}/${chord.notes[Number(bass)].name}` : chord.name;
+      const svg = A.Diagram.voicing(v, chord, tuning);
+      svg.removeAttribute('aria-hidden');
+      svg.setAttribute('role', 'img');
+      svg.setAttribute('aria-label', `${name}: trastes ${d.frets.replace(/x/g, 'muda')}, de la cuerda grave a la aguda`);
+      return figure('fig fig--chord', svg, h('strong', null, name), h('span', { class: 'fig-sub' }, d.frets));
+    },
+
     scales() {
       const rows = Object.entries(T.SCALES).map(([id, s]) => [
         s.name, groupTitle(s.group), T.parseFormula(s.formula).map((t) => T.pretty(t.token)).join(' '),
@@ -107,7 +166,9 @@
         f: 'Número de trastes: 22 o 24', c: 'Traste de la cejilla (0 = sin cejilla, hasta 9)', l: 'Modo zurdo: 1 = sí, 0 = no',
         z: 'Acordes diatónicos: 3 = tríadas, 4 = cuatriadas', v: 'Sonido al tocar una nota: 1 = sí, 0 = no',
         r: 'Fundamental del explorador de acordes (0–11)', q: 'Tipo de acorde del explorador (por ejemplo maj, m7, dim7)',
-        b: 'Nota del bajo en el explorador (0 = fundamental, 1 = 3ª, 2 = 5ª…)', w: 'Pestaña abierta: escala o acordes'
+        b: 'Nota del bajo en el explorador (0 = fundamental, 1 = 3ª, 2 = 5ª…)', w: 'Pestaña abierta: escala, acordes o practica',
+        x: 'Ejercicio de la pestaña Práctica: name (nombra la nota), find (encuéntrala) o interval (intervalos)',
+        y: 'Nivel del ejercicio: 1, 2 o 3'
       };
       const rows = Object.keys(D).map((k) => [k, String(D[k]), desc[k] || '—']);
       return table('Parámetros que guarda la dirección (tras el símbolo #)', ['Parámetro', 'Valor por defecto', 'Significado'], rows, [0, 1]);

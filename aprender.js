@@ -34,6 +34,12 @@
       });
       const all = [...levels.values()].reduce((a, c) => ({ total: a.total + c.total, done: a.done + c.done }), { total: 0, done: 0 });
       $$('[data-progress-total]').forEach((el) => { el.textContent = `${all.done} de ${all.total}`; });
+      // Barras de avance: una por nivel (data-progress-bar="n0"…) y la de toda la ruta ("all").
+      $$('progress[data-progress-bar]').forEach((bar) => {
+        const c = bar.dataset.progressBar === 'all' ? all : levels.get(bar.dataset.progressBar) || { total: 0, done: 0 };
+        bar.max = c.total || 1;
+        bar.value = c.done;
+      });
     };
 
     boxes.forEach((b) => {

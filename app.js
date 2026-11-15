@@ -1,5 +1,5 @@
 /* FretMaster · orquestación de la herramienta: controles, estado, escala, acordes diatónicos y pestañas.
-   El dibujo del mástil y el explorador viven en fretboard.js y explorer.js. */
+   El dibujo del mástil, el explorador y la práctica viven en fretboard.js, explorer.js y practice.js. */
 (function () {
   'use strict';
 
@@ -8,7 +8,7 @@
   const { $, $$, el } = A.Util;
 
   // Cambios que no invalidan el acorde diatónico seleccionado.
-  const KEEP_CHORD_KEYS = ['t', 'f', 'c', 'l', 'm', 'v', 'p', 'r', 'q', 'b', 'w'];
+  const KEEP_CHORD_KEYS = ['t', 'f', 'c', 'l', 'm', 'v', 'p', 'r', 'q', 'b', 'w', 'x', 'y'];
 
   let state = A.State.load();
   let S;                       // escala deletreada actual
@@ -43,6 +43,7 @@
     renderChords();
     A.Fretboard.render(state, S, chordPcs());
     A.Explorer.render(state);
+    A.Practice.render(state);
     renderTabs();
     A.State.persist(state);
     announce(`${S.rootName} ${scale.name}: ${S.notes.map((n) => n.name).join(' ')}`);
@@ -290,6 +291,10 @@
       n.textContent += ` Las notas ajenas a esa mayor (${alt.join(', ')}) van en la caja de la nota a la que sustituyen, un traste más arriba o abajo.`;
     }
     const offset = T.cagedOffset(T.TUNINGS[state.t].midi);
+    // Los métodos de guitarra numeran las cajas de la pentatónica en lugar de nombrarlas por la forma.
+    if (offset !== null && (state.s === 'minor_pentatonic' || state.s === 'blues')) {
+      n.textContent += ` Es la que los métodos de guitarra llaman «caja ${T.PENTA_BOX[state.p]}» de la pentatónica menor.`;
+    }
     if (offset === null) {
       n.textContent += ' En esta afinación no existen las formas CAGED: se muestran las mismas ventanas de trastes que en la estándar, solo como zonas del mástil.';
     } else if (offset > 0) {
@@ -431,6 +436,21 @@
     }
   }
 
+  // ---------- Vuelta a la guía ----------
+
+  /** Si se llega desde un botón «Abrir» de la página Aprender, muestra un enlace que devuelve a la lección donde se dejó. */
+  function wireBackLink() {
+    let from = null;
+    try { from = new URL(document.referrer); } catch (e) { /* sin página de origen */ }
+    if (!from || from.origin !== location.origin || !/\/aprender\.html$/.test(from.pathname)) return;
+    const link = $('#back-lesson');
+    link.hidden = false;
+    // Atrás conserva la posición de lectura; persist() usa replaceState, así que la guía sigue siendo la entrada anterior.
+    link.addEventListener('click', (e) => {
+      if (history.length > 1) { e.preventDefault(); history.back(); }
+    });
+  }
+
   // ---------- Arranque ----------
 
   function init() {
@@ -444,8 +464,10 @@
       }
     });
     A.Explorer.init({ setState, announce });
+    A.Practice.init({ setState, announce });
     A.Audio.onProblem(() => toast(AUDIO_HINT));
     wireEvents();
+    wireBackLink();
     // Un cambio del # en la misma pestaña (escrito a mano o pegado) no recarga la página: se vuelve a leer el estado.
     // persist() usa replaceState, que no dispara este evento, así que no hay bucle.
     window.addEventListener('hashchange', () => {

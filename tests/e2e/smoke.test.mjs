@@ -126,14 +126,15 @@ await test('explorador: tipo, bajo y filtros', async (p) => {
 
 await test('ajustes: afinación, 24 trastes y cejilla', async (p) => {
   await p.goto(base('#t=dropd&f=24&c=2'));
-  assert.equal(await p.eval('document.querySelectorAll(".string-row").length'), 6);
+  assert.equal(await p.eval('document.querySelectorAll("#fretboard .string-row").length'), 6);
   assert.equal(await p.eval('document.querySelectorAll("#fret-numbers span").length'), 25);
   assert.ok(await p.eval('!!document.querySelector(".capo")'));
 });
 
 await test('7 cuerdas dibuja 7 filas', async (p) => {
   await p.goto(base('#t=seven'));
-  assert.equal(await p.eval('document.querySelectorAll(".string-row").length'), 7);
+  assert.equal(await p.eval('document.querySelectorAll("#fretboard .string-row").length'), 7);
+  assert.equal(await p.eval('document.querySelectorAll("#quiz-board .string-row").length'), 7, 'el mástil de práctica sigue la afinación');
 });
 
 await test('teclado: un solo punto de tabulación y las flechas mueven entre notas', async (p) => {
@@ -229,6 +230,185 @@ await test('selector de escala por familias: cambia de familia sin cambiar la es
   assert.match(await p.eval('document.title'), /Dórico/);
 });
 
+await test('lo que lleva el atributo hidden no se ve (el display propio de .btn y .seg no lo anula)', async (p) => {
+  const shown = (sel) => `getComputedStyle(document.querySelector(${JSON.stringify(sel)})).display !== "none"`;
+  await p.goto(base());
+  assert.equal(await p.eval(shown('#open-voicings')), false, 'sin acorde elegido no hay «Ver digitaciones»');
+  await p.click('#chord-list .chord');
+  assert.equal(await p.eval(shown('#open-voicings')), true, 'con un acorde elegido, sí');
+  await p.click('#scale-groups [data-group="penta"]');
+  await p.click('#scale-selector [data-scale="minor_pentatonic"]');
+  assert.equal(await p.eval(shown('#size-seg')), false, 'sin acordes diatónicos no hay Tríadas / Cuatriadas');
+  assert.equal(await p.eval(shown('#open-voicings')), false);
+  const leaked = await p.eval('[...document.querySelectorAll("[hidden]")].filter(e => getComputedStyle(e).display !== "none").map(e => e.id || e.className)');
+  assert.deepEqual(leaked, []);
+});
+
+await test('un enlace parcial conserva las preferencias (zurdo, trastes, alteraciones, sonido) y reinicia la vista', async (p) => {
+  await p.goto(base('#k=4&s=dorian&p=E&t=eb&c=2&l=1&f=24&a=flat&v=0'));
+  await p.goto(`${server.url}/aprender.html`);
+  await p.goto(base('#k=0&s=major&m=notes'));           // como los botones «Abrir» de las lecciones
+  const st = Object.fromEntries(new URLSearchParams((await p.eval('location.hash')).slice(1)));
+  assert.deepEqual([st.l, st.f, st.a, st.v], ['1', '24', 'flat', '0'], 'preferencias conservadas');
+  assert.deepEqual([st.k, st.s, st.p, st.t, st.c], ['0', 'major', 'all', 'standard', '0'], 'la vista vuelve a los valores por defecto');
+  assert.ok(await p.eval('document.querySelector("#board-inner").classList.contains("lefty")'));
+  // Lo que el enlace dice explícitamente manda sobre lo guardado.
+  await p.goto(`${server.url}/aprender.html`);
+  await p.goto(base('#k=0&l=0'));
+  assert.match(await p.eval('location.hash'), /l=0/);
+});
+
+await test('una forma CAGED se enmarca con una franja que abarca sus notas y desaparece con «Todo»', async (p) => {
+  await p.goto(base('#k=9&s=harmonic_minor'));
+  assert.equal(await p.eval('document.querySelectorAll("#fretboard .band").length'), 0);
+  await p.click('#caged-seg [data-pos="C"]');
+  const spans = await p.eval('[...document.querySelectorAll("#fretboard .band")].map(b => b.style.gridColumn)');
+  // Trastes 0–4 (columnas 1 a 6): la ventana es 0–3, pero el G♯ de la caja está en el traste 4.
+  assert.equal(spans[0].replace(/\s/g, ''), '1/6', spans.join(' | '));
+  assert.ok(spans.length >= 2, 'la caja se repite una octava más arriba');
+  const outside = await p.eval(`(() => {
+    const cols = [...document.querySelectorAll('#fretboard .band')].map(b => b.style.gridColumn.split('/').map(Number));
+    return [...document.querySelectorAll('.note-marker.note-active')].filter(m => !cols.some(([a, b]) => +m.dataset.f + 1 >= a && +m.dataset.f + 1 < b)).length;
+  })()`);
+  assert.equal(outside, 0, 'notas de la caja fuera de la franja');
+  assert.match(await p.eval('document.querySelector("#caged-note").textContent'), /^Forma C/);
+  await p.click('#caged-seg [data-pos="all"]');
+  assert.equal(await p.eval('document.querySelectorAll("#fretboard .band").length'), 0);
+});
+
+await test('la pentatónica menor indica el número de caja y la descripción va junto al título', async (p) => {
+  await p.goto(base('#k=9&s=minor_pentatonic&p=G'));
+  assert.match(await p.eval('document.querySelector("#caged-note").textContent'), /«caja 1»/);
+  await p.click('#caged-seg [data-pos="E"]');
+  assert.match(await p.eval('document.querySelector("#caged-note").textContent'), /«caja 2»/);
+  const order = await p.eval('document.querySelector("#scale-desc").compareDocumentPosition(document.querySelector("#fretboard")) & Node.DOCUMENT_POSITION_FOLLOWING');
+  assert.ok(order, 'la descripción de la escala va antes del mástil');
+  assert.ok(await p.eval('document.querySelector("#scale-desc").textContent.length > 20'));
+});
+
+await test('desde la guía, la herramienta ofrece volver a la lección', async (p) => {
+  await p.goto(base());
+  assert.equal(await p.eval('document.querySelector("#back-lesson").hidden'), true, 'sin venir de la guía no aparece');
+  await p.goto(`${server.url}/aprender.html`);
+  await p.click('a.try[href^="index.html#k=9"]');
+  await p.waitFor('location.pathname.endsWith("index.html") && !!document.querySelector(".note-marker")');
+  assert.equal(await p.eval('document.querySelector("#back-lesson").hidden'), false);
+  await p.click('#back-lesson');
+  await p.waitFor('location.pathname.endsWith("aprender.html")');
+});
+
+// ---------- Pestaña Práctica ----------
+const feedback = 'document.querySelector("#quiz-feedback").textContent';
+const score = 'document.querySelector("#quiz-score").textContent';
+// Posición (cuerda, traste) de un punto del mástil de práctica, leída del propio dibujo.
+const dotAt = (sel) => `(() => {
+  const d = document.querySelector('#quiz-board ${sel}');
+  if (!d) return null;
+  const row = d.closest('.string-row');
+  return { s: [...document.querySelectorAll('#quiz-board .string-row')].indexOf(row), f: [...row.querySelectorAll('.fret-cell')].indexOf(d.closest('.fret-cell')) };
+})()`;
+
+await test('práctica: «Nombra la nota» corrige el fallo y el acierto, y lleva la racha', async (p) => {
+  await p.goto(base('#w=practica&x=name&y=1'));
+  assert.equal(await p.eval('document.querySelector("#panel-practica").hidden'), false);
+  assert.equal(await p.eval('document.querySelector("#tab-practica").getAttribute("aria-selected")'), 'true');
+  assert.equal(await p.eval('document.querySelectorAll("#quiz-answers .quiz-answer").length'), 7, 'nivel 1: siete notas naturales');
+  assert.equal(await p.eval('document.querySelectorAll("#quiz-board .qdot--ask").length'), 1);
+  const rightPc = async () => {
+    const pos = await p.eval(dotAt('.qdot--ask'));
+    assert.match(await p.eval('document.querySelector("#quiz-sub").textContent'), new RegExp(`^Cuerda ${pos.s + 1}, traste ${pos.f}$`));
+    assert.ok(pos.s === 4 || pos.s === 5, 'nivel 1: cuerdas 6 y 5');
+    return p.eval(`(FretTheory.TUNINGS.standard.midi[${pos.s}] + ${pos.f}) % 12`);
+  };
+  let pc = await rightPc();
+  const wrong = [0, 2, 4, 5, 7, 9, 11].find((x) => x !== pc);
+  await p.click(`#quiz-answers [data-a="${wrong}"]`);
+  assert.match(await p.eval(feedback), /^✗ No\. Es /);
+  assert.ok(await p.eval(`document.querySelector('#quiz-answers [data-a="${wrong}"]').classList.contains('is-wrong')`));
+  assert.ok(await p.eval(`document.querySelector('#quiz-answers [data-a="${pc}"]').classList.contains('is-right')`));
+  assert.match(await p.eval(score), /^Racha: 0 · Mejor racha: 0 · Aciertos: 0 de 1$/);
+  assert.equal(await p.eval('document.activeElement.id'), 'quiz-next', 'el foco pasa a «Siguiente»');
+  await p.click(`#quiz-answers [data-a="${pc}"]`);                 // ya respondida: no cuenta dos veces
+  assert.match(await p.eval(score), /Aciertos: 0 de 1$/);
+  await p.click('#quiz-next');
+  assert.equal(await p.eval(feedback), '');
+  assert.equal(await p.eval('document.querySelector("#quiz-next").hidden'), true);
+  pc = await rightPc();
+  await p.click(`#quiz-answers [data-a="${pc}"]`);
+  assert.match(await p.eval(feedback), /^✓ Correcto\. Es /);
+  assert.match(await p.eval(score), /^Racha: 1 · Mejor racha: 1 · Aciertos: 1 de 2$/);
+  assert.equal(await p.eval('JSON.parse(localStorage.getItem("fm-practice"))["name-1"]'), 1);
+  await p.waitFor(`${feedback} === ""`, 4000);                      // tras un acierto, la siguiente llega sola
+  assert.equal(await p.eval('document.querySelectorAll("#quiz-board .qdot--ask").length'), 1);
+  // La mejor racha se recupera al volver.
+  await p.goto(`${server.url}/aprender.html`);
+  await p.goto(base('#w=practica&x=name&y=1'));
+  assert.match(await p.eval(score), /^Racha: 0 · Mejor racha: 1 · Aciertos: 0 de 0$/);
+});
+
+await test('práctica: «Encuentra la nota» se responde en el mástil y enseña dónde estaba', async (p) => {
+  await p.goto(base('#w=practica&x=find&y=1'));
+  assert.equal(await p.eval('document.querySelector("#quiz-answers").hidden'), true);
+  assert.equal(await p.eval('document.querySelectorAll("#quiz-board .quiz-cell").length'), 13, 'trastes 0 a 12 de una sola cuerda');
+  // La nota pedida se deduce del enunciado («Toca G (Sol)») y las casillas correctas, de la afinación.
+  const cells = () => p.eval(`(() => {
+    const label = document.querySelector('#quiz-prompt').textContent.replace(/^Toca /, '');
+    const pc = [0, 2, 4, 5, 7, 9, 11].find((x) => label.startsWith(FretTheory.keyLabel(x, 'auto') + ' ('));
+    const all = [...document.querySelectorAll('#quiz-board .quiz-cell')].map((c) => ({ s: +c.dataset.s, f: +c.dataset.f }));
+    const ok = (c) => (FretTheory.TUNINGS.standard.midi[c.s] + c.f) % 12 === pc;
+    return { right: all.filter(ok), wrong: all.filter((c) => !ok(c)) };
+  })()`);
+  let c = await cells();
+  assert.ok(c.right.length >= 1 && c.wrong.length >= 11);
+  assert.match(await p.eval('document.querySelector("#quiz-sub").textContent'), new RegExp(`^en la cuerda ${c.right[0].s + 1}$`));
+  await p.click(`#quiz-board .quiz-cell[data-f="${c.right[0].f}"]`);
+  assert.match(await p.eval(feedback), /^✓ Correcto\./);
+  assert.equal(await p.eval('document.querySelectorAll("#quiz-board .qdot--ok").length'), c.right.length);
+  assert.equal(await p.eval('document.querySelectorAll("#quiz-board .quiz-cell").length'), 0, 'respondida: ya no se puede pulsar');
+  await p.click('#quiz-next');
+  c = await cells();
+  await p.click(`#quiz-board .quiz-cell[data-f="${c.wrong[0].f}"]`);
+  assert.match(await p.eval(feedback), /^✗ No\. Has tocado /);
+  assert.equal(await p.eval('document.querySelectorAll("#quiz-board .qdot--bad").length'), 1);
+  assert.equal(await p.eval('document.querySelectorAll("#quiz-board .qdot--ok").length'), c.right.length, 'se enseña la posición correcta');
+  assert.match(await p.eval(score), /^Racha: 0 · Mejor racha: 1 · Aciertos: 1 de 2$/);
+});
+
+await test('práctica: «Intervalos» a la vista y de oído, y el ejercicio viaja en la URL', async (p) => {
+  await p.goto(base('#w=practica&x=interval&y=1'));
+  assert.equal(await p.eval('document.querySelectorAll("#quiz-answers .quiz-answer").length'), 5);
+  const root = await p.eval(dotAt('.role-root'));
+  const target = await p.eval(dotAt('.qdot--ask'));
+  const semi = await p.eval(`(() => { const t = FretTheory.TUNINGS.standard.midi; return t[${target.s}] + ${target.f} - t[${root.s}] - ${root.f}; })()`);
+  assert.ok([3, 4, 5, 7, 12].includes(semi), 'nivel 1: intervalos básicos, y el dibujo coincide con la pregunta');
+  await p.click(`#quiz-answers [data-a="${semi}"]`);
+  assert.match(await p.eval(feedback), /^✓ Correcto\. Es una .+ \(.+\): \d+ semitonos\.$/);
+  // Cambiar algo ajeno al ejercicio (el modo zurdo) redibuja la pregunta en curso sin cambiarla ni perder la cuenta.
+  await p.click('#quiz-next');
+  const before = await p.eval(dotAt('.qdot--ask'));
+  await p.eval('(() => { const c = document.querySelector("#chk-lefty"); c.checked = true; c.dispatchEvent(new Event("change", { bubbles: true })); })()');
+  assert.deepEqual(await p.eval(dotAt('.qdot--ask')), before);
+  assert.ok(await p.eval('document.querySelector("#quiz-inner").classList.contains("lefty")'));
+  assert.match(await p.eval(score), /Aciertos: 1 de 1$/);
+  // Nivel 3: doce intervalos y el mástil vacío hasta responder.
+  await p.click('#quiz-level [data-y="3"]');
+  assert.match(await p.eval('location.hash'), /x=interval&y=3/);
+  assert.match(await p.eval('document.querySelector("#quiz-level-desc").textContent'), /solo de oído/);
+  assert.equal(await p.eval('document.querySelectorAll("#quiz-answers .quiz-answer").length'), 12);
+  assert.equal(await p.eval('document.querySelectorAll("#quiz-board .qdot").length'), 0);
+  assert.equal(await p.eval('document.querySelector("#quiz-ear").hidden'), false);
+  assert.match(await p.eval(score), /^Racha: 0 · Mejor racha: 0 · Aciertos: 0 de 0$/, 'otro nivel empieza de cero');
+  await p.click('#quiz-answers [data-a="7"]');
+  assert.equal(await p.eval('document.querySelectorAll("#quiz-board .qdot").length'), 2, 'al responder se ven las dos notas');
+  assert.equal(await p.eval('document.querySelector("#quiz-ear").hidden'), true);
+  // Cambiar de ejercicio con los botones.
+  await p.click('#quiz-kind [data-x="find"]');
+  assert.match(await p.eval('location.hash'), /x=find&y=3/);
+  assert.match(await p.eval('document.querySelector("#quiz-prompt").textContent'), /^Toca /);
+  // El mástil principal no se ve afectado por el de práctica.
+  assert.equal(await p.eval('document.querySelectorAll(".note-marker").length'), 84);
+});
+
 await test('service worker: se registra y cachea la app', async (p) => {
   await p.goto(base());
   await p.waitFor('navigator.serviceWorker.ready.then(() => true)', 8000);
@@ -245,6 +425,14 @@ await test('móvil (375 px): sin desbordamiento horizontal de la página', async
     await m.goto(base());
     const overflow = await m.eval('document.documentElement.scrollWidth - document.documentElement.clientWidth');
     assert.ok(overflow <= 1, 'desbordamiento de ' + overflow + ' px');
+    // En columna, la etiqueta de cada familia de acordes mide lo que su texto (antes, 88 px por un flex-basis de fila).
+    await m.goto(base('#w=acordes'));
+    const labels = await m.eval('[...document.querySelectorAll("#chord-type .glabel")].map(e => e.getBoundingClientRect().height)');
+    assert.ok(labels.length > 0 && labels.every((h) => h > 0 && h < 30), 'altura de las etiquetas: ' + labels.join(', '));
+    await m.goto(base('#w=practica&x=interval&y=2'));
+    assert.equal(await m.eval('document.querySelector("#panel-practica").hidden'), false);
+    const wide = await m.eval('document.documentElement.scrollWidth - document.documentElement.clientWidth');
+    assert.ok(wide <= 1, 'la pestaña Práctica desborda ' + wide + ' px');
     assert.deepEqual(m.errors, []);
   } finally { await m.close(); }
 });

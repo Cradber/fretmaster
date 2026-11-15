@@ -40,6 +40,8 @@ const ROLES = ['c-root', 'c-third', 'c-fifth', 'c-tritone', 'c-seventh'];
   ['fg', 'muted', 'faint'].forEach((t) => ['bg', 'surface', 'surface-2'].forEach((b) => check(theme, tk, t, b, 4.5)));
   ['accent'].forEach(() => ['bg', 'surface'].forEach((b) => check(theme, tk, 'accent', b, 4.5, 'acento como texto sobre ' + b)));
   check(theme, tk, 'on-accent', 'accent', 4.5, 'texto del botón primario');
+  // Acierto y fallo en la pestaña Práctica: se usan como color de texto.
+  ['c-third', 'c-seventh'].forEach((c) => ['bg', 'surface'].forEach((b) => check(theme, tk, c, b, 4.5, `${c} como texto sobre ${b}`)));
   check(theme, tk, 'pill-on-fg', 'pill-on-bg', 4.5, 'selección activa');
   check(theme, tk, 'c-scale-fg', 'c-scale', 4.5, 'nota del resto de la escala');
   ROLES.forEach((r) => check(theme, tk, 'on-role', r, 4.5, `texto de nota sobre ${r}`));

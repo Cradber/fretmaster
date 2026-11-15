@@ -31,17 +31,19 @@ const ctx = {
 };
 ctx.window = ctx;
 vm.createContext(ctx);
-['theory.js', 'synth.js', 'theme.js', 'util.js', 'state.js', 'audio.js', 'fretboard.js', 'explorer.js'].forEach((f) => vm.runInContext(read(f), ctx, { filename: f }));
+['theory.js', 'synth.js', 'quiz.js', 'theme.js', 'util.js', 'state.js', 'audio.js', 'fretboard.js', 'diagram.js', 'explorer.js', 'practice.js'].forEach((f) => vm.runInContext(read(f), ctx, { filename: f }));
 
 const MODULES = {
-  FretTheory: ctx.FretTheory, FretSynth: ctx.FretSynth, FretTheme: ctx.FretTheme,
+  FretTheory: ctx.FretTheory, FretSynth: ctx.FretSynth, FretQuiz: ctx.FretQuiz, FretTheme: ctx.FretTheme,
+  'FretApp.Practice': ctx.FretApp.Practice,
   'FretApp.Util': ctx.FretApp.Util, 'FretApp.State': ctx.FretApp.State, 'FretApp.Audio': ctx.FretApp.Audio,
-  'FretApp.Fretboard': ctx.FretApp.Fretboard, 'FretApp.Explorer': ctx.FretApp.Explorer
+  'FretApp.Fretboard': ctx.FretApp.Fretboard, 'FretApp.Diagram': ctx.FretApp.Diagram, 'FretApp.Explorer': ctx.FretApp.Explorer
 };
 const PROVIDERS = {
-  FretTheory: 'theory.js', FretSynth: 'synth.js', FretTheme: 'theme.js',
+  FretTheory: 'theory.js', FretSynth: 'synth.js', FretQuiz: 'quiz.js', FretTheme: 'theme.js',
+  'FretApp.Practice': 'practice.js',
   'FretApp.Util': 'util.js', 'FretApp.State': 'state.js', 'FretApp.Audio': 'audio.js',
-  'FretApp.Fretboard': 'fretboard.js', 'FretApp.Explorer': 'explorer.js'
+  'FretApp.Fretboard': 'fretboard.js', 'FretApp.Diagram': 'diagram.js', 'FretApp.Explorer': 'explorer.js'
 };
 
 test('todos los módulos cargan y exponen un objeto', () => {
@@ -69,7 +71,8 @@ test('el orden de carga de index.html respeta las dependencias entre módulos', 
     const needs = new Set();
     if (/FretTheory/.test(src)) needs.add('theory.js');
     if (/FretSynth/.test(src)) needs.add('synth.js');
-    for (const [, name] of src.matchAll(/(?:FretApp|\bA)\.(Util|State|Audio|Fretboard|Explorer)\b/g)) needs.add(PROVIDERS['FretApp.' + name]);
+    if (/FretQuiz/.test(src)) needs.add('quiz.js');
+    for (const [, name] of src.matchAll(/(?:FretApp|\bA)\.(Util|State|Audio|Fretboard|Diagram|Explorer|Practice)\b/g)) needs.add(PROVIDERS['FretApp.' + name]);
     if (/FretApp\.Util\b|\{\s*\$[^}]*\}\s*=\s*(?:global\.FretApp|A)\.Util/.test(src)) needs.add('util.js');
     needs.delete(file);
     return [...needs];
@@ -82,9 +85,9 @@ test('el orden de carga de index.html respeta las dependencias entre módulos', 
   });
 });
 
-test('teoría y síntesis son puras: sin DOM, almacenamiento, red ni temporizadores', () => {
+test('teoría, síntesis y ejercicios son puros: sin DOM, almacenamiento, red ni temporizadores', () => {
   const forbidden = /\b(document|localStorage|sessionStorage|navigator|fetch|XMLHttpRequest|AudioContext|setTimeout|setInterval|location|history)\b/;
-  ['theory.js', 'synth.js'].forEach((f) => {
+  ['theory.js', 'synth.js', 'quiz.js'].forEach((f) => {
     const src = read(f).replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
     const hit = forbidden.exec(src);
     assert.ok(!hit, `${f} usa «${hit && hit[0]}»`);

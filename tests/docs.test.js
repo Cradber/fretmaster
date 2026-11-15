@@ -69,6 +69,7 @@ const CHECKS = {
   steps: (id) => T.stepPattern(id).join(' '),
   diatonic: (pc, id, size) => T.diatonicChords(T.spellScale(+pc, id), +size).map((c) => c.name).join(' '),
   roman: (pc, id, size) => T.diatonicChords(T.spellScale(+pc, id), +size).map((c) => c.roman).join(' '),
+  pentabox: (shape) => String(T.PENTA_BOX[shape]),
   chordname: (pc, type, bass) => { const c = T.spellChord(+pc, type); return +bass ? `${c.name}/${c.notes[+bass].name}` : c.name; }
 };
 
@@ -108,6 +109,27 @@ pages.forEach((page) => {
         assert.equal(text.replace(/–/g, '-'), CHECKS[kind](...args), spec);
       }
     });
+  });
+
+  test(`${page}: los diagramas generados piden escalas, cajas y digitaciones que existen`, () => {
+    const attrs = (tag) => Object.fromEntries([...tag.matchAll(/data-([\w-]+)="([^"]*)"/g)].map((m) => [m[1], decode(m[2])]));
+    for (const [tag] of read(page).matchAll(/<[^>]*data-gen="board"[^>]*>/g)) {
+      const d = attrs(tag);
+      assert.ok(+d.k >= 0 && +d.k < 12 && T.SCALES[d.s], `mástil con escala desconocida: ${tag}`);
+      assert.ok(d.p === undefined || T.CAGED_ORDER.includes(d.p), `forma desconocida: ${tag}`);
+      assert.ok(d.m === undefined || d.m === 'notes' || d.m === 'intervals', `modo desconocido: ${tag}`);
+      assert.ok((d.from === undefined) === (d.to === undefined) && +(d.from || 0) <= +(d.to || 0), `trastes mal indicados: ${tag}`);
+      assert.ok(d.caption && d.caption.length > 5, `falta el pie del diagrama: ${tag}`);
+    }
+    // Un diagrama de acorde solo puede mostrar una digitación que el buscador encuentra para ese acorde.
+    for (const [tag] of read(page).matchAll(/<[^>]*data-gen="voicing"[^>]*>/g)) {
+      const d = attrs(tag);
+      const [pc, type, bass] = d.chord.split(':');
+      assert.ok(T.CHORD_TYPES[type], `tipo de acorde desconocido: ${tag}`);
+      const tuning = T.TUNINGS[d.tuning || 'standard'].midi.map((m) => m + +(d.capo || 0));
+      const found = voicings(tuning, +pc, type, +bass, 21);
+      assert.ok(found.includes(d.frets), `${d.chord}: «${d.frets}» no está entre ${found.slice(0, 6).join(' | ')}`);
+    }
   });
 
   test(`${page}: los enlaces a la herramienta llevan parámetros válidos`, () => {

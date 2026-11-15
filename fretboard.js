@@ -51,6 +51,7 @@
       });
     });
     board.appendChild(inlays);
+    board.appendChild(el('div', 'layer bands'));     // franjas de la forma CAGED; las rellena highlight()
 
     for (let s = 0; s < n; s++) {
       const row = el('div', 'string-row');
@@ -93,7 +94,9 @@
   /** Atenúa las notas fuera de la forma CAGED elegida o del acorde seleccionado (chordPcs: Set de clases de altura o null). */
   function highlight(st, S, chordPcs) {
     state = st;
-    const inShape = T.positionPredicate(st.s, st.k, st.p, st.f, T.TUNINGS[st.t].midi);
+    const tuning = T.TUNINGS[st.t].midi;
+    const inShape = T.positionPredicate(st.s, st.k, st.p, st.f, tuning);
+    drawBands(st, tuning, inShape);
     $$('.note-marker').forEach((m) => {
       const fret = Number(m.dataset.f);
       const pc = Number(m.dataset.pc);
@@ -106,6 +109,27 @@
       const first = $('.note-marker.note-active') || $('.note-marker');
       if (first) first.tabIndex = 0;
     }
+  }
+
+  /**
+   * Dibuja una franja detrás de cada repetición de la forma elegida. Va de la primera a la última nota de la caja,
+   * no de la ventana teórica: una nota alterada (el G♯ de la menor armónica) puede quedar un traste fuera de ella.
+   */
+  function drawBands(st, tuning, inShape) {
+    const layer = $('#fretboard .bands');
+    if (!layer) return;
+    layer.textContent = '';
+    if (st.p === 'all') return;
+    const frets = $$('#fretboard .note-marker')
+      .filter((m) => inShape(Number(m.dataset.f), Number(m.dataset.pc)))
+      .map((m) => Number(m.dataset.f));
+    T.positionRanges(st.s, st.k, st.f, tuning)[st.p].forEach(([a, b]) => {
+      const inBox = frets.filter((f) => f >= a - 1 && f <= b + 1);
+      if (!inBox.length) return;
+      const band = el('i', 'band');
+      band.style.gridColumn = `${Math.min(...inBox) + 1} / ${Math.max(...inBox) + 2}`;
+      layer.appendChild(band);
+    });
   }
 
   /** Ilumina un momento las notas que cumplan match(marcador), salvo las atenuadas. */

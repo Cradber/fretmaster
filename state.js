@@ -7,12 +7,15 @@
   const { has } = global.FretApp.Util;
 
   const STORE_KEY = 'fm-state';
+  // Ejercicios de la pestaña Práctica; un test comprueba que son los de quiz.js (state.js no depende de él).
+  const EXERCISES = ['name', 'find', 'interval'];
 
   /*  k tonalidad (0–11)        s escala            p forma CAGED (all|C|A|G|E|D)   m mostrar (notes|intervals)
       a alteraciones (auto|sharp|flat)  t afinación  f trastes (22|24)  c cejilla (0–9)  l zurdo (0|1)
       z acordes diatónicos (3|4)  v sonido (0|1)     r fundamental del explorador   q tipo de acorde
-      b nota del bajo (índice)   w pestaña (escala|acordes) */
-  const DEFAULTS = { k: 0, s: 'major', p: 'all', m: 'notes', a: 'auto', t: 'standard', f: 22, c: 0, l: 0, z: 3, v: 1, r: 0, q: 'maj', b: 0, w: 'escala' };
+      b nota del bajo (índice)   w pestaña (escala|acordes|practica)
+      x ejercicio de práctica (name|find|interval)   y nivel del ejercicio (1–3) */
+  const DEFAULTS = { k: 0, s: 'major', p: 'all', m: 'notes', a: 'auto', t: 'standard', f: 22, c: 0, l: 0, z: 3, v: 1, r: 0, q: 'maj', b: 0, w: 'escala', x: 'name', y: 1 };
 
   /** Convierte cualquier entrada (URL, localStorage) en un estado válido; lo que no es válido vuelve al valor por defecto. */
   function sanitize(raw) {
@@ -35,17 +38,26 @@
     if (has(T.CHORD_TYPES, raw.q)) o.q = String(raw.q);
     const b = parseInt(raw.b, 10);
     if (b >= 0 && b < 6) o.b = b;
-    if (raw.w === 'escala' || raw.w === 'acordes') o.w = raw.w;
+    if (['escala', 'acordes', 'practica'].includes(raw.w)) o.w = raw.w;
+    if (EXERCISES.includes(raw.x)) o.x = raw.x;
+    const y = parseInt(raw.y, 10);
+    if (y >= 1 && y <= 3) o.y = y;
     if (o.c > 0 && o.c >= o.f - 2) o.c = 0;
     return o;
   }
 
+  // Preferencias de quien toca (zurdo, trastes, alteraciones, sonido): un enlace que no las mencione no debe borrarlas.
+  // El resto (escala, forma, afinación, cejilla…) describe una vista, y un enlace parcial la deja en su valor por defecto.
+  const PREF_KEYS = ['l', 'f', 'a', 'v'];
+
   function load() {
-    let raw = Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
-    if (!Object.keys(raw).length) {
-      try { raw = JSON.parse(localStorage.getItem(STORE_KEY) || '{}') || {}; } catch (e) { raw = {}; }
-    }
-    return sanitize(raw);
+    const fromUrl = Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
+    let stored;
+    try { stored = JSON.parse(localStorage.getItem(STORE_KEY) || '{}') || {}; } catch (e) { stored = {}; }
+    if (!Object.keys(fromUrl).length) return sanitize(stored);
+    const prefs = {};
+    PREF_KEYS.forEach((k) => { if (has(stored, k)) prefs[k] = stored[k]; });
+    return sanitize({ ...prefs, ...fromUrl });
   }
 
   function persist(state) {

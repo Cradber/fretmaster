@@ -109,11 +109,14 @@
           <tbody>
             <tr><td class="mono">theory.js</td><td>Datos y reglas</td><td>Teoría pura: catálogos, ortografía, roles, acordes, cajas CAGED, buscador de digitaciones. Sin DOM.</td></tr>
             <tr><td class="mono">synth.js</td><td>Datos y reglas</td><td>Síntesis de cuerda pulsada (Karplus-Strong). Pura: devuelve muestras.</td></tr>
+            <tr><td class="mono">quiz.js</td><td>Datos y reglas</td><td>Ejercicios de práctica: genera las preguntas y corrige las respuestas. Puro: el azar llega como parámetro.</td></tr>
             <tr><td class="mono">state.js</td><td>Estado</td><td>Valores por defecto, validación y persistencia del estado.</td></tr>
             <tr><td class="mono">util.js</td><td>Interfaz</td><td>Utilidades de DOM y SVG.</td></tr>
             <tr><td class="mono">audio.js</td><td>Interfaz</td><td>Salida de audio con Web Audio; usa synth.js.</td></tr>
             <tr><td class="mono">fretboard.js</td><td>Interfaz</td><td>Dibujo del mástil, resaltado y teclado.</td></tr>
-            <tr><td class="mono">explorer.js</td><td>Interfaz</td><td>Explorador de acordes y diagramas SVG.</td></tr>
+            <tr><td class="mono">diagram.js</td><td>Interfaz</td><td>Diagramas SVG sin estado: digitación de un acorde y tramo del mástil con una escala. Los usan el explorador y las páginas de documentación.</td></tr>
+            <tr><td class="mono">explorer.js</td><td>Interfaz</td><td>Explorador de acordes: catálogo, inversiones y digitaciones.</td></tr>
+            <tr><td class="mono">practice.js</td><td>Interfaz</td><td>Pestaña Práctica: mástil de los ejercicios, respuestas, sonido y rachas; usa quiz.js.</td></tr>
             <tr><td class="mono">app.js</td><td>Orquestación</td><td>Controles, ciclo de actualización, pestañas, ajustes; une los módulos.</td></tr>
             <tr><td class="mono">theme.js</td><td>Compartido</td><td>Tema Automático, Claro y Oscuro, común a todas las páginas.</td></tr>
             <tr><td class="mono">docs.js</td><td>Documentación</td><td>Tablas generadas desde el código, índice y anclas de las páginas de documentación.</td></tr>
@@ -183,14 +186,17 @@
       <pre><code>&lt;script src="theme.js"&gt;&lt;/script&gt;      →  window.FretTheme
 &lt;script src="theory.js"&gt;&lt;/script&gt;     →  window.FretTheory
 &lt;script src="synth.js"&gt;&lt;/script&gt;      →  window.FretSynth
+&lt;script src="quiz.js"&gt;&lt;/script&gt;       →  window.FretQuiz
 &lt;script src="util.js"&gt;&lt;/script&gt;       →  window.FretApp.Util
 &lt;script src="state.js"&gt;&lt;/script&gt;      →  window.FretApp.State
 &lt;script src="audio.js"&gt;&lt;/script&gt;      →  window.FretApp.Audio
 &lt;script src="fretboard.js"&gt;&lt;/script&gt;  →  window.FretApp.Fretboard
+&lt;script src="diagram.js"&gt;&lt;/script&gt;    →  window.FretApp.Diagram
 &lt;script src="explorer.js"&gt;&lt;/script&gt;   →  window.FretApp.Explorer
+&lt;script src="practice.js"&gt;&lt;/script&gt;   →  window.FretApp.Practice
 &lt;script src="app.js"&gt;&lt;/script&gt;        →  (arranca la aplicación al cargar el DOM)</code></pre>
       <p>Un test lee ese orden en <code>index.html</code> y comprueba, mirando el código fuente de cada archivo, que todo módulo que usa otro se carga <em>después</em> de él. Si alguien reordena las etiquetas o añade una dependencia nueva, el test falla.</p>
-      <p><code data-src="theory.js:typeof window">theory.js</code> y <code data-src="synth.js:typeof module">synth.js</code> además se exportan como módulos de Node (<code>module.exports</code>) para poder probarlos sin navegador. El resto, que depende del DOM, no.</p>
+      <p><code data-src="theory.js:typeof window">theory.js</code> y <code data-src="synth.js:typeof module">synth.js</code> (y <code data-src="quiz.js:typeof module">quiz.js</code>, la lógica de los ejercicios) además se exportan como módulos de Node (<code>module.exports</code>) para poder probarlos sin navegador. El resto, que depende del DOM, no.</p>
 
       <!-- ===================================================== -->
       <h2 id="teoria">Teoría musical (<code>theory.js</code>)</h2>
@@ -235,7 +241,7 @@
       <pre><code>puntuación = amplitud × 1,5 + traste_más_bajo × 0,12 + mudas × 1,2
              − cuerdas_al_aire × 0,4 + (falta la quinta ? 1 : 0)
              + dedos × 0,3 − cuerdas_que_suenan × 0,3</code></pre>
-      <p><code>fingering</code> detecta la cejilla: si el traste pisado más bajo aparece en dos o más cuerdas y ninguna cuerda <em>entre</em> la primera y la última está por debajo de ese traste (ni al aire ni muda), esas notas cuentan como un solo dedo.</p>
+      <p><code>fingering</code> detecta la cejilla: si el traste pisado más bajo aparece en dos o más cuerdas y ninguna cuerda <em>entre</em> la primera y la última está por debajo de ese traste (ni al aire ni muda), esas notas cuentan como un solo dedo. Si la digitación tiene cuerdas al aire, la cejilla solo se acepta cuando hay más de cuatro notas pisadas; si no, los acordes abiertos como A (x02220), D (xx0232) o Em (022000) saldrían marcados con cejilla y con menos dedos de los que usan.</p>
       <p><strong>Coste</strong>: en las pruebas locales (Node 26) una búsqueda completa tarda <em>menos de un milisegundo</em>, probada en todas las combinaciones de tipo de acorde y fundamental del catálogo, tanto con 6 como con 7 cuerdas; en el navegador es instantánea. Por eso el explorador la ejecuta en cada cambio, sin caché.</p>
       <p>Para soportar la cejilla, <code data-src="explorer.js:map((m) => m + st.c)">explorer.js</code> no modifica el algoritmo: le pasa una afinación en la que cada cuerda está subida en los trastes de la cejilla y un máximo de trastes reducido en la misma cantidad.</p>
 
@@ -266,12 +272,12 @@
       <h2 id="estado">Estado y persistencia</h2>
       <p>El estado es un objeto plano con <span data-count="params"></span> claves cortas (<a href="ayuda.html#compartir">tabla en la ayuda</a>). <code data-src="state.js:function sanitize">State.sanitize</code> es el único punto de entrada: recibe cualquier objeto (de la URL, de <code>localStorage</code> o un parche de la interfaz) y devuelve un estado <strong>completo y válido</strong>, sustituyendo cada valor inválido por el de <code data-src="state.js:const DEFAULTS">DEFAULTS</code>. Los identificadores se validan contra los catálogos de <code>theory.js</code>, así que un enlace manipulado no puede romper la aplicación ni inyectar contenido.</p>
       <ul>
-        <li><strong>Carga</strong> (<code data-src="state.js:function load">load</code>): primero la URL (<code>location.hash</code>, leída con <code>URLSearchParams</code>); si está vacía, <code>localStorage</code>. Se repite en cada <code data-src="app.js:hashchange">hashchange</code>, de modo que cambiar el <code>#</code> en la misma pestaña actualiza la vista; <code>persist</code> usa <code>replaceState</code>, que no dispara ese evento, así que no hay bucle.</li>
+        <li><strong>Carga</strong> (<code data-src="state.js:function load">load</code>): primero la URL (<code>location.hash</code>, leída con <code>URLSearchParams</code>); si está vacía, <code>localStorage</code>. Si la URL trae solo algunas claves (los enlaces de la página Aprender), las preferencias de quien toca (<code data-src="state.js:const PREF_KEYS">PREF_KEYS</code>: zurdo, trastes, alteraciones y sonido) se toman de <code>localStorage</code> y el resto queda por defecto, de modo que abrir una lección no borra el modo zurdo. Se repite en cada <code data-src="app.js:hashchange">hashchange</code>, de modo que cambiar el <code>#</code> en la misma pestaña actualiza la vista; <code>persist</code> usa <code>replaceState</code>, que no dispara ese evento, así que no hay bucle.</li>
         <li><strong>Escritura</strong> (<code data-src="state.js:function persist">persist</code>): en ambos sitios, con <code>history.replaceState</code>, que cambia la dirección <em>sin añadir entradas</em> al historial, así que el botón Atrás no recorre cada clic.</li>
         <li>Todo acceso a <code>localStorage</code> está protegido con <code>try/catch</code> (modo privado, almacenamiento bloqueado): la aplicación funciona igual sin él.</li>
         <li>El estado es <strong>inmutable por convención</strong>: <code data-src="app.js:function setState">setState</code> crea uno nuevo con <code>sanitize({...state, ...parche})</code>.</li>
       </ul>
-      <p>Algunos cambios <strong>conservan el acorde diatónico seleccionado</strong> (<code data-src="app.js:KEEP_CHORD_KEYS">KEEP_CHORD_KEYS</code>: afinación, trastes, cejilla, zurdo, notas o intervalos, sonido, forma, explorador y pestaña) y el resto lo deselecciona.</p>
+      <p>Algunos cambios <strong>conservan el acorde diatónico seleccionado</strong> (<code data-src="app.js:KEEP_CHORD_KEYS">KEEP_CHORD_KEYS</code>: afinación, trastes, cejilla, zurdo, notas o intervalos, sonido, forma, explorador, pestaña y ejercicio de práctica) y el resto lo deselecciona.</p>
       <div data-gen="state"></div>
 
       <!-- ===================================================== -->
@@ -295,12 +301,17 @@
         <li><strong>Capas</strong>: las marcas del mástil y la cejilla son capas superpuestas con la misma rejilla (<code data-src="app.css:.layer">.layer</code>), colocadas por <code>grid-column</code>. Funcionan con cualquier número de cuerdas; las marcas dobles se desplazan una fracción de la altura calculada con variables CSS (<code>--n</code>, <code>--cell</code>).</li>
         <li><strong>Modo zurdo</strong>: <code>direction: rtl</code> sobre las rejillas invierte el orden de las columnas sin tocar el DOM; las notas fuerzan <code>direction: ltr</code> para que el texto no se espeje.</li>
         <li><strong>Notas</strong>: cada nota es un <code>&lt;button&gt;</code> con <code>data-s</code>, <code>data-f</code> y <code>data-pc</code>, de modo que el mismo elemento sirve para ratón, teclado y lectores de pantalla.</li>
-        <li><strong>Resaltado</strong>: <code data-src="fretboard.js:function highlight">highlight</code> evalúa para cada nota la pertenencia a la forma CAGED y al acorde y alterna tres clases (<code>note-active</code>, <code>note-dimmed</code>, <code>chord-tone</code>); las transiciones CSS hacen el resto.</li>
+        <li><strong>Resaltado</strong>: <code data-src="fretboard.js:function highlight">highlight</code> evalúa para cada nota la pertenencia a la forma CAGED y al acorde y alterna tres clases (<code>note-active</code>, <code>note-dimmed</code>, <code>chord-tone</code>); las transiciones CSS hacen el resto. Con una forma elegida, <code data-src="fretboard.js:function drawBands">drawBands</code> pinta además una franja detrás de cada repetición de la caja, de su primera a su última nota.</li>
         <li><strong>Teclado</strong>: un único botón del mástil tiene <code>tabindex="0"</code> (<em>roving tabindex</em>) y las flechas mueven el foco. Para subir o bajar de cuerda se elige la nota más cercana en traste (<code data-src="fretboard.js:function onKey">onKey</code>).</li>
       </ul>
 
+      <h3 id="practica">La práctica</h3>
+      <p>La pestaña Práctica separa, como el resto de la aplicación, las reglas del dibujo. <code data-src="quiz.js:function next">FretQuiz.next</code> genera una pregunta (nombrar una nota, encontrarla o reconocer un intervalo) a partir del ejercicio, el nivel, la afinación y una función de azar, y <code data-src="quiz.js:function check">check</code> decide si una respuesta es correcta; ninguna de las dos toca el DOM, así que se prueban en Node con un generador reproducible (<code data-src="quiz.js:function seeded">seeded</code>). <code data-src="practice.js:function render">Practice.render</code> solo pide una pregunta nueva cuando cambian el ejercicio, el nivel o la afinación: el resto de los cambios de estado (tema, zurdo, alteraciones) redibujan la pregunta en curso sin perderla.</p>
+      <p>El mástil de los ejercicios reutiliza las clases CSS del mástil principal (<code>fretboard</code>, <code>string-row</code>, <code>fret-cell</code>), pero sus puntos son <code>.qdot</code> y sus casillas pulsables <code>.quiz-cell</code>, no <code>.note-marker</code>: así el resaltado y el teclado de <code>fretboard.js</code> no los alcanzan. El ejercicio y el nivel son dos claves más del estado (<code>x</code>, <code>y</code>), por lo que se enlazan igual que una escala; las mejores rachas se guardan aparte, en <code data-src="practice.js:const BEST_KEY">localStorage</code>. El sonido de un intervalo solo se lanza desde un gesto del usuario o con el audio ya en marcha, por la misma restricción de los navegadores que afecta a «Escuchar escala».</p>
+
       <h3 id="explorador">El explorador</h3>
-      <p><code data-src="explorer.js:function render">Explorer.render</code> calcula el acorde con <code>spellChord</code>, la afinación efectiva (con cejilla), las digitaciones con <code>findVoicings</code> (hasta 80 candidatas) y las filtra y recorta a ocho. Cada una se dibuja con <code data-src="explorer.js:function drawVoicing">drawVoicing</code>, que genera un <strong>SVG</strong> de 110 × 134 unidades con cuerdas verticales, cejilla, mudas y cuerdas al aire. Los colores de los puntos son variables CSS (<code>var(--c-third)</code>), de modo que los diagramas cambian de tema sin volver a dibujarse. La selección del bajo (inversiones) es un parámetro más del buscador.</p>
+      <p><code data-src="explorer.js:function render">Explorer.render</code> calcula el acorde con <code>spellChord</code>, la afinación efectiva (con cejilla), las digitaciones con <code>findVoicings</code> (hasta 80 candidatas) y las filtra y recorta a ocho. Cada una se dibuja con <code data-src="diagram.js:function voicing">Diagram.voicing</code>, que genera un <strong>SVG</strong> de 110 × 134 unidades con cuerdas verticales, cejilla, mudas y cuerdas al aire. Los colores de los puntos son variables CSS (<code>var(--c-third)</code>), de modo que los diagramas cambian de tema sin volver a dibujarse. La selección del bajo (inversiones) es un parámetro más del buscador.</p>
+      <p><code>diagram.js</code> no guarda estado: recibe la digitación, el acorde y la afinación por parámetros. Por eso las páginas de documentación dibujan con el mismo código que la herramienta: <code data-src="docs.js:voicing(slot)">docs.js</code> convierte cada <code>data-gen="voicing"</code> en un diagrama de acorde y cada <code>data-gen="board"</code> en un tramo del mástil (<code data-src="diagram.js:function board">Diagram.board</code>), y un test comprueba que las digitaciones que cita la guía son de las que encuentra el buscador.</p>
 
       <h3 id="a11y">Accesibilidad</h3>
       <ul>
@@ -343,6 +354,7 @@
           <caption>Suites de pruebas</caption>
           <thead><tr><th scope="col">Archivo</th><th scope="col">Qué comprueba</th><th scope="col">Cómo</th></tr></thead>
           <tbody>
+            <tr><td class="mono">tests/quiz.test.js</td><td>Ejercicios de práctica: cada nivel pregunta solo lo que anuncia, las respuestas correctas se aceptan y las demás no, no se repite la misma pregunta seguida, y los ejercicios del estado coinciden con los del catálogo.</td></tr>
             <tr><td class="mono">tests/theory.test.js</td><td>Ortografía, roles, acordes diatónicos, cajas CAGED (cobertura en las 12 tonalidades), mapa de alteraciones, catálogo de acordes, digitaciones clásicas (C = x32010, F con cejilla = 133211…), inversiones y cejilla.</td><td>Node, funciones puras</td></tr>
             <tr><td class="mono">tests/synth.test.js</td><td>Afinación del sintetizador (autocorrelación), decaimiento, ausencia de saturación y determinismo.</td><td>Node, señales</td></tr>
             <tr><td class="mono">tests/contrast.test.js</td><td>Contraste WCAG de los tokens en los dos temas.</td><td>Node, lee <code>base.css</code></td></tr>
@@ -371,12 +383,15 @@ npm run test:all  # todo lo anterior</code></pre>
       <p>Las tablas se generan al cargar la página con los objetos reales (<code>Object.keys</code> de cada módulo); las descripciones están en un bloque JSON de esta página. Un test comprueba que ambos coinciden nombre por nombre, de modo que una función nueva sin documentar o una descripción de una función borrada <strong>rompen la comprobación</strong>.</p>
       <h3>FretTheory (theory.js)</h3><div data-gen="api" data-api="FretTheory"></div>
       <h3>FretSynth (synth.js)</h3><div data-gen="api" data-api="FretSynth"></div>
+      <h3>FretQuiz (quiz.js)</h3><div data-gen="api" data-api="FretQuiz"></div>
       <h3>FretTheme (theme.js)</h3><div data-gen="api" data-api="FretTheme"></div>
       <h3>FretApp.Util (util.js)</h3><div data-gen="api" data-api="FretApp.Util"></div>
       <h3>FretApp.State (state.js)</h3><div data-gen="api" data-api="FretApp.State"></div>
       <h3>FretApp.Audio (audio.js)</h3><div data-gen="api" data-api="FretApp.Audio"></div>
       <h3>FretApp.Fretboard (fretboard.js)</h3><div data-gen="api" data-api="FretApp.Fretboard"></div>
+      <h3>FretApp.Diagram (diagram.js)</h3><div data-gen="api" data-api="FretApp.Diagram"></div>
       <h3>FretApp.Explorer (explorer.js)</h3><div data-gen="api" data-api="FretApp.Explorer"></div>
+      <h3>FretApp.Practice (practice.js)</h3><div data-gen="api" data-api="FretApp.Practice"></div>
 
       <!-- ===================================================== -->
       <h2 id="extender">Cómo ampliarlo</h2>
@@ -474,6 +489,7 @@ npm run test:all  # todo lo anterior</code></pre>
     "TUNINGS": "Catálogo de afinaciones: nombre y notas MIDI de la cuerda más aguda a la más grave.",
     "CAGED": "Ventanas de trastes de las cinco formas, medidas para la mayor de Do.",
     "CAGED_ORDER": "Orden de las formas a lo largo del mástil: C, A, G, E, D.",
+    "PENTA_BOX": "Número de caja de la pentatónica menor que corresponde a cada forma (G es la caja 1).",
     "INLAY_FRETS": "Trastes que llevan un punto de referencia en el mástil.",
     "ROLE_NAMES": "Nombre en español de cada rol de nota en una escala.",
     "CHORD_GROUPS": "Familias de acordes del explorador, con su identificador y título.",
@@ -496,6 +512,16 @@ npm run test:all  # todo lo anterior</code></pre>
     "alterationMap": "Notas de una escala ajenas a su mayor madre y la nota que sustituye cada una.",
     "positionPredicate": "Devuelve una función que dice si una nota (traste, altura) pertenece a una forma CAGED.",
     "cagedOffset": "Trastes que se desplazan las cajas en una afinación (1 en medio tono abajo); null en las abiertas, donde CAGED no existe."
+  },
+  "FretQuiz": {
+    "MAX_FRET": "Último traste que usan los ejercicios (12).",
+    "INTERVALS": "Los doce intervalos ascendentes: semitonos, símbolo y nombre.",
+    "EXERCISES": "Catálogo de ejercicios con su título y la descripción de sus tres niveles.",
+    "config": "Qué entra en un ejercicio y nivel: cuerdas, notas, intervalos y si es de oído.",
+    "next": "Genera una pregunta nueva sin repetir la anterior; el azar llega como parámetro.",
+    "check": "Dice si una respuesta es correcta para una pregunta dada.",
+    "tally": "Devuelve el marcador tras una respuesta: aciertos, intentos, racha y mejor racha.",
+    "seeded": "Crea un generador pseudoaleatorio reproducible, para las pruebas."
   },
   "FretSynth": {
     "pluckSamples": "Sintetiza una cuerda pulsada con Karplus-Strong y devuelve las muestras.",
@@ -533,10 +559,18 @@ npm run test:all  # todo lo anterior</code></pre>
     "highlight": "Atenúa las notas fuera de la forma CAGED o del acorde elegidos.",
     "flash": "Ilumina un momento las notas que cumplan una condición."
   },
+  "FretApp.Diagram": {
+    "voicing": "Dibuja en SVG una digitación: cuerdas, cejilla, mudas y cuerdas al aire.",
+    "board": "Dibuja en SVG un tramo del mástil con las notas de una escala o de una caja."
+  },
   "FretApp.Explorer": {
     "init": "Crea los controles del explorador y conecta sus eventos.",
     "render": "Calcula y dibuja el acorde, sus notas y sus digitaciones.",
     "open": "Abre el explorador con un acorde concreto."
+  },
+  "FretApp.Practice": {
+    "init": "Crea los controles de la pestaña Práctica y conecta sus eventos.",
+    "render": "Dibuja el ejercicio actual; cambia de pregunta si cambian ejercicio, nivel o afinación."
   }
 }
   </script>
@@ -544,11 +578,14 @@ npm run test:all  # todo lo anterior</code></pre>
   <script src="theme.js"></script>
   <script src="theory.js"></script>
   <script src="synth.js"></script>
+  <script src="quiz.js"></script>
   <script src="util.js"></script>
   <script src="state.js"></script>
   <script src="audio.js"></script>
   <script src="fretboard.js"></script>
+  <script src="diagram.js"></script>
   <script src="explorer.js"></script>
+  <script src="practice.js"></script>
   <script src="docs.js"></script>
 </body>
 </html>
